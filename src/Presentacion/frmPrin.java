@@ -77,6 +77,7 @@ public class frmPrin extends javax.swing.JFrame {
         this.licPorFecha.setVisible(false);
         this.setContentPane(desktop);
         //this.jMenu5.setVisible(false);
+        //ES UNA PRUEBA
     }
     
     public void cargaInfo() throws ClassNotFoundException, SQLException{
