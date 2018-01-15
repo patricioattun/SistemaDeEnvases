@@ -1,22 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package Presentacion.Liquidaciones;
 
-/**
- *
- * @author pattun
- */
 public class InternalModCodFijo extends javax.swing.JInternalFrame {
 
-    /**
-     * Creates new form InternalModCodFijo
-     */
+ 
     public InternalModCodFijo() {
         initComponents();
     }
+        
 
     /**
      * This method is called from within the constructor to initialize the form.

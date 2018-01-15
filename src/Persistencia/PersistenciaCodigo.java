@@ -698,8 +698,31 @@ public class PersistenciaCodigo {
             }
          return esta;
     }
-
+    
     public boolean insertaEnCodigosFijos(Ingreso ing) throws ClassNotFoundException, SQLException {
+        Connection cnn=null;
+        Integer suma=0;
+        boolean ret=false;
+        String insert="";
+        PreparedStatement ps=null;
+        cnn=conexion.Cadena();
+            insert="insert into PERS_CODIGOS_FIJOS(CODFUNC,CODMOV,VALOR,FECHACARGADO)"+"values(?,?,?,?)";
+            ps=cnn.prepareStatement(insert);
+            ps.setInt(1, ing.getFunc().getCodFunc());
+            ps.setInt(2, ing.getCodMov().getCod());
+            ps.setDouble(3, ing.getCantidad());
+            ps.setString(4,this.convertirFecha(ing.getFecha())); 
+            suma+=ps.executeUpdate();
+         if(suma>0){
+             ret=true;
+         }                           
+       if(cnn!=null){
+             cnn.close();
+       }
+           return ret;
+    }
+    
+    public boolean actualizaEnCodigosFijos(Ingreso ing) throws ClassNotFoundException, SQLException {
         Connection cnn=null;
         Integer suma=0;
         boolean ret=false;
