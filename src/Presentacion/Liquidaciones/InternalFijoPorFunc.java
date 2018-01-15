@@ -104,6 +104,7 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
 
         jPopupMenu1 = new javax.swing.JPopupMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
         jLabel2 = new javax.swing.JLabel();
         txtNumFunc = new org.edisoncor.gui.textField.TextFieldRound();
         btnBuscar = new org.edisoncor.gui.button.ButtonIcon();
@@ -123,6 +124,9 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
             }
         });
         jPopupMenu1.add(jMenuItem1);
+
+        jMenuItem2.setText("Modificar");
+        jPopupMenu1.add(jMenuItem2);
 
         setClosable(true);
         setIconifiable(true);
@@ -569,6 +573,7 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tabla;
