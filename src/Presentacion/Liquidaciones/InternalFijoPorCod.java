@@ -31,6 +31,7 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
     private LogCodigo logs;
     private LogFuncionario log;
     private InternalListadoFuncFiltro listadoFunc;
+    private InternalModCodFijo internalIng;
     private Funcionario f;
     Codigo cod=null;
     private Ingreso ingres=null;
@@ -69,6 +70,14 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
      ingres.setCantidad(Double.valueOf(String.valueOf(tmMov.getValueAt(m, 2))));
      ingres.setCodMov(cod);
     }
+
+    public Funcionario getF() {
+        return f;
+    }
+
+    public void setF(Funcionario f) {
+        this.f = f;
+    }
     
 
    public static InternalFijoPorCod instancia() throws ClassNotFoundException, SQLException
@@ -103,6 +112,7 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
 
         jPopupMenu1 = new javax.swing.JPopupMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
         jLabel5 = new javax.swing.JLabel();
         comboCodigos = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
@@ -125,6 +135,14 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
             }
         });
         jPopupMenu1.add(jMenuItem1);
+
+        jMenuItem2.setText("Modificar");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jPopupMenu1.add(jMenuItem2);
 
         setClosable(true);
         setIconifiable(true);
@@ -569,6 +587,38 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
        }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        if(this.ingres!=null){
+            try {
+                this.internalIng=InternalModCodFijo.instancia(logs,ingres,0);
+                frmPrin prin=frmPrin.instancia();
+                if (!internalIng.isVisible()) {
+                    prin.getDesktop().add(internalIng);
+                    internalIng.setLocation((prin.getDesktop().getWidth()/2)-(internalIng.getWidth()/2),(prin.getDesktop().getHeight()/2) - internalIng.getHeight()/2);
+                    internalIng.setVisible(true);
+              
+                    internalIng.repaint();
+                    internalIng.revalidate();
+                    
+                }
+                else{
+                    internalIng.setSelected(true);
+                    internalIng.requestFocus();
+                    internalIng.setVisible(true);
+                    internalIng.repaint();
+                    internalIng.revalidate();
+                    
+                }
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SQLException ex) {
+                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (PropertyVetoException ex) {
+                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.edisoncor.gui.button.ButtonIcon btnBuscar;
@@ -579,6 +629,7 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
@@ -613,7 +664,8 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
       }
     }
 
-    private void cargaTabla() throws SQLException, ClassNotFoundException {
+    public void cargaTabla() throws SQLException, ClassNotFoundException {
+        this.LimpiarTabla();
         this.Alinear_Grillas();
         ArrayList<Ingreso> lista=this.logs.cargaMovimientosFijo(cod.getCod());
          DefaultTableModel modelo = (DefaultTableModel)tabla.getModel();

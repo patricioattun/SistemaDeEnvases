@@ -1,6 +1,8 @@
 
 package Presentacion.Liquidaciones;
 
+import Dominio.Codigo;
+import Dominio.Funcionario;
 import Dominio.Ingreso;
 import Logica.LogCodigo;
 import java.sql.SQLException;
@@ -52,7 +54,25 @@ public class InternalModCodFijo extends javax.swing.JInternalFrame {
         btnAceptar = new org.edisoncor.gui.button.ButtonIcon();
         lblIngreso = new javax.swing.JLabel();
 
+        setClosable(true);
         setTitle("Modificar Ingreso");
+        addInternalFrameListener(new javax.swing.event.InternalFrameListener() {
+            public void internalFrameActivated(javax.swing.event.InternalFrameEvent evt) {
+            }
+            public void internalFrameClosed(javax.swing.event.InternalFrameEvent evt) {
+                formInternalFrameClosed(evt);
+            }
+            public void internalFrameClosing(javax.swing.event.InternalFrameEvent evt) {
+            }
+            public void internalFrameDeactivated(javax.swing.event.InternalFrameEvent evt) {
+            }
+            public void internalFrameDeiconified(javax.swing.event.InternalFrameEvent evt) {
+            }
+            public void internalFrameIconified(javax.swing.event.InternalFrameEvent evt) {
+            }
+            public void internalFrameOpened(javax.swing.event.InternalFrameEvent evt) {
+            }
+        });
 
         jLabel6.setFont(new java.awt.Font("Euphemia", 1, 14)); // NOI18N
         jLabel6.setText("Valor");
@@ -136,14 +156,18 @@ public class InternalModCodFijo extends javax.swing.JInternalFrame {
         ing.setFecha(fecha);
         if(!ing.getCantidad().equals(d)){
             ing.setCantidad(d);
-            if(this.fr==1){
+          
             try {
                 if(this.log.actualizaEnCodigosFijos(ing)){
                     if(fr==1){
+                        InternalFijoPorFunc.instancia().setCod(ing.getCodMov());
                         InternalFijoPorFunc.instancia().getBtnBuscar().doClick();
                     }
                     else if(fr==0){
-                        InternalFijoPorCod.instancia().getBtnBuscar().doClick();
+                        Funcionario f =new Funcionario();
+                        f.setCodFunc(ing.getCodFunc());
+                        InternalFijoPorCod.instancia().setF(f);
+                        InternalFijoPorCod.instancia().cargaTabla();
                     }
                     this.dispose();
                 }
@@ -157,13 +181,17 @@ public class InternalModCodFijo extends javax.swing.JInternalFrame {
                 Logger.getLogger(InternalModCodFijo.class.getName()).log(Level.SEVERE, null, ex);
             }
                 
-            }
+            
             }
                     
                 
 
         
     }//GEN-LAST:event_btnAceptarActionPerformed
+
+    private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
+        instancia=null;
+    }//GEN-LAST:event_formInternalFrameClosed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

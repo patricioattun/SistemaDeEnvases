@@ -69,6 +69,7 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
      ingres.setCantidad(Double.valueOf(String.valueOf(tmMov.getValueAt(m, 2))));
      ingres.setCodMov(c);
     }
+     
     public static InternalFijoPorFunc instancia() throws ClassNotFoundException, SQLException
         {    
          if (instancia== null)
@@ -94,6 +95,15 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
     public void setBtnBuscar(ButtonIcon btnBuscar) {
         this.btnBuscar = btnBuscar;
     }
+
+    public Codigo getCod() {
+        return cod;
+    }
+
+    public void setCod(Codigo cod) {
+        this.cod = cod;
+    }
+    
     
     
     /**
