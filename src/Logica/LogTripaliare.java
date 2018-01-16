@@ -336,7 +336,7 @@ public class LogTripaliare {
                                                 marca.setTipo("LICENCIA");
                                                 marca.setFecha(hoy);
                                                 marca.setSupervisado(0);
-                                                this.codPer.insertarCodigoMarca(this.trip.obtenerMaxCodFunc(f.getCodFunc()),marca.getFunCod(),m.getTipoLic(),1.0);
+                                                //this.codPer.insertarCodigoMarca(this.trip.obtenerMaxCodFunc(f.getCodFunc()),marca.getFunCod(),m.getTipoLic(),1.0);
                                                 this.trip.insertarMarcas(marca);
                                                 listaAux.add(lic);
                                              

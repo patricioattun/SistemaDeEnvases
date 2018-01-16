@@ -1,13 +1,42 @@
 
 package Presentacion.Liquidaciones;
 
-public class InternalModCodFijo extends javax.swing.JInternalFrame {
+import Dominio.Ingreso;
+import Logica.LogCodigo;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
- 
-    public InternalModCodFijo() {
+public class InternalModCodFijo extends javax.swing.JInternalFrame {
+    private LogCodigo log;
+    private Ingreso ing;
+    private int fr;
+    private static InternalModCodFijo instancia=null;
+    public InternalModCodFijo(LogCodigo loga,Ingreso ing,int fram) {
         initComponents();
+        this.log=loga;
+        this.ing=ing;
+        this.fr=fram;
+        this.cargaFrame();
     }
         
+     public static InternalModCodFijo instancia(LogCodigo loga,Ingreso ing,int fram) throws ClassNotFoundException, SQLException
+   {    
+         if (instancia== null)
+         {
+            instancia = new InternalModCodFijo(loga,ing,fram);
+         }
+         return instancia;
+      
+   }
+     
+     private void cargaFrame() {
+        
+        this.txtValor.setText(this.ing.getCantidad().toString());
+        this.txtValor.selectAll();
+        this.lblIngreso.setText(this.ing.toString());
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -18,21 +47,129 @@ public class InternalModCodFijo extends javax.swing.JInternalFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel6 = new javax.swing.JLabel();
+        txtValor = new org.edisoncor.gui.textField.TextFieldRound();
+        btnAceptar = new org.edisoncor.gui.button.ButtonIcon();
+        lblIngreso = new javax.swing.JLabel();
+
+        setTitle("Modificar Ingreso");
+
+        jLabel6.setFont(new java.awt.Font("Euphemia", 1, 14)); // NOI18N
+        jLabel6.setText("Valor");
+
+        txtValor.setBackground(new java.awt.Color(102, 153, 255));
+        txtValor.setForeground(new java.awt.Color(255, 255, 255));
+        txtValor.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtValor.setCaretColor(new java.awt.Color(255, 255, 255));
+        txtValor.setSelectedTextColor(new java.awt.Color(0, 0, 0));
+        txtValor.setSelectionColor(new java.awt.Color(255, 255, 255));
+        txtValor.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtValorKeyTyped(evt);
+            }
+        });
+
+        btnAceptar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Ok.png"))); // NOI18N
+        btnAceptar.setText("buttonIcon1");
+        btnAceptar.setToolTipText("Aceptar");
+        btnAceptar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAceptarActionPerformed(evt);
+            }
+        });
+
+        lblIngreso.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+        lblIngreso.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblIngreso.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 394, Short.MAX_VALUE)
+            .addComponent(lblIngreso, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(28, 28, 28)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtValor, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 274, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblIngreso, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtValor, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addGap(18, 18, 18)
+                .addComponent(btnAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(37, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void txtValorKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtValorKeyTyped
+        int k = (int) evt.getKeyChar();
+        char c=evt.getKeyChar();
+        if(k!=46){
+            if(!Character.isDigit(c)){
+                evt.consume();
+            }
+        }
+        if(k==10){
+            this.btnAceptar.doClick();
+        }
+    }//GEN-LAST:event_txtValorKeyTyped
+
+    private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAceptarActionPerformed
+        Double d=Double.parseDouble(this.txtValor.getText());
+        Date fecha=new Date();
+        
+        ing.setFecha(fecha);
+        if(!ing.getCantidad().equals(d)){
+            ing.setCantidad(d);
+            if(this.fr==1){
+            try {
+                if(this.log.actualizaEnCodigosFijos(ing)){
+                    if(fr==1){
+                        InternalFijoPorFunc.instancia().getBtnBuscar().doClick();
+                    }
+                    else if(fr==0){
+                        InternalFijoPorCod.instancia().getBtnBuscar().doClick();
+                    }
+                    this.dispose();
+                }
+                else{
+                    //mensaje
+                }
+                
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(InternalModCodFijo.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SQLException ex) {
+                Logger.getLogger(InternalModCodFijo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+                
+            }
+            }
+                    
+                
+
+        
+    }//GEN-LAST:event_btnAceptarActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.edisoncor.gui.button.ButtonIcon btnAceptar;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel lblIngreso;
+    private org.edisoncor.gui.textField.TextFieldRound txtValor;
     // End of variables declaration//GEN-END:variables
 }

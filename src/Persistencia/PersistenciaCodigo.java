@@ -729,12 +729,12 @@ public class PersistenciaCodigo {
         String insert="";
         PreparedStatement ps=null;
         cnn=conexion.Cadena();
-            insert="insert into PERS_CODIGOS_FIJOS(CODFUNC,CODMOV,VALOR,FECHACARGADO)"+"values(?,?,?,?)";
+            insert="update PERS_CODIGOS_FIJOS set VALOR=?, FECHACARGADO=? WHERE CODFUNC=? AND CODMOV=?";
             ps=cnn.prepareStatement(insert);
-            ps.setInt(1, ing.getFunc().getCodFunc());
-            ps.setInt(2, ing.getCodMov().getCod());
-            ps.setDouble(3, ing.getCantidad());
-            ps.setString(4,this.convertirFecha(ing.getFecha())); 
+            ps.setDouble(1, ing.getCantidad());
+            ps.setString(2,this.convertirFecha(ing.getFecha())); 
+            ps.setInt(3, ing.getCodFunc());
+            ps.setInt(4, ing.getCodMov().getCod());
             suma+=ps.executeUpdate();
          if(suma>0){
              ret=true;

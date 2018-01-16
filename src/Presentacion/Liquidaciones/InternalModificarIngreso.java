@@ -3,14 +3,13 @@ package Presentacion.Liquidaciones;
 
 import Dominio.Ingreso;
 import Logica.LogCodigo;
-import Presentacion.Liquidaciones.InternalIngresoPorFunc;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 public class InternalModificarIngreso extends javax.swing.JInternalFrame {
-    private static Presentacion.Liquidaciones.InternalModificarIngreso instancia=null;
+    private static InternalModificarIngreso instancia=null;
     private InternalIngresoPorFunc inte;
     private InternalIngresoPorCod internalCod;
     private LogCodigo log;

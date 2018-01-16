@@ -98,6 +98,9 @@ public class LogCodigo {
     public boolean insertaEnCodigosFijos(Ingreso ing) throws ClassNotFoundException, SQLException {
         return this.pers.insertaEnCodigosFijos(ing);
     }
+    public boolean actualizaEnCodigosFijos(Ingreso ing) throws ClassNotFoundException, SQLException {
+        return this.pers.actualizaEnCodigosFijos(ing);
+    }
 
     public boolean borrarCodigoEnPersCodFijo(Ingreso ingres) throws SQLException, SQLException {
         return this.pers.borrarCodigoEnPersCodFijo(ingres);

@@ -66,6 +66,7 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
      Integer m=this.tabla.rowAtPoint(e.getPoint());
      this.ingres=new Ingreso();
      ingres.setCodFunc(Integer.valueOf(String.valueOf(tmMov.getValueAt(m, 0))));
+     ingres.setCantidad(Double.valueOf(String.valueOf(tmMov.getValueAt(m, 2))));
      ingres.setCodMov(cod);
     }
     
