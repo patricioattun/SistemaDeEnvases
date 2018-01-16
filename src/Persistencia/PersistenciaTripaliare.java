@@ -675,7 +675,7 @@ public Date sumarDiasFecha(Date fecha){
         PreparedStatement ps=null;
         String consulta="";
         if(f==null&&sup==1){       
-        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.id=e.id and m.codfunc=e.codfunc order by e.codigo";
+        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -683,7 +683,7 @@ public Date sumarDiasFecha(Date fecha){
         ps.setTimestamp(2, has);
         }
         else if(f==null&&sup==0){
-        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.id=e.id and m.codfunc=e.codfunc order by e.codigo";
+        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -692,7 +692,7 @@ public Date sumarDiasFecha(Date fecha){
         ps.setInt(3, sup);
         }
         else if(f!=null&&sup==1){
-        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc order by e.codigo";
+        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -701,7 +701,7 @@ public Date sumarDiasFecha(Date fecha){
         ps.setInt(3, f.getCodFunc());
         }
         else if(f!=null && sup==0){
-        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc order by e.codigo";
+        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -725,6 +725,48 @@ public Date sumarDiasFecha(Date fecha){
          return marcas;
     }
     
+    public ArrayList<Marca> codigoDiezDiasGenerado(Funcionario f,Integer mes) throws ClassNotFoundException, SQLException{
+        Connection cnn=null;
+        Marca m=null;
+        cnn=conexion.Cadena();
+        ArrayList<Marca> marcas=new ArrayList<>();
+        PreparedStatement ps=null;
+        String consulta="";
+        Integer total=0;
+        if(f==null){
+            consulta="select dias_generados,dias_descuento,codfunc from pers_licencia_generada where month(fechaini)=?";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, mes);
+        }
+        else{
+            consulta="select dias_generados,dias_descuento,codfunc from pers_licencia_generada where month(fechaini)=1 and codfunc=?";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, mes);
+            ps.setInt(2, f.getCodFunc());
+        }
+        
+        ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+            m=new Marca();
+            //se usa marca como objeto contenedor para poder integrarlo a las marcas
+            //los atributos no reflejan lo que llevan adentro
+            //solo importa el tipo de datos
+            m.setFunCod(rs.getInt("CODFUNC"));
+            total=rs.getInt("DIAS_GENERADOS")-rs.getInt("DIAS_DESCUENTO");
+            m.setEditada(total);
+            m.setIncongruencia(10);
+            marcas.add(m);
+            }      
+             if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+         return marcas;
+        
+    }
+    
+    
     public ArrayList<Codigo> codigosDistintos(Funcionario f,Date desde,Date hasta,Integer sup) throws ClassNotFoundException, SQLException{
         Connection cnn=null;
         Codigo m=null;
@@ -734,7 +776,7 @@ public Date sumarDiasFecha(Date fecha){
         String consulta="";
         this.persCod=new PersistenciaCodigo();
         if(f==null&&sup==1){       
-        consulta="SELECT distinct(e.codigo) FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.id=e.id and m.codfunc=e.codfunc order by e.codigo";
+        consulta="SELECT distinct(e.codigo) FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -742,7 +784,7 @@ public Date sumarDiasFecha(Date fecha){
         ps.setTimestamp(2, has);
         }
         else if(f==null&&sup==0){
-        consulta="SELECT distinct(e.codigo) FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.id=e.id and m.codfunc=e.codfunc order by e.codigo";
+        consulta="SELECT distinct(e.codigo) FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -751,7 +793,7 @@ public Date sumarDiasFecha(Date fecha){
         ps.setInt(3, sup);
         }
         else if(f!=null&&sup==1){
-        consulta="SELECT distinct(e.codigo) FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc order by e.codigo";
+        consulta="SELECT distinct(e.codigo) FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -760,7 +802,7 @@ public Date sumarDiasFecha(Date fecha){
         ps.setInt(3, f.getCodFunc());
         }
         else if(f!=null && sup==0){
-        consulta="SELECT distinct(e.codigo) FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc order by e.codigo";
+        consulta="SELECT distinct(e.codigo) FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -769,6 +811,8 @@ public Date sumarDiasFecha(Date fecha){
         ps.setInt(3, sup);
         ps.setInt(4, f.getCodFunc());
         }
+        m=this.persCod.obtenerCodigoTipoTope(10);
+        codigos.add(m);
         ResultSet rs=ps.executeQuery();
             while(rs.next()){
             m=this.persCod.obtenerCodigoTipoTope(rs.getInt("CODIGO"));
@@ -779,6 +823,7 @@ public Date sumarDiasFecha(Date fecha){
                 rs.close();
                 cnn.close();
             }
+            
          return codigos;
     }
     

@@ -831,8 +831,27 @@ private boolean cercania(Time time, Date date, Time horaEntrada, Time horaSalida
     }
     
    public ArrayList<Marca> codigosFuncionarios(Funcionario f,Date desde,Date hasta,Integer sup) throws ClassNotFoundException, SQLException{
-       return this.trip.codigosFuncionarios(f, desde, hasta, sup);
+       ArrayList<Marca> marcas = this.trip.codigosFuncionarios(f, desde, hasta, sup);
+       ArrayList<Marca> marcasDiez=this.trip.codigoDiezDiasGenerado(f, this.obtieneMes());
+       return fusionaMarcas(marcas,marcasDiez);
    } 
+   
+   private ArrayList<Marca> fusionaMarcas(ArrayList<Marca> marcas, ArrayList<Marca> marcasDiez){
+       if(!marcasDiez.isEmpty()){
+            for(Marca m : marcasDiez){
+                    marcas.add(m);
+            }
+       }
+       return marcas;
+   }
+   
+    private Integer obtieneMes(){
+    Date fecha = new Date();
+    Calendar c=Calendar.getInstance();
+    c.setTimeInMillis(fecha.getTime());
+    int mes = c.get(Calendar.MONTH)+1;
+    return mes;
+    }
    public ArrayList<Codigo> codigosDistintos(Funcionario f,Date desde,Date hasta,Integer sup) throws ClassNotFoundException, SQLException{
        return this.trip.codigosDistintos(f, desde, hasta, sup);
    }

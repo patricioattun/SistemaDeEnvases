@@ -435,16 +435,21 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
                                             }
                                             break;
                                         case 3:
-                                            Double cantidad=this.trip.CantidadCodigo(this.txtFechaDesde.getDate(), this.txtFechahasta.getDate(), m.getFunCod(), m.getIncongruencia());
-                                            if(m.getFunCod()==6130 && codigos.get(s).getCod()==61){
-                                                int o=9;
+                                            if(m.getIncongruencia()!=10){
+                                                Double cantidad=this.trip.CantidadCodigo(this.txtFechaDesde.getDate(), this.txtFechahasta.getDate(), m.getFunCod(), m.getIncongruencia());
+
+                                                    if(codigos.get(s).getTipoUnidad().equals(0)&& !codigos.get(s).getCod().equals(40)){
+                                                        cantidad=this.recalculaCantidad(cantidad);
+                                                        celda.setCellValue(cantidad);
+                                                        total+=cantidad;
+                                                    }
+                                                    else{
+                                                        celda.setCellValue(cantidad);
+                                                        total+=cantidad;
+                                                    }
                                             }
-                                            if(codigos.get(s).getTipoUnidad().equals(0)&& !codigos.get(s).getCod().equals(40)){
-                                                cantidad=this.recalculaCantidad(cantidad);
-                                                celda.setCellValue(cantidad);
-                                                total+=cantidad;
-                                            }
-                                            else{
+                                            else if(m.getIncongruencia()==10){
+                                                Integer cantidad=m.getEditada();
                                                 celda.setCellValue(cantidad);
                                                 total+=cantidad;
                                             }
