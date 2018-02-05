@@ -76,7 +76,7 @@ public class frmPrin extends javax.swing.JFrame {
         this.setVisible(true);
         this.licPorFecha.setVisible(false);
         this.setContentPane(desktop);
-        //this.jMenu5.setVisible(false);
+       // this.jMenu5.setVisible(false);
         
     }
     
@@ -184,6 +184,10 @@ public class frmPrin extends javax.swing.JFrame {
         jMenuItem17 = new javax.swing.JMenuItem();
         jMenuItem18 = new javax.swing.JMenuItem();
         jMenuItem19 = new javax.swing.JMenuItem();
+        jMenu8 = new javax.swing.JMenu();
+        jMenuItem20 = new javax.swing.JMenuItem();
+        jMenu9 = new javax.swing.JMenu();
+        jMenuItem21 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(51, 102, 255));
@@ -398,6 +402,22 @@ public class frmPrin extends javax.swing.JFrame {
         jMenu5.add(jMenuItem19);
 
         jMenuBar1.add(jMenu5);
+
+        jMenu8.setText("Vales");
+        jMenu8.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+
+        jMenuItem20.setText("Ingreso de Vales");
+        jMenu8.add(jMenuItem20);
+
+        jMenuBar1.add(jMenu8);
+
+        jMenu9.setText("Declaraciones Juradas");
+        jMenu9.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+
+        jMenuItem21.setText("jMenuItem21");
+        jMenu9.add(jMenuItem21);
+
+        jMenuBar1.add(jMenu9);
 
         setJMenuBar(jMenuBar1);
 
@@ -1034,6 +1054,8 @@ public class frmPrin extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenu jMenu6;
     private javax.swing.JMenu jMenu7;
+    private javax.swing.JMenu jMenu8;
+    private javax.swing.JMenu jMenu9;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem10;
@@ -1047,6 +1069,8 @@ public class frmPrin extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem18;
     private javax.swing.JMenuItem jMenuItem19;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem20;
+    private javax.swing.JMenuItem jMenuItem21;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;

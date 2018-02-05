@@ -5,6 +5,7 @@ import Dominio.Codigo;
 import Dominio.Funcionario;
 import Dominio.Ingreso;
 import Dominio.IngresoMarca;
+import Dominio.Marca;
 import Dominio.Retencion;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,6 +17,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PersistenciaCodigo {
      private Conexion conexion;
@@ -259,7 +262,7 @@ public class PersistenciaCodigo {
            }
         return str;
          }
-     private Timestamp fijaHoraDesde(Date date){
+    private Timestamp fijaHoraDesde(Date date){
     Calendar c=Calendar.getInstance();
     c.setTimeInMillis(date.getTime());
     c.set(Calendar.HOUR_OF_DAY, 0);
@@ -810,7 +813,7 @@ public class PersistenciaCodigo {
         ArrayList<Codigo> lista=new ArrayList<>();
         Codigo c=null;    
         cnn=conexion.Cadena();
-        String consulta="select codigo,descripcion from pers_codigos where retencion=1 order by codigo";
+        String consulta="select codigo,descripcion from pers_codigos where retencion_fija=1 order by codigo";
         PreparedStatement ps=cnn.prepareStatement(consulta);
         ResultSet rs=ps.executeQuery();
             while(rs.next()){
@@ -1086,5 +1089,58 @@ public class PersistenciaCodigo {
                 cnn.close();
             }
         return retorno;    
+    }
+
+    public Integer totalPeriodo(Timestamp desde, Timestamp hasta, Marca m,Integer cod, Connection cnn) {
+          Integer retorno = 0;
+        try {
+             ArrayList<Marca> marcas=new ArrayList<>();
+             PreparedStatement ps=null;
+            
+             String consulta="SELECT sum(cantidad) as cant FROM PERS_INGRESOS_MARCAS where codfunc=? and codigo=?  and codfunc in(select codFunc from pers_Marcas where Marca>=? and marca<=?) and id in (select id from pers_Marcas where Marca>=? and marca<=? and codfunc=?) group by codigo";
+             
+             ps=cnn.prepareStatement(consulta);
+             java.sql.Timestamp des = this.fijaHoraDesde(desde);
+             java.sql.Timestamp has = this.fijaHoraHasta(hasta);
+             ps.setInt(1, m.getFunCod());
+             ps.setInt(2, cod);
+             ps.setTimestamp(3, des);
+             ps.setTimestamp(4, has);
+             ps.setTimestamp(5, des);
+             ps.setTimestamp(6, has);
+             ps.setInt(7, m.getFunCod());
+             
+             ResultSet rs = ps.executeQuery();
+             while(rs.next()){
+                 retorno = rs.getInt("cant");  
+             }
+             ps.close();
+             rs.close();
+         } catch (SQLException ex) {
+             Logger.getLogger(PersistenciaCodigo.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         return retorno;
+    }
+
+    public Integer obtengoTope(Integer cod, Connection cnn) {
+        Integer retorno = 0;
+        try {
+                          
+             PreparedStatement ps=null;
+             String consulta="SELECT * FROM PERS_Parametros where nombre=?";
+             ps=cnn.prepareStatement(consulta);
+             ps.setString(1, cod.toString());
+             
+             ResultSet rs = ps.executeQuery();
+             while(rs.next()){
+                 retorno = Integer.valueOf(rs.getString("VALOR").trim());  
+             }
+             ps.close();
+             rs.close();
+            
+         } catch (SQLException ex) {
+             Logger.getLogger(PersistenciaCodigo.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         return retorno;
     }
 }

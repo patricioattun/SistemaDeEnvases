@@ -349,22 +349,58 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
         if(cant>0){
             if(marca!=null){
                     try {
-                        marca.setSupervisado(1);
-                        if(this.log.insertarCodigoMarca(marca.getId(), marca.getFunCod(), codigo, cant) && this.trip.actualizaMarca(marca,null)==1){
-                            this.lblMsj.setText("Ingreso Exitoso");
-                            this.txtCant.setText("");
-                            this.txtCod.setText("");
-                            this.txtCodDesc.setText("");
-                            this.lblCant.setText("Cantidad");
-                            this.txtCod.requestFocus();
-                            this.txtCod.selectAll();
-                            this.internal.getBtnListar().doClick();
+                        if(codigo == 35 || codigo ==36){
+                        Integer tope = this.log.calculoTopesCodigos(marca, codigo);
+                        if(tope>0){
+                            if(tope>=cant){
+                                    marca.setSupervisado(1);
+                                    if(this.log.insertarCodigoMarca(marca.getId(), marca.getFunCod(), codigo, cant) && this.trip.actualizaMarca(marca,null)==1){
+                                        this.lblMsj.setText("Ingreso Exitoso");
+                                        this.txtCant.setText("");
+                                        this.txtCod.setText("");
+                                        this.txtCodDesc.setText("");
+                                        this.lblCant.setText("Cantidad");
+                                        this.txtCod.requestFocus();
+                                        this.txtCod.selectAll();
+                                        this.internal.getBtnListar().doClick();
+                                    }
+                                    else{
+                                        this.lblMsj.setText("Inténtelo de nuevo");
+                                        this.txtCod.requestFocus();
+                                        this.txtCod.selectAll();
+                                    }
+                            }
+                            else{
+                              this.lblMsj.setText("Saldo " +tope +". Ingrese una cantidad menor o igual al saldo");
+                              this.txtCant.requestFocus();
+                              this.txtCant.selectAll();
+                            }
                         }
                         else{
-                            this.lblMsj.setText("Inténtelo de nuevo");
+                            this.lblMsj.setText("El saldo para este código está en cero");
                             this.txtCod.requestFocus();
                             this.txtCod.selectAll();
                         }
+                        }
+                        else{
+                             marca.setSupervisado(1);
+                                if(this.log.insertarCodigoMarca(marca.getId(), marca.getFunCod(), codigo, cant) && this.trip.actualizaMarca(marca,null)==1){
+                                    this.lblMsj.setText("Ingreso Exitoso");
+                                    this.txtCant.setText("");
+                                    this.txtCod.setText("");
+                                    this.txtCodDesc.setText("");
+                                    this.lblCant.setText("Cantidad");
+                                    this.txtCod.requestFocus();
+                                    this.txtCod.selectAll();
+                                    this.internal.getBtnListar().doClick();
+                                }
+                                else{
+                                    this.lblMsj.setText("Inténtelo de nuevo");
+                                    this.txtCod.requestFocus();
+                                    this.txtCod.selectAll();
+                                }
+                        }
+                        
                     } catch (SQLException ex) {
                         int respuesta = JOptionPane.showConfirmDialog(this, "Ya tiene ingreso del código "+ codigo +" para este funcionario y esta marca.¿Desea eliminarla?",null, JOptionPane.YES_NO_OPTION);
                         if(respuesta==0){

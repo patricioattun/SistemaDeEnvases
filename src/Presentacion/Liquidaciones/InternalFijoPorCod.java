@@ -589,6 +589,7 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         if(this.ingres!=null){
+            if(ingres.getCodMov().getCod()==44){
             try {
                 this.internalIng=InternalModCodFijo.instancia(logs,ingres,0);
                 frmPrin prin=frmPrin.instancia();
@@ -616,7 +617,11 @@ public class InternalFijoPorCod extends javax.swing.JInternalFrame {
             } catch (PropertyVetoException ex) {
                 Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
             }
+          }
         }
+        else{
+               JOptionPane.showInternalMessageDialog(this, "Este código no es modificable");
+           }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
 

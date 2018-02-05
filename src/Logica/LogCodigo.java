@@ -4,15 +4,21 @@ package Logica;
 import Dominio.Codigo;
 import Dominio.Funcionario;
 import Dominio.Ingreso;
+import Dominio.Marca;
 import Dominio.Retencion;
+import Persistencia.Conexion;
 import Persistencia.PersistenciaCodigo;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 
 public class LogCodigo {
     private PersistenciaCodigo pers;
-
+    private Conexion conexion;
     public LogCodigo() {
         this.pers=new PersistenciaCodigo();
     }
@@ -138,6 +144,99 @@ public class LogCodigo {
 
     public boolean actualizaRetencion(Retencion r) throws ClassNotFoundException, SQLException {
         return this.pers.actualizaRetencion(r);
+    }
+    
+    public Integer calculoTopesCodigos(Marca m, Integer cod) throws ClassNotFoundException, SQLException{
+        Integer retorno = 0;
+        Connection cnn=null;
+        cnn=conexion.Cadena();
+        Integer tope = this.pers.obtengoTope(cod,cnn);
+        if(tope!=0){
+        Timestamp desde = this.calcularDesde(m.getFechaUso(),cod);
+        Timestamp hasta = this.calcularHasta(m.getFechaUso(),cod);
+        Integer cantPeriodo = this.pers.totalPeriodo(desde,hasta,m,cod,cnn);
+        
+        retorno = tope-cantPeriodo;
+        }
+        cnn.close();
+        return retorno;
+    }
+
+    private Timestamp calcularDesde(Date fecha, Integer cod) {
+        Timestamp ts= null;
+        if(cod==35){
+            Calendar c=Calendar.getInstance();
+            c.setTimeInMillis(fecha.getTime());
+            c.set(Calendar.DAY_OF_MONTH, 01);
+            c.set(Calendar.MONTH, 01-1);
+            ts = new java.sql.Timestamp(fecha.getTime());
+            ts.setTime(c.getTimeInMillis());
+        }
+        else if(cod==36){
+            Calendar c=Calendar.getInstance();
+            c.setTimeInMillis(fecha.getTime());
+            if(c.get(Calendar.DAY_OF_MONTH)>21){
+                c.set(Calendar.DAY_OF_MONTH, 21);
+                c.set(Calendar.MONTH, c.get(Calendar.MONTH));
+                ts = new java.sql.Timestamp(fecha.getTime());
+                ts.setTime(c.getTimeInMillis());
+            }
+            else{
+                c.set(Calendar.DAY_OF_MONTH, 21);
+                c.set(Calendar.MONTH, c.get(Calendar.MONTH)-1);
+                ts = new java.sql.Timestamp(fecha.getTime());
+                ts.setTime(c.getTimeInMillis());
+            }
+        }
+        
+        return ts;
+    }
+    
+    private Timestamp fijaHoraDesde(Date date){
+    Calendar c=Calendar.getInstance();
+    c.setTimeInMillis(date.getTime());
+    c.set(Calendar.HOUR_OF_DAY, 0);
+    c.set(Calendar.MINUTE, 0);
+    c.set(Calendar.SECOND, 0);
+    c.set(Calendar.MILLISECOND, 0);
+    Timestamp ts = new java.sql.Timestamp(date.getTime());
+    ts.setTime(c.getTimeInMillis());
+    return ts;
+    }
+
+    private Timestamp calcularHasta(Date fecha, Integer cod) {
+         Timestamp ts= null;
+        if(cod==35){
+            Calendar c=Calendar.getInstance();
+            c.setTimeInMillis(fecha.getTime());
+            c.set(Calendar.DAY_OF_MONTH, 31);
+            c.set(Calendar.MONTH, 11);
+            ts = new java.sql.Timestamp(fecha.getTime());
+            ts.setTime(c.getTimeInMillis());
+            
+        }
+        else if(cod==36){
+            Calendar c=Calendar.getInstance();
+            c.setTimeInMillis(fecha.getTime());
+            if(c.get(Calendar.DAY_OF_MONTH)>21){
+                c.set(Calendar.DAY_OF_MONTH, 20);
+                c.set(Calendar.MONTH, c.get(Calendar.MONTH)+1);
+                ts = new java.sql.Timestamp(fecha.getTime());
+                ts.setTime(c.getTimeInMillis());
+            }
+            else{
+                c.set(Calendar.DAY_OF_MONTH, 20);
+                c.set(Calendar.MONTH, c.get(Calendar.MONTH));
+                ts = new java.sql.Timestamp(fecha.getTime());
+                ts.setTime(c.getTimeInMillis());
+            }
+        }
+        
+        return ts;
+    }
+
+    private void getFunCod() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

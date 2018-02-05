@@ -53,6 +53,7 @@ public class InternalModCodFijo extends javax.swing.JInternalFrame {
         txtValor = new org.edisoncor.gui.textField.TextFieldRound();
         btnAceptar = new org.edisoncor.gui.button.ButtonIcon();
         lblIngreso = new javax.swing.JLabel();
+        lblMsj = new javax.swing.JLabel();
 
         setClosable(true);
         setTitle("Modificar Ingreso");
@@ -108,14 +109,15 @@ public class InternalModCodFijo extends javax.swing.JInternalFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(lblIngreso, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
+                .addGap(28, 28, 28)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(28, 28, 28)
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(txtValor, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblMsj, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
                         .addComponent(btnAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -129,7 +131,9 @@ public class InternalModCodFijo extends javax.swing.JInternalFrame {
                     .addComponent(txtValor, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
                 .addGap(18, 18, 18)
-                .addComponent(btnAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(btnAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblMsj, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(37, Short.MAX_VALUE))
         );
 
@@ -155,6 +159,7 @@ public class InternalModCodFijo extends javax.swing.JInternalFrame {
         
         ing.setFecha(fecha);
         if(!ing.getCantidad().equals(d)){
+          
             ing.setCantidad(d);
           
             try {
@@ -185,19 +190,32 @@ public class InternalModCodFijo extends javax.swing.JInternalFrame {
             }
                     
                 
-
-        
     }//GEN-LAST:event_btnAceptarActionPerformed
 
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
         instancia=null;
     }//GEN-LAST:event_formInternalFrameClosed
 
+    private Boolean esNum(String num){
+        Boolean es=true;
+        Integer i=0;
+        if(num.equals("")){
+            es=false;
+        }
+        while(i<num.length() && es){
+            if(!Character.isDigit(num.charAt(i))){
+                es=false;
+            }
+            i++;
+        }
+        return es;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.edisoncor.gui.button.ButtonIcon btnAceptar;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel lblIngreso;
+    private javax.swing.JLabel lblMsj;
     private org.edisoncor.gui.textField.TextFieldRound txtValor;
     // End of variables declaration//GEN-END:variables
 }

@@ -95,7 +95,7 @@ public class InternalInfo extends javax.swing.JInternalFrame {
 
     
     private void cargaVencimientos() throws ClassNotFoundException, SQLException{
-    logF=new LogFuncionario();
+    logF= new LogFuncionario();
     ArrayList<Funcionario> listado=logF.vencimientoCarne();
     Integer x=0;
     Date fecha=new Date();
