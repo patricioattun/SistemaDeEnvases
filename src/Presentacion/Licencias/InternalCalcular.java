@@ -6,6 +6,7 @@ import Dominio.Funcionario;
 import Dominio.Horario;
 import Dominio.Licencia;
 import Logica.LogFuncionario;
+import Persistencia.BDExcepcion;
 import Presentacion.frmPrin;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -16,6 +17,7 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 
 public class InternalCalcular extends javax.swing.JInternalFrame {
@@ -341,13 +343,13 @@ public class InternalCalcular extends javax.swing.JInternalFrame {
         this.limpiar();
 
         String codFunc=this.txtCodFunc.getText();
-        try {
-            if(!"".equals(codFunc)){
+        if(!"".equals(codFunc)){
+            try {
                 listaLicencia=log.licenciaPorCod(codFunc);
                 this.cargaCombo(listaLicencia);
                 lic=(Licencia) this.comboAño.getSelectedItem();
                 if(lic!=null){
-                    this.lblNombres.setText(lic.getFuncionario().getNomCompleto());
+                    this.lblNombres.setText(lic.getFuncionario().getNomCompletoApe());
                     this.txtFechaFin.setDate(lic.getFechaFin());
                     this.txtFechaIni.setDate(lic.getFechaIni());
                     this.txtGen.setText(lic.getDiasGenerados().toString());
@@ -362,7 +364,7 @@ public class InternalCalcular extends javax.swing.JInternalFrame {
                     Funcionario f=log.funcParcial(codFunc);
                     if(f!=null&&f.getFechaEgreso()==null){
                         this.limpiar();
-                        this.lblNombres.setText(f.getNomCompleto());
+                        this.lblNombres.setText(f.getNomCompletoApe());
                         this.lblMsg.setText("Este funcionario no tiene los días calculados ");
                         this.btnAceptar.setEnabled(false);
                     }
@@ -371,16 +373,13 @@ public class InternalCalcular extends javax.swing.JInternalFrame {
                         this.lblMsg.setText("Este funcionario no existe ");
                     }
                 }
+            } catch (BDExcepcion ex) {
+              JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
             }
-            else{
-                this.limpiar();
-                this.lblMsg.setText("Ingrese número de funcionario");
-            }
-
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(InternalCalcular.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(InternalCalcular.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        else{
+            this.limpiar();
+            this.lblMsg.setText("Ingrese número de funcionario");
         }
     }//GEN-LAST:event_btnBuscarActionPerformed
 
@@ -399,7 +398,7 @@ public class InternalCalcular extends javax.swing.JInternalFrame {
         if(fechaIni!=null&&fechaFin!=null){
 
             if(this.evaluaFechas(fechaIni, fechaFin, this.txtGen.getText(),this.lic.getFuncionario().getHorarios(),desc)){
-
+                
                 try {
                     boolean updateLic=log.actualizarLic(fechaIni, fechaFin,lic);
                     if(updateLic){
@@ -420,13 +419,10 @@ public class InternalCalcular extends javax.swing.JInternalFrame {
                         this.txtCodFunc.setText("");
 
                     }
-                } catch (ParseException ex) {
-                    Logger.getLogger(InternalCalcular.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SQLException ex) {
-                    Logger.getLogger(InternalCalcular.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(InternalCalcular.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (BDExcepcion ex) {
+                                      JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                 }
+                
             }
             else{
                 Integer dom=this.obtieneDomingoySabado(fechaIni, fechaFin,this.lic.getFuncionario().getHorarios());
@@ -445,7 +441,7 @@ public class InternalCalcular extends javax.swing.JInternalFrame {
         this.limpiar();
         Licencia lic=(Licencia) this.comboAño.getSelectedItem();
         if(lic!=null){
-            this.lblNombres.setText(lic.getFuncionario().getNomCompleto());
+            this.lblNombres.setText(lic.getFuncionario().getNomCompletoApe());
             this.txtFechaFin.setDate(lic.getFechaFin());
             this.txtFechaIni.setDate(lic.getFechaIni());
             this.txtGen.setText(lic.getDiasGenerados().toString());
@@ -507,12 +503,16 @@ public class InternalCalcular extends javax.swing.JInternalFrame {
      }
   
   private ArrayList<Feriado> compararFechas(Date fechaIni, Date fechaFin) {
-        Integer dias=0;
+        
         ArrayList<Feriado> aux=new ArrayList<>();
         
         for(Feriado f:this.listaFeriados){
             if((fechaIni.equals(f.getFecha())||fechaIni.before(f.getFecha()))&& (fechaFin.equals(f.getFecha())||fechaFin.after(f.getFecha()))){
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(f.getFecha());
+                if(cal.get(Calendar.DAY_OF_WEEK)!=1){
                 aux.add(f);
+                }
             }
         }
         
@@ -525,7 +525,7 @@ public class InternalCalcular extends javax.swing.JInternalFrame {
     c1.setTime(fechaIni);
     Calendar c2 = Calendar.getInstance();
     c2.setTime(fechaFin);
-    ArrayList<Date> listaFechas = new ArrayList<Date>();
+    ArrayList<Date> listaFechas = new ArrayList<>();
     boolean Domingo=this.diaEsta(horarios,"DOMINGO");
     //boolean Sabado=this.diaEsta(horarios,"SABADO");
     
@@ -544,12 +544,7 @@ public class InternalCalcular extends javax.swing.JInternalFrame {
                   contador++;
             }	
           }
-//          if(!Sabado){
-//            if(cal.get(Calendar.DAY_OF_WEEK)==7){
-//                  contador++;
-//          }
-//       }
-       
+
     }
      return contador;
   }

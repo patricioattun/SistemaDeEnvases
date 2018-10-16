@@ -1,13 +1,12 @@
-
 package Logica;
-
-
 
 import Dominio.Banco;
 import Dominio.Cargo;
 import Dominio.CentroCosto;
 import Dominio.Codigo;
+import Dominio.CodigoBcu;
 import Dominio.CodigoDesvinc;
+import Dominio.Declaracion;
 import Dominio.Departamento;
 import Dominio.EstadoCivil;
 import Dominio.Fallecimiento;
@@ -17,8 +16,12 @@ import Dominio.Horario;
 import Dominio.Licencia;
 import Dominio.LicenciaAdelantada;
 import Dominio.MovimientoLicencia;
+import Dominio.Parametro;
+import Dominio.PersonasACargo;
+import Dominio.Relacion;
 import Dominio.Sns;
 import Dominio.Sucursal;
+import Persistencia.BDExcepcion;
 import Persistencia.Conexion;
 import Persistencia.PersistenciaCombos;
 import Persistencia.PersistenciaFuncionario;
@@ -44,6 +47,7 @@ public class LogFuncionario {
     private PersistenciaHorario hor;
     private ArrayList<Feriado> listaFeriados;
     private Conexion conexion;
+    Connection cn;
     
     public LogFuncionario() throws ClassNotFoundException, SQLException {
         this.pers=new PersistenciaFuncionario();
@@ -59,10 +63,7 @@ public class LogFuncionario {
     public void setC(PersistenciaCombos c) {
         this.c = c;
     }
-    
-   
-     
-     public ArrayList<Sucursal> cargaComboSucursal() throws SQLException, ClassNotFoundException{
+    public ArrayList<Sucursal> cargaComboSucursal() throws SQLException, ClassNotFoundException{
         
          return c.cargaComboSucursal();
      }
@@ -203,6 +204,16 @@ public class LogFuncionario {
 
     }
     
+     public boolean modFuncionarioSecretaria(Funcionario f) throws SQLException {
+       
+       Boolean alta=false;
+      
+           alta=this.pers.modFuncionarioSecretaria(f);
+       
+       return alta;
+
+    }
+    
     public ArrayList<Funcionario> vencimientoCarne() throws ClassNotFoundException, SQLException{
       return  this.pers.vencimientoCarne();
     }
@@ -232,21 +243,30 @@ public class LogFuncionario {
         Integer año=Integer.valueOf(str)+1;
         return  this.pers.listarLicencia(año);
     }
-    public ArrayList<Licencia> licenciaPorCod(String codigo)throws ClassNotFoundException, SQLException {
+    public ArrayList<Licencia> licenciaPorCod(String codigo)throws BDExcepcion {
         Integer cod=Integer.valueOf(codigo);
         return  this.pers.licenciaPorCod(cod);
     }
-    public Licencia Licencia(String codigo) throws ClassNotFoundException, SQLException, ParseException {
+    public Licencia Licencia(String codigo)throws BDExcepcion, ParseException{
         Integer cod=Integer.valueOf(codigo);
         return  this.pers.licencia(cod,this.calcular1());
     }
-    public Licencia LicenciaAño(String codigo,String año) throws ClassNotFoundException, SQLException, ParseException {
+    public Licencia LicenciaAño(String codigo,String año)throws BDExcepcion, ParseException{
         Integer cod=Integer.valueOf(codigo);
         return  this.pers.licencia(cod,this.calcular2(año));
     }
-    public Funcionario funcParcial(String codigo) throws ClassNotFoundException, SQLException{
+    public Funcionario funcParcial(String codigo) throws BDExcepcion{
         Integer cod=Integer.valueOf(codigo);
         return this.pers.funcionarioParcial(cod);
+    }
+    
+     public Funcionario funcParcialTodos(String codigo) throws BDExcepcion{
+        Integer cod=Integer.valueOf(codigo);
+        return this.pers.funcionarioParcialTodos(cod);
+    }
+    
+    public Funcionario funcVale(Integer codigo,Connection cnn) throws ClassNotFoundException, SQLException{
+        return this.pers.funcionarioVale(codigo,cnn);
     }
     public Funcionario funcBasico(String codigo) throws ClassNotFoundException, SQLException{
         Integer cod=Integer.valueOf(codigo);
@@ -269,6 +289,7 @@ public class LogFuncionario {
                for(i=0;i<lista.size();i++){
                      if(this.estaEnLicencia(listado, lista.get(i))){
                             this.pers.actualizarLicenciaFechaCargada(lista.get(i));
+                            
                         }
                         else{
                           
@@ -302,17 +323,17 @@ public class LogFuncionario {
         return esta;
     }
     
-    public ArrayList<Licencia> cargaComboLicencia(String cod) throws ClassNotFoundException, SQLException{
+    public ArrayList<Licencia> cargaComboLicencia(String cod)throws BDExcepcion{
         Integer c=Integer.valueOf(cod);
         return this.pers.cargaComboLicencia(c);
     }
-    public ArrayList<Licencia> cargaComboLicenciaPasado(String cod) throws ClassNotFoundException, SQLException{
+    public ArrayList<Licencia> cargaComboLicenciaPasado(String cod)throws BDExcepcion{
         Integer c=Integer.valueOf(cod);
         return this.pers.cargaComboLicenciaPasado(c);
     }
     
     ///MODIFICACIONES LICENCIA///
-    public Licencia licenciaActualFunc(Integer cod) throws ClassNotFoundException, SQLException{
+    public Licencia licenciaActualFunc(Integer cod) throws BDExcepcion{
         
         return this.pers.licenciaActualFunc(cod);
         
@@ -530,15 +551,15 @@ public class LogFuncionario {
         aux.set(Calendar.DAY_OF_MONTH,dia);
         return aux.getTime();
     }
-    public Licencia calculaLicenciaIndividual(Integer cod, Date fecha) throws ParseException, ClassNotFoundException, SQLException{
+    public Licencia calculaLicenciaIndividual(Integer cod, Date fecha)throws BDExcepcion, ParseException{
         Integer añosTrab=null;
         Integer diasGenerados=null;
         Licencia l=null;
-
+        Date fechaAnt=this.calcular1();
         Funcionario f=this.pers.funcionarioParcial(cod);
         if(f!=null){       
            l=new Licencia();
-           añosTrab=this.calcularAñosTrabajados(fecha,f.getFechaIngreso());
+           añosTrab=this.calcularAñosTrabajados(fechaAnt,f.getFechaIngreso());
            if(añosTrab>=5){
               diasGenerados=(añosTrab/4)+20;
            }
@@ -546,8 +567,10 @@ public class LogFuncionario {
                diasGenerados=20;
            }
            else{
-               diasGenerados=this.calculoTardio(f.getFechaIngreso(), fecha);
+               diasGenerados=this.calculoTardio(f.getFechaIngreso(), fechaAnt);
            }
+           diasGenerados=this.prorrateo(fecha,diasGenerados);
+           
            l.setDiasGenerados(diasGenerados);
            l.setFuncionario(f);
            Date p=new Date();
@@ -576,7 +599,7 @@ public class LogFuncionario {
      return años;
     }
     
-
+ 
     private int calculoTardio(Date fechaIngreso, Date d) {
         long fin=0;
         Integer dias=this.diferenciaDeDias(d,fechaIngreso);
@@ -607,12 +630,12 @@ public class LogFuncionario {
         return replace;
     }
 
-    public boolean actualizarLic(Date fechaIni, Date fechaFin,Licencia lic) throws ParseException, SQLException {
+    public boolean actualizarLic(Date fechaIni, Date fechaFin,Licencia lic) throws BDExcepcion{
              lic.setSaldo(lic.getSaldo()-lic.getDiasDescuento());
         return this.pers.actualizarLicencia(fechaIni,fechaFin,lic);
     }
 
-    public boolean insertarMovLicencia(Date ini, Date fin, Integer saldo, Integer diasTomar, Date hoy, Integer añoSacar, Funcionario Func, Integer saldoPos,Integer tipoLic) throws ClassNotFoundException, SQLException {
+    public boolean insertarMovLicencia(Date ini, Date fin, Integer saldo, Integer diasTomar, Date hoy, Integer añoSacar, Funcionario Func, Integer saldoPos,Integer tipoLic,Long marcaId) throws ClassNotFoundException, SQLException {
             MovimientoLicencia Mov=new MovimientoLicencia();
             Mov.setAñoSaldo(añoSacar);
             Mov.setDiasTomados(diasTomar);
@@ -624,10 +647,11 @@ public class LogFuncionario {
             Mov.setSaldoAño(saldo);
             Mov.setTipoLic(tipoLic);
             Mov.setReferencia(0);
+            Mov.setMarcaId(marcaId);
            return this.pers.insertarMovLicencia(Mov);
     }
     
-    public MovimientoLicencia consultaAdelantadoDos(String codFunc) throws ClassNotFoundException, SQLException{
+    public MovimientoLicencia consultaAdelantadoDos(String codFunc)throws BDExcepcion{
          Integer cod=Integer.valueOf(codFunc);
            Date fecha=new Date();
            Integer año=Integer.valueOf(this.obtenerAño(fecha));
@@ -636,7 +660,7 @@ public class LogFuncionario {
            return pers.consultaAdelantado(cod,año);
     }
     
-    public MovimientoLicencia consultaAdelantado(String codFunc) throws SQLException, ClassNotFoundException {
+    public MovimientoLicencia consultaAdelantado(String codFunc)throws BDExcepcion{
            Integer cod=Integer.valueOf(codFunc);
            Date fecha=new Date();
            Integer año=Integer.valueOf(this.obtenerAño(fecha));
@@ -675,7 +699,7 @@ public class LogFuncionario {
         return str;
    }
 
-    public boolean insertarLicAdelantada(Integer año, Date ini, Date fin, Integer diasTomar, Funcionario func,Integer referencia) throws ClassNotFoundException, SQLException {
+    public boolean insertarLicAdelantada(Integer año, Date ini, Date fin, Integer diasTomar, Funcionario func,Integer referencia,Long id) throws ClassNotFoundException, SQLException {
          MovimientoLicencia lic=new MovimientoLicencia();
                 Date d=new Date();
                 lic.setAñoSaldo(año);
@@ -685,10 +709,11 @@ public class LogFuncionario {
                 lic.setFechaMovimiento(d);
                 lic.setFuncionario(func);
                 lic.setReferencia(referencia);
-                return pers.insertarLicAdelantada(lic);
+               
+                return pers.insertarLicAdelantada(lic,id);
     }
 
-    public ArrayList<MovimientoLicencia> listarLicAdelantada(String codigo, MovimientoLicencia mov) throws ClassNotFoundException, SQLException {
+    public ArrayList<MovimientoLicencia> listarLicAdelantada(String codigo, MovimientoLicencia mov)throws BDExcepcion{
          Integer cod=null;
          if(!codigo.equals("")){
          cod=Integer.valueOf(codigo);
@@ -696,7 +721,7 @@ public class LogFuncionario {
          return pers.listarLicAdelantada(cod,mov);
    }
 
-    public ArrayList<MovimientoLicencia> movimientoLic(String cod,MovimientoLicencia mov) throws ClassNotFoundException, SQLException {
+    public ArrayList<MovimientoLicencia> movimientoLic(String cod,MovimientoLicencia mov) throws BDExcepcion{
          
          Integer codigo=null;
          if(!cod.equals("")){
@@ -704,7 +729,7 @@ public class LogFuncionario {
          }
          return pers.movimientoLic(codigo,mov);
     }
-    public ArrayList<MovimientoLicencia> ultimoMovimiento(String cod,Integer tipo, Integer anio) throws ClassNotFoundException, SQLException{
+    public ArrayList<MovimientoLicencia> ultimoMovimiento(String cod,Integer tipo, Integer anio) throws BDExcepcion{
         Integer codigo=null;
         Integer tip=null;
         ArrayList<MovimientoLicencia> mov=null;
@@ -732,7 +757,7 @@ public class LogFuncionario {
         return this.pers.listarFeriadosRango(desde,hasta);
     }
 
-    public ArrayList<Licencia> licenciaAnteriorFunc(Integer codFunc) throws ClassNotFoundException, SQLException {
+    public ArrayList<Licencia> licenciaAnteriorFunc(Integer codFunc) throws BDExcepcion{
         
         return this.pers.licenciaAnteriorFunc(codFunc);
     }
@@ -823,7 +848,11 @@ public class LogFuncionario {
         
         for(Feriado f:this.listaFeriados){
             if((fechaIni.equals(f.getFecha())||fechaIni.before(f.getFecha()))&& (fechaFin.equals(f.getFecha())||fechaFin.after(f.getFecha()))){
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(f.getFecha());
+                if(cal.get(Calendar.DAY_OF_WEEK)!=1){
                 aux.add(f);
+                }
             }
         }
         
@@ -875,9 +904,246 @@ public ArrayList<Funcionario> listarFuncionariosActivosLike(String filtro) throw
 }
    
         
-    
-   
+///DECLARACIONES JURADAS
 
+public ArrayList<String> cargoComboDocumento() throws ClassNotFoundException, SQLException{
+    cn = conexion.Cadena();
+   return this.c.cargoComboDocumento(cn);
+}
+public ArrayList<String> cargoComboPais(){
+    return this.c.cargocomboPais(cn);
+}
+public ArrayList<String> cargoComboNacionalidad(){
+    return this.c.cargocomboNacionalidad(cn);
+}
+public ArrayList<Relacion> cargoComboRelacion(){
+    return this.c.cargocomboRelacion(cn);
+}
+public ArrayList<String> cargoComboFondo() throws SQLException{
+      ArrayList<String> caja= this.c.cargocomboCaja(cn);
+   if(cn!=null){
+        cn.close();
+    } 
+   return caja;
+}
+
+public Declaracion cargoDeclaracion(Integer codFunc){
+    return this.pers.cargoDeclaracion(codFunc);
+}
+
+public ArrayList<PersonasACargo> cargoPeronas(Integer codFunc){
+    return this.pers.cargoPersonas(codFunc);
+}    
+
+//    public boolean actualizaPersonasAcargo(String tipoDoc, String numDoc, String pais, Date fecha, String nacional, Character sexo, Character relacion, String salud, Integer atrib, Integer discapacidad, String nombreUno, String nombreDos, String apellidoUno, String apellidoDos, PersonasACargo pe) {
+//        boolean ret=false;
+//        PersonasACargo p = new PersonasACargo();
+//        p.setApellidoDos(apellidoDos);
+//        p.setApellidoUno(apellidoUno);
+//        p.setDiscapacidad(discapacidad);
+//        p.setFecha_nac(fecha);
+//        p.setNacionalidad(nacional);
+//        p.setNombreDos(nombreDos);
+//        p.setNombreUno(nombreUno);
+//        p.setNroDoc(numDoc);
+//        p.setPais(pais);
+//        p.setPjedist(atrib);
+//        p.setRelacion(relacion);
+//        p.setSexo(sexo);
+//        p.setSistSalud(salud);
+//        p.setTipoDoc(tipoDoc);
+//        
+//        if(this.pers.atualizaPersonasAcargo(p,pe)){
+//            ret=true;
+//        }
+//        return ret;
+//    }
+
+    public boolean ingresoDeclaracion(Integer codFunc, String tipoDoc, String nroDoc, String pais, String strVigMes, String strVigAño, String strCatcjpu, String strReint, String fondo, String strAdicional, String strMinimo, Date fechaRecep, String familiar, String tipoDocCony, String nroDocCony, String paisCony, String apeUnoCony, String apeDosCony, String nomUnoCony, String nomDosCony, Date fechaNacCony, String nacCony, String sexoCony, ArrayList<PersonasACargo> lista) throws BDExcepcion {
+        Declaracion d = new Declaracion();
+        
+        if(strAdicional!=null){
+            if(strAdicional.equals("NO")){
+            d.setAdicionalcjpu(0);
+            }
+            else{
+            d.setAdicionalcjpu(1);    
+            }
+        }
+        else{
+            d.setAdicionalcjpu(null);    
+        }
+        
+        d.setApellidoDosConyu(apeDosCony);
+        d.setApellidoUnoConyu(apeUnoCony);
+        d.setCatcjpu(Integer.valueOf(strCatcjpu));
+        d.setCodFunc(codFunc);
+        
+        if(familiar!=null){
+            if(familiar.equals("NO")){
+                 d.setFamiliar(0);
+            }
+            else{
+             d.setFamiliar(1);
+            }
+        }
+        else{
+             d.setFamiliar(null);
+        }
+       
+        d.setFechaNacConyu(fechaNacCony);
+        d.setFechaRecepcion(fechaRecep);
+        d.setFondosolcjpu(fondo);
+        
+        if(strMinimo!=null){
+            if(strMinimo.equals("NO")){
+            d.setMinimoimp(0);
+            }
+            else{
+            d.setMinimoimp(1);
+            }
+        }
+        else{
+        d.setMinimoimp(null);
+        }
+        
+        d.setNacionalConyu(nacCony);
+        d.setNombreDosConyu(nomDosCony);
+        d.setNombreUnoConyu(nomUnoCony);
+        d.setNroDoc(nroDoc);
+        d.setNroDocConyu(nroDocCony);
+        d.setPais(pais);
+        d.setPaisConyu(paisCony);
+        if(lista!=null){
+        d.setPersonasACargo(lista.size());
+        }
+        else{
+            d.setPersonasACargo(0);
+        }
+        d.setReintcjpu(Double.valueOf(strReint));
+        if(sexoCony!=null){
+            if(sexoCony.equals("MASCULINO")){
+            d.setSexoConyu('M');
+            }
+            else{
+            d.setSexoConyu('F');    
+            }
+        }
+        else{
+            d.setSexoConyu(null);
+        }
+        d.setTipoDoc(tipoDoc);
+        d.setTipoDocConyu(tipoDocCony);
+        Integer vig = Integer.valueOf(strVigAño+strVigMes);
+        d.setVigencia(vig);
+        
+        
+        return this.pers.ingresoDeclaracion(d,lista);
+            
+    }
+
+    public boolean eliminarDeclaracion(Funcionario f) {
+        boolean retorno = false;
+        try {
+            cn = conexion.Cadena();
+            cn.setAutoCommit(false);
+            if(this.pers.borrarDeclaracion(f.getCodFunc(), cn)==1){
+                if(this.pers.borrarPersonasACargo(f.getCodFunc(), cn)>=1){ 
+                    retorno=true;
+                }
+            }
+            cn.commit();
+            if(cn!=null){
+                cn.close();
+            }
+          
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(LogFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(LogFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+          return retorno;
+    }
+
+    public ArrayList<CodigoBcu> cargaComboBcu() {
+         return c.cargaComboBcu();
+    }
     
+    public ArrayList<Funcionario> listadoSueldo() throws SQLException, ClassNotFoundException{
+        return this.pers.listadoSueldo();
+    }
+
+    public Integer actualizaSalarios(ArrayList<Funcionario> funcionarios,String antiguedad,String porcentaje,Integer tipo) {
+        return this.pers.actualizaSalario(funcionarios,antiguedad,porcentaje,tipo);
+    }
+    
+    public boolean actualizaParametros(String valorNuevo, String valorViejo, String nombre) throws BDExcepcion{
+        return this.pers.actualizaParametros(valorNuevo, valorViejo, nombre);
+    }
+    
+    public ArrayList<Parametro> cargoParametros() throws BDExcepcion{
+        return this.pers.cargaParametros();
+    }
+    
+    public String cargoParametro(String nombre) throws BDExcepcion, ClassNotFoundException, SQLException{
+        return this.pers.cargoParametro(nombre); 
+    }
+    
+    public boolean actualizaParametro(String valor, String nombre) throws BDExcepcion{
+        return this.pers.actualizaParametro(valor, nombre);
+    }
+    
+    public String valorDeAntiguedad() throws ClassNotFoundException, SQLException{
+        return this.pers.valorDeAntiguedad();
+    }
+
+    public boolean borrarLicAdelantada(Long id, Integer funCod, Integer codigo) {
+        return this.pers.borrarLicAdelantada(id,funCod,codigo);
+    }
+
+    public Integer obtieneAñoSaldo(Long id, Integer funCod, Integer codigo) throws ClassNotFoundException, SQLException {
+        return this.pers.obtieneAñoSaldo(id,funCod,codigo);
+    }
+
+    private Integer prorrateo(Date fecha, Integer diasGenerados) throws ParseException {
+        Integer retorno=0;
+        Long ret;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date fechaInicial=dateFormat.parse(this.obtenerAño1(fecha)+"-01-01");
+	Integer dias=(int) ((fecha.getTime()-fechaInicial.getTime())/86400000);
+        
+        
+        double d=Double.valueOf(dias*diasGenerados)/360;
+        ret=(long) Math.ceil(d);
+        
+        retorno=ret.intValue();
+        return retorno;
+    }
+
+    public Integer actualizoParametros(ArrayList<Parametro> parametros) throws BDExcepcion {
+        Integer total=0;
+        for(Parametro p:parametros){
+            if(p.getValorNuevo()!=null){
+                if(this.pers.actualizaParametros(p.getValorNuevo().trim(), p.getValor().trim(), p.getNombre().trim())){
+                    total++;
+                }
+            }
+        }
+        return total;
+        
+    }
+
+    public ArrayList<Funcionario> listadoFuncionariosActivosReLiq() throws ClassNotFoundException, SQLException {
+        return this.pers.listarFuncionariosActivosReLiq();
+    }
+
+    public Date fechaLiquidacionEnLiq() throws BDExcepcion {
+       return this.pers.fechaLiquidacionEnLiq();
+    }
+
+    public boolean fechaLiquidacionHistorica(String fechaLiq) throws BDExcepcion {
+       return this.pers.fechaLiquidacionHistorica(fechaLiq);
+    }
+
     
 }

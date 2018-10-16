@@ -42,6 +42,7 @@ public class InternalListadoEgreso extends javax.swing.JInternalFrame {
             }    
         });
         this.cargaTabla(listaCod);
+       
     }
     
     
@@ -89,6 +90,9 @@ public class InternalListadoEgreso extends javax.swing.JInternalFrame {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 tablaCodKeyPressed(evt);
             }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                tablaCodKeyTyped(evt);
+            }
         });
         jScrollPane1.setViewportView(tablaCod);
         if (tablaCod.getColumnModel().getColumnCount() > 0) {
@@ -116,12 +120,24 @@ public class InternalListadoEgreso extends javax.swing.JInternalFrame {
 
     private void tablaCodKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tablaCodKeyPressed
         int k = (int) evt.getKeyChar();
-        if(k==27||k==43){
+        if(k==27){
             internal.getTxtEgreso().requestFocus();
             internal.getTxtEgreso().selectAll();
             this.dispose();
         }
     }//GEN-LAST:event_tablaCodKeyPressed
+
+    private void tablaCodKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tablaCodKeyTyped
+       int m=this.tablaCod.getSelectedRow();
+       int k = (int) evt.getKeyChar();
+        if(k==43){
+            String cod=String.valueOf(tmMov.getValueAt(m, 0));
+            internal.getTxtEgreso().setText(cod);
+            internal.getTxtEgreso().requestFocus();
+            internal.getTxtDescMotivo().requestFocus();
+            this.dispose();
+        }
+    }//GEN-LAST:event_tablaCodKeyTyped
 
       public static InternalListadoEgreso instancia(LogFuncionario log, InternalModFunc internal) throws ClassNotFoundException, SQLException
    {    

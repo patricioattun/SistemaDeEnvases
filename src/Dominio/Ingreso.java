@@ -4,15 +4,25 @@ package Dominio;
 import java.util.Date;
 
 
-public class Ingreso {
+public class Ingreso implements Comparable<Ingreso>{
     private Date fecha;
     private Integer codFunc;
     private Codigo codMov;
+    private Integer cod;
     private Double cantidad;
     private Double Importe;
     private Integer EnPers;
     private Funcionario func;
 
+    public Integer getCod() {
+        return cod;
+    }
+
+    public void setCod(Integer cod) {
+        this.cod = cod;
+    }
+
+    
     public Funcionario getFunc() {
         return func;
     }
@@ -21,8 +31,6 @@ public class Ingreso {
         this.func = func;
     }
     
-    
-
     public Integer getEnPers() {
         return EnPers;
     }
@@ -78,6 +86,15 @@ public class Ingreso {
         return this.codMov.toString()+"\n - Funcionario Nº: "+this.getCodFunc();
     }
     
-    
+    @Override
+    public int compareTo(Ingreso o) {
+            if (codFunc < o.codFunc) {
+                return -1;
+            }
+            if (codFunc > o.codFunc) {
+                return 1;
+            }
+            return 0;
+    }
     
 }

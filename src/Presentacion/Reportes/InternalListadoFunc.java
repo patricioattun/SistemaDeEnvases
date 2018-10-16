@@ -9,6 +9,7 @@ import Dominio.Sns;
 import Dominio.Sucursal;
 import Logica.LogFuncionario;
 import Logica.logPdf;
+import Persistencia.BDExcepcion;
 
 import Presentacion.Mantenimiento.InternalModFunc;
 
@@ -32,6 +33,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -68,7 +70,12 @@ public class InternalListadoFunc extends javax.swing.JInternalFrame {
              public void mouseClicked(java.awt.event.MouseEvent e) {
                 if(e.getClickCount()==2){
                     try {
+                        if(frmPrin.instancia().getUsuario().getPermiso().getPermiso().equals(2)||frmPrin.instancia().getUsuario().getPermiso().getPermiso().equals(1)){
                         pasarAFicha(e);
+                        }
+                        else{
+                            JOptionPane.showMessageDialog(null, "No tiene permiso para acceder a la ficha de Funcionario");
+                        }
                     } catch (SQLException ex) {
                         Logger.getLogger(InternalListadoFunc.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (ClassNotFoundException ex) {
@@ -148,6 +155,7 @@ public class InternalListadoFunc extends javax.swing.JInternalFrame {
         grupoTabla = new javax.swing.ButtonGroup();
         jPopupMenu1 = new javax.swing.JPopupMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         btnListar = new org.edisoncor.gui.button.ButtonIcon();
@@ -170,6 +178,14 @@ public class InternalListadoFunc extends javax.swing.JInternalFrame {
             }
         });
         jPopupMenu1.add(jMenuItem1);
+
+        jMenuItem2.setText("Editar");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jPopupMenu1.add(jMenuItem2);
 
         setClosable(true);
         setIconifiable(true);
@@ -547,6 +563,41 @@ public class InternalListadoFunc extends javax.swing.JInternalFrame {
         }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+      try {
+             Integer i = this.tablaFunc.getSelectedRow();
+             Funcionario e = this.listado.get(i);
+             if(e.getFechaEgreso()==null){
+             InternalDatosSecretaria frm =InternalDatosSecretaria.instancia(e.getCodFunc().toString());
+             frmPrin prin=frmPrin.instancia();
+             if (!frm.isVisible()) {
+                 prin.getDesktop().add(frm);
+                 frm.setLocation((prin.getDesktop().getWidth()/2)-(frm.getWidth()/2),(prin.getDesktop().getHeight()/2) - frm.getHeight()/2);
+                 frm.setVisible(true);
+             }
+             else{
+                 frm.requestFocus();
+                 frm.setSelected(true);
+                 
+                 
+             }
+             this.repaint();
+             this.revalidate();
+             }
+             else{
+                 JOptionPane.showMessageDialog(null, "Este funcionario actualmente está inactivo");
+             }
+         } catch (ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+         } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+         } catch (PropertyVetoException ex) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+         } catch (BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+       }
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
     
     private void mandaAPdf() throws ClassNotFoundException, SQLException, DocumentException, IOException{
         FileOutputStream fileOut = null;
@@ -652,7 +703,9 @@ public class InternalListadoFunc extends javax.swing.JInternalFrame {
                             filas[22]=f.getBaseHoras();
                             filas[23]=this.lugar(f.getLugarTrabajo());
                             filas[24]=this.afap(f.getAfap());
-                            filas[25]=f.getCuenta();
+                            String cuenta=f.getCuenta().toString();
+                            cuenta=cuenta.substring(0, cuenta.length()-2);
+                            filas[25]=cuenta;
                             filas[26]=this.banco(f.getBanco());
                             filas[27]=this.cuentas(f.getTipoCuenta());
                             filas[28]=f.getNumSocio();
@@ -1032,6 +1085,7 @@ public class InternalListadoFunc extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;

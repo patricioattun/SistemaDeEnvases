@@ -10,6 +10,7 @@ import Dominio.Marca;
 import Dominio.MovimientoLicencia;
 import Logica.LogFuncionario;
 import Logica.LogTripaliare;
+import Persistencia.BDExcepcion;
 import Presentacion.Marcas.InternalMarcas;
 import Presentacion.frmPrin;
 import com.toedter.calendar.JDateChooser;
@@ -26,6 +27,7 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import org.edisoncor.gui.button.ButtonIcon;
@@ -504,16 +506,16 @@ public class InternalAjustesLicencia extends javax.swing.JInternalFrame {
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
         this.limpiar();
         String codFunc=this.txtCodFunc.getText();
-        try {
-            if(!codFunc.equals("")){
+        if(!codFunc.equals("")){
+            try {
                 this.f=log.funcParcial(codFunc);
                 if(f!=null){
                     this.lblMsg.setText("");
-                    this.lblNombres.setText(f.getNomCompleto());
-                     if(this.fechaAjuste!=null){
+                    this.lblNombres.setText(f.getNomCompletoApe());
+                    if(this.fechaAjuste!=null){
                         this.txtFechaAjuste.setDate(fechaAjuste);
                     }
-   
+                    
                     this.txtDias.setEnabled(true);
                     this.radioActual.setEnabled(true);
                     this.radioAnterior.setEnabled(true);
@@ -536,150 +538,134 @@ public class InternalAjustesLicencia extends javax.swing.JInternalFrame {
                     this.txtDias.setEnabled(false);
                     this.txtSaldo.setEnabled(false);
                 }
+            } catch (BDExcepcion ex) {
+               JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
             }
-            else{
-                this.lblMsg.setText("Ingrese un número de funcionario");
-            }
-
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        else{
+            this.lblMsg.setText("Ingrese un número de funcionario");
         }
        
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void radioAnteriorFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_radioAnteriorFocusGained
-        this.mov=null;
-        this.comboAño.removeAllItems();
-        this.txtDias.setText("");
-        this.txtSaldo.setText("");
-        this.txtDias.requestFocus();
-        //this.txtFechaAjuste.setDate(null);
-        this.txtFechaUlt.setDate(null);
-        try {
-            lista=this.log.licenciaAnteriorFunc(f.getCodFunc());
-
-        } catch (ClassNotFoundException ex) { 
-           Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-       } catch (SQLException ex) {
-           Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
+       try {
+           this.mov=null;
+           this.comboAño.removeAllItems();
+           this.txtDias.setText("");
+           this.txtSaldo.setText("");
+           this.txtDias.requestFocus();
+           //this.txtFechaAjuste.setDate(null);
+           this.txtFechaUlt.setDate(null);
+           lista=this.log.licenciaAnteriorFunc(f.getCodFunc());
+           if(lista.size()>0){
+               for(int i=0;i<lista.size();i++){
+                   this.comboAño.addItem(lista.get(i));
+               }
+               if(this.comboAño.getSelectedItem()!=null){
+                   Licencia l=(Licencia) this.comboAño.getSelectedItem();
+                   listaMov=this.log.ultimoMovimiento(this.txtCodFunc.getText(),10,l.getAño());
+                   this.cargarTabla(listaMov);
+                   this.txtSaldo.setText(l.getSaldo().toString());
+                   this.lblMsg.setText("");
+               }
+               this.comboAño.setEnabled(true);
+               this.txtDias.setEnabled(true);
+               this.txtSaldo.setEnabled(true);
+               this.btnAceptar.setEnabled(true);
+           }
+           else{
+               this.comboAño.setEnabled(false);
+               this.txtDias.setEnabled(false);
+               this.txtSaldo.setEnabled(false);
+               this.btnAceptar.setEnabled(false);
+               this.lblMsg.setText("Este funcionario no tiene saldos de licencias previas");
+               this.LimpiarTabla();
+           }
+       } catch (BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
        }
-        if(lista.size()>0){
-            for(int i=0;i<lista.size();i++){
-                this.comboAño.addItem(lista.get(i));
-            }
-            if(this.comboAño.getSelectedItem()!=null){
-                Licencia l=(Licencia) this.comboAño.getSelectedItem();
-                try {
-                    listaMov=this.log.ultimoMovimiento(this.txtCodFunc.getText(),10,l.getAño());
-                } catch (ClassNotFoundException ex) { 
-                    Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SQLException ex) {
-                    Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                this.cargarTabla(listaMov);
-                this.txtSaldo.setText(l.getSaldo().toString());
-                this.lblMsg.setText("");
-            }
-            this.comboAño.setEnabled(true);
-            this.txtDias.setEnabled(true);
-            this.txtSaldo.setEnabled(true);
-            this.btnAceptar.setEnabled(true);
-        }
-        else{
-            this.comboAño.setEnabled(false);
-            this.txtDias.setEnabled(false);
-            this.txtSaldo.setEnabled(false);
-            this.btnAceptar.setEnabled(false);
-            this.lblMsg.setText("Este funcionario no tiene saldos de licencias previas");
-            this.LimpiarTabla();
-        }
     }//GEN-LAST:event_radioAnteriorFocusGained
 
     private void radioActualFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_radioActualFocusGained
-        this.mov=null;
-        this.comboAño.removeAllItems();
-        this.txtDias.setText("");
-        this.txtSaldo.setText("");
-        this.txtDias.requestFocus();
-       // this.txtFechaAjuste.setDate(null);
-        this.txtFechaUlt.setDate(null);
-        try {
-            l=this.log.licenciaActualFunc(f.getCodFunc());
-            this.comboAño.addItem(l);
-            listaMov=this.log.ultimoMovimiento(this.txtCodFunc.getText(),10,l.getAño());
-            this.cargarTabla(listaMov);
-            this.txtSaldo.setText(l.getSaldo().toString());
-            this.lblMsg.setText("");
-
-        } catch (ClassNotFoundException ex) { 
-           Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-       } catch (SQLException ex) {
-           Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
+       try {
+           this.mov=null;
+           this.comboAño.removeAllItems();
+           this.txtDias.setText("");
+           this.txtSaldo.setText("");
+           this.txtDias.requestFocus();
+           // this.txtFechaAjuste.setDate(null);
+           this.txtFechaUlt.setDate(null);
+           l=this.log.licenciaActualFunc(f.getCodFunc());
+           this.comboAño.addItem(l);
+           listaMov=this.log.ultimoMovimiento(this.txtCodFunc.getText(),10,l.getAño());
+           this.cargarTabla(listaMov);
+           this.txtSaldo.setText(l.getSaldo().toString());
+           this.lblMsg.setText("");
+           
+           this.comboAño.setEnabled(true);
+           this.txtDias.setEnabled(true);
+           this.txtSaldo.setEnabled(true);
+           this.btnAceptar.setEnabled(true);
+       } catch (BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
        }
-
-        this.comboAño.setEnabled(true);
-        this.txtDias.setEnabled(true);
-        this.txtSaldo.setEnabled(true);
-        this.btnAceptar.setEnabled(true);
 
     }//GEN-LAST:event_radioActualFocusGained
 
     private void radioSiguienteFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_radioSiguienteFocusGained
-        this.comboAño.removeAllItems();
-        this.txtDias.setText("");
-        this.txtSaldo.setText("");
-        this.txtDias.requestFocus();
-       // this.txtFechaAjuste.setDate(null);
-        this.txtFechaUlt.setDate(null);
-        this.mov=null;
-        this.mov=new MovimientoLicencia();
-        try {
-            lic= log.consultaAdelantado(this.txtCodFunc.getText());
-            if(lic.getFuncionario()!=null){
-                l=new Licencia();
-                l.setFuncionario(lic.getFuncionario());
-                l.setAño(lic.getAñoSaldo()-1);
-                this.lblMsg.setText("");
-            }
-            else{
-                this.comboAño.setEnabled(false);
-                this.txtDias.setEnabled(false);
-                this.txtSaldo.setEnabled(false);
-                this.btnAceptar.setEnabled(false);
-                this.lblMsg.setText("Ingrese las fechas para la licencia de este Funcionario");
-            }
-        } catch (SQLException ex) { 
-           Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-       } catch (ClassNotFoundException ex) {
-           Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-       }
-        if(lic.getFuncionario()!=null){
-            this.lblNombres.setText(lic.getFuncionario().getNomCompleto());
-            Integer saldo=10-lic.getDiasTomados();
-            l.setSaldo(saldo);
-            this.comboAño.addItem(l);
-            this.txtSaldo.setText(saldo.toString());
-            mov.setAñoSaldo(lic.getAñoSaldo()-1);
-            try {
-                listaAdel=this.log.listarLicAdelantada(this.txtCodFunc.getText(), mov);
-                //this.listaMov=this.convierteMovEnAdel(listaAdel);
-                this.cargarTabla(listaAdel);
-            } catch (ClassNotFoundException ex) { 
-                Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SQLException ex) {
-                Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            this.comboAño.setEnabled(true);
-            this.txtDias.setEnabled(true);
-            this.txtSaldo.setEnabled(true);
-            this.btnAceptar.setEnabled(true);
+       try {
+           this.comboAño.removeAllItems();
+           this.txtDias.setText("");
+           this.txtSaldo.setText("");
+           this.txtDias.requestFocus();
+           // this.txtFechaAjuste.setDate(null);
+           this.txtFechaUlt.setDate(null);
+           this.mov=null;
+           this.mov=new MovimientoLicencia();
+           lic= log.consultaAdelantado(this.txtCodFunc.getText());
+           if(lic.getFuncionario()!=null){
+               l=new Licencia();
+               l.setFuncionario(lic.getFuncionario());
+               l.setAño(lic.getAñoSaldo()-1);
+               this.lblMsg.setText("");
+           }
+           else{
+               this.comboAño.setEnabled(false);
+               this.txtDias.setEnabled(false);
+               this.txtSaldo.setEnabled(false);
+               this.btnAceptar.setEnabled(false);
+               this.lblMsg.setText("Ingrese las fechas para la licencia de este Funcionario");
+           }
+           if(lic.getFuncionario()!=null){
+               try {
+                   this.lblNombres.setText(lic.getFuncionario().getNomCompletoApe());
+                   Integer saldo=10-lic.getDiasTomados();
+                   l.setSaldo(saldo);
+                   this.comboAño.addItem(l);
+                   this.txtSaldo.setText(saldo.toString());
+                   mov.setAñoSaldo(lic.getAñoSaldo()-1);
+                   
+                   listaAdel=this.log.listarLicAdelantada(this.txtCodFunc.getText(), mov);
+                   //this.listaMov=this.convierteMovEnAdel(listaAdel);
+                   this.cargarTabla(listaAdel);
+                   
+                   this.comboAño.setEnabled(true);
+                   this.txtDias.setEnabled(true);
+                   this.txtSaldo.setEnabled(true);
+                   this.btnAceptar.setEnabled(true);
+               } catch (BDExcepcion ex) {
+                   JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+               }
+               
 
     }//GEN-LAST:event_radioSiguienteFocusGained
     
- }
-    
+        }catch (BDExcepcion ex) {
+          JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+       }
+    }
+        
     
     private void cargarTabla(ArrayList<MovimientoLicencia> listaMov) {
         this.LimpiarTabla();
@@ -791,7 +777,7 @@ public class InternalAjustesLicencia extends javax.swing.JInternalFrame {
                                 Integer dnegativo=d*-1;
                                 if(d+l.getSaldo()<=10){
                                     mov.setFechaIni(this.txtFechaAjuste.getDate());
-                                    if(this.log.insertarLicAdelantada(l.getAño()+1,mov.getFechaIni(),mov.getFechaFin(),dnegativo,l.getFuncionario(),mov.getReferencia())){
+                                    if(this.log.insertarLicAdelantada(l.getAño()+1,mov.getFechaIni(),mov.getFechaFin(),dnegativo,l.getFuncionario(),mov.getReferencia(),null)){
                                         this.radioSiguiente.setSelected(true);
                                         this.txtCodFunc.setText("");
                                         this.txtDias.setText("");
@@ -873,14 +859,12 @@ public class InternalAjustesLicencia extends javax.swing.JInternalFrame {
                 if(l!=null){
                     try {
                         listaMov=this.log.ultimoMovimiento(this.txtCodFunc.getText(),10,l.getAño());
-                    } catch (ClassNotFoundException ex) { 
-                        Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(InternalAjustesLicencia.class.getName()).log(Level.SEVERE, null, ex);
+                        this.cargarTabla(listaMov);
+                        this.txtSaldo.setText(l.getSaldo().toString());
+                        this.lblMsg.setText("");
+                    } catch (BDExcepcion ex) {
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     }
-                    this.cargarTabla(listaMov);
-                    this.txtSaldo.setText(l.getSaldo().toString());
-                    this.lblMsg.setText("");
 
                 }
 

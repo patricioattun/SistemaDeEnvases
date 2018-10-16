@@ -7,12 +7,15 @@ import Dominio.Ingreso;
 import Dominio.Retencion;
 import Logica.LogCodigo;
 import Logica.LogFuncionario;
+import Persistencia.BDExcepcion;
 import Presentacion.frmPrin;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -36,7 +39,9 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
   DefaultTableModel tmMov=null; 
   private Retencion ret;
   private Retencion retMod;
-  private InternalModRetencion internalMod;
+  private Double sumaImpo=0.0;
+  private Double sumaPorcen=0.0;
+
   public InternalRetencionesFijas() throws ClassNotFoundException, SQLException {
         initComponents();
         log=new LogFuncionario();
@@ -62,21 +67,27 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
     
     private void cargarMovimiento(MouseEvent e) throws ParseException {
      Integer m=this.tabla.rowAtPoint(e.getPoint());
+     m=this.tabla.getSelectedRow();
      this.ret=new Retencion();
      Funcionario fu = new Funcionario();
      Codigo c = new Codigo();
      fu.setCodFunc(Integer.valueOf(String.valueOf(tmMov.getValueAt(m, 0))));
      fu.setNombre1(String.valueOf(tmMov.getValueAt(m, 1)));
      c.setCod(Integer.valueOf(String.valueOf(tmMov.getValueAt(m, 2))));
-     c.setDescripcion(String.valueOf(tmMov.getValueAt(m, 3)));
-     String importe=String.valueOf(tmMov.getValueAt(m,4));
+     c.setDescripcion(String.valueOf(tmMov.getValueAt(m, 3)).replace(",", ""));
+     String importe=String.valueOf(tmMov.getValueAt(m,4)).replace(",", "");
      String porcentaje=String.valueOf(tmMov.getValueAt(m,5));
      ret.setImporte(Double.valueOf(importe));
      ret.setPorcentaje(Double.valueOf(porcentaje));
      ret.setTipo(Integer.valueOf(String.valueOf(tmMov.getValueAt(m, 6))));
      ret.setSueldo(Integer.valueOf(String.valueOf(tmMov.getValueAt(m, 7))));
      ret.setOtros(Integer.valueOf(String.valueOf(tmMov.getValueAt(m, 8))));
-     ret.setActiva(Integer.valueOf(String.valueOf(tmMov.getValueAt(m, 9))));
+     if(tmMov.getValueAt(m, 9).equals(true)){
+         ret.setActiva(1);
+     }
+     else{
+         ret.setActiva(0);
+     }
      ret.setCod(c);
      ret.setFunc(fu);
     }
@@ -123,6 +134,22 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
 
     public void setTxtNumFunc2(TextFieldRound txtNumFunc2) {
         this.txtValor = txtNumFunc2;
+    }
+
+    public LogCodigo getLogs() {
+        return logs;
+    }
+
+    public void setLogs(LogCodigo logs) {
+        this.logs = logs;
+    }
+
+    public Retencion getRet() {
+        return ret;
+    }
+
+    public void setRet(Retencion ret) {
+        this.ret = ret;
     }
     
     
@@ -176,6 +203,9 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
         btnListar1 = new org.edisoncor.gui.button.ButtonIcon();
         jLabel9 = new javax.swing.JLabel();
         lblMsj = new javax.swing.JLabel();
+        txtImporte = new org.edisoncor.gui.textField.TextFieldRound();
+        jLabel10 = new javax.swing.JLabel();
+        txtPorcen = new org.edisoncor.gui.textField.TextFieldRound();
 
         jMenuItem1.setText("Modificar");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -185,7 +215,7 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
         });
         jPopupMenu1.add(jMenuItem1);
 
-        jMenuItem2.setText("Eliminar");
+        jMenuItem2.setText("Inactivar/Activar");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem2ActionPerformed(evt);
@@ -223,9 +253,16 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                 "Cod Func", "Nombre", "Cod Ret", "Descripción", "Importe", "Porcentaje", "Tipo", "Sueldo", "Otros", "Activa"
             }
         ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, true, true
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, true, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
@@ -243,9 +280,9 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
             tabla.getColumnModel().getColumn(2).setMinWidth(70);
             tabla.getColumnModel().getColumn(2).setPreferredWidth(70);
             tabla.getColumnModel().getColumn(2).setMaxWidth(70);
-            tabla.getColumnModel().getColumn(3).setMinWidth(250);
+            tabla.getColumnModel().getColumn(3).setMinWidth(200);
             tabla.getColumnModel().getColumn(3).setPreferredWidth(200);
-            tabla.getColumnModel().getColumn(3).setMaxWidth(250);
+            tabla.getColumnModel().getColumn(3).setMaxWidth(200);
             tabla.getColumnModel().getColumn(6).setMinWidth(0);
             tabla.getColumnModel().getColumn(6).setPreferredWidth(0);
             tabla.getColumnModel().getColumn(6).setMaxWidth(0);
@@ -255,12 +292,20 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
             tabla.getColumnModel().getColumn(8).setMinWidth(0);
             tabla.getColumnModel().getColumn(8).setPreferredWidth(0);
             tabla.getColumnModel().getColumn(8).setMaxWidth(0);
-            tabla.getColumnModel().getColumn(9).setMinWidth(0);
-            tabla.getColumnModel().getColumn(9).setPreferredWidth(0);
-            tabla.getColumnModel().getColumn(9).setMaxWidth(0);
         }
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Listar"));
+
+        comboListar.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                comboListarItemStateChanged(evt);
+            }
+        });
+        comboListar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                comboListarMouseClicked(evt);
+            }
+        });
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Nro. Funcionario ");
@@ -448,6 +493,12 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Nuevo Ingreso"));
 
+        comboNuevo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                comboNuevoMouseClicked(evt);
+            }
+        });
+
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel5.setText("Código");
         jLabel5.setToolTipText("");
@@ -606,6 +657,33 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                 .addContainerGap())
         );
 
+        txtImporte.setEditable(false);
+        txtImporte.setBackground(new java.awt.Color(102, 102, 102));
+        txtImporte.setForeground(new java.awt.Color(255, 255, 255));
+        txtImporte.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtImporte.setCaretColor(new java.awt.Color(255, 255, 255));
+        txtImporte.setSelectionColor(new java.awt.Color(255, 255, 255));
+        txtImporte.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtImporteKeyTyped(evt);
+            }
+        });
+
+        jLabel10.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jLabel10.setText("Totales:");
+
+        txtPorcen.setEditable(false);
+        txtPorcen.setBackground(new java.awt.Color(102, 102, 102));
+        txtPorcen.setForeground(new java.awt.Color(255, 255, 255));
+        txtPorcen.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtPorcen.setCaretColor(new java.awt.Color(255, 255, 255));
+        txtPorcen.setSelectionColor(new java.awt.Color(255, 255, 255));
+        txtPorcen.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtPorcenKeyTyped(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -619,6 +697,14 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(29, 29, 29)
+                .addComponent(txtImporte, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(txtPorcen, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(78, 78, 78))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -628,8 +714,13 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 292, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(106, 106, 106))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtPorcen, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtImporte, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel10))
+                .addGap(94, 94, 94))
         );
 
         pack();
@@ -641,6 +732,9 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
 
         if (k >= 97 && k <= 122 || k >= 65 && k <= 90 || k==32||k==46||k==45||k==8||k==47||k==42||k==43)  {
             evt.consume();
+        }
+         if(this.txtNumFunc.getText().length()>3){
+             evt.consume();
         }
         
         if(k==10){
@@ -692,6 +786,8 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
       }
     }
     public void LimpiarTabla() {
+        this.sumaImpo=0.0;
+        this.sumaPorcen=0.0;
         DefaultTableModel modelo=(DefaultTableModel) tabla.getModel();
         //primero limpio todas las filas
         for (int i = 0; i < tabla.getRowCount(); i++) {
@@ -702,6 +798,7 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
     private void txtNumFuncNuevoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNumFuncNuevoKeyTyped
         this.txtNombre.setText("");
         this.txtValor.setText("");
+        this.lblMsj.setText("");
         int k = (int) evt.getKeyChar();
 
         if (k >= 97 && k <= 122 || k >= 65 && k <= 90 || k==32||k==46||k==45||k==8||k==47||k==42||k==43)  {
@@ -709,6 +806,9 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
         }
         if(k==10){
             this.txtValor.requestFocus();
+        }
+         if(this.txtNumFuncNuevo.getText().length()>3){
+             evt.consume();
         }
     }//GEN-LAST:event_txtNumFuncNuevoKeyTyped
 
@@ -719,6 +819,7 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
     private void txtValorKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtValorKeyTyped
         int k = (int) evt.getKeyChar();
         String valor = this.txtValor.getText();
+        this.lblMsj.setText("");
         if(!valor.contains(".")){ 
             if (k >= 97 && k <= 122 || k >= 65 && k <= 90 || k==32||k==45||k==8||k==47||k==42||k==43)  {
                 evt.consume();
@@ -732,8 +833,9 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_txtValorKeyTyped
 
     private void btnListarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListarActionPerformed
-      this.LimpiarTabla();
-        try {
+      try {
+          this.LimpiarTabla();
+          
           if(this.comboListar.getSelectedIndex()!=0){
               cod=(Codigo) this.comboListar.getSelectedItem();
           }
@@ -766,21 +868,14 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
           }
           
           if(this.esNum(codFunc)){
-              try {
-                  f=this.log.funcParcial(codFunc);
-              } catch (ClassNotFoundException ex) {
-                  Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
-              } catch (SQLException ex) {
-                  Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
-              }
-              
+              f=this.log.funcParcial(codFunc);
+                
           }
           this.cargarTabla(activa,f,cod,aplica,tipo);
-      } catch (ClassNotFoundException ex) {
-          Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
-      } catch (SQLException ex) {
-          Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (BDExcepcion ex) {
+         JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
       }
+      
     }//GEN-LAST:event_btnListarActionPerformed
 
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
@@ -789,6 +884,7 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
 
     private void btnListar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListar1ActionPerformed
       try {
+          if(this.logs.bloqueoContaduria()==0){
           Codigo c=null;
           if(this.comboNuevo.getSelectedIndex()!=0){
               c =(Codigo) this.comboNuevo.getSelectedItem();
@@ -855,12 +951,18 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                   }
           }
           else{
-              this.lblMsj.setText("Ya esta ingresado");
+              this.lblMsj.setText("Ya esta ingresada esta retención");
               }
+          }
+          else{
+              JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
+          }
       } catch (ClassNotFoundException ex) {
-          Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema, consulte a Desarrollo");
       } catch (SQLException ex) {
-          Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema, consulte a Desarrollo");
+      } catch (BDExcepcion ex) {
+          JOptionPane.showMessageDialog(null, "Ha ocurrido un problema, consulte a Desarrollo");
       }
       
     }//GEN-LAST:event_btnListar1ActionPerformed
@@ -875,8 +977,23 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
             } catch (SQLException ex) {
                 Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
             }
+             Codigo c=null;
+                    if(this.comboNuevo.getSelectedIndex()!=0){
+                        c =(Codigo) this.comboNuevo.getSelectedItem();
+                    }
             if(f!=null){
-                this.txtNombre.setText(f.getNomCompleto());
+                this.txtNombre.setText(f.getNomCompletoApe());
+                  if(c!=null){
+                    try {
+                        if(this.logs.estaEnRetFijas(f, c)){
+                              this.lblMsj.setText("Ya esta ingresada esta retención");
+                        }
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    }
             }
             else{
                 this.txtNombre.setText("El funcionario no existe");
@@ -893,57 +1010,87 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
         }
     }//GEN-LAST:event_txtNumFuncNuevoFocusLost
     
-    //Eliminar
+ // Inactivar
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-      if(ret!=null){
-           int respuesta=JOptionPane.showConfirmDialog(this, "Seguro desea eliminar esta línea?");
-           //si es 0,no es 1 cancela es 2
-           if(respuesta==0){
-               try {
-                   if(this.logs.eliminarRetencionFija(ret)){
-                       this.btnListar.doClick();
-                   }
-               } catch (SQLException ex) {
-                   Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
-               } catch (ClassNotFoundException ex) {
-                   Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
-               }
-           }
-       }
+      try {
+          if(this.logs.bloqueoContaduria()==0){
+              if(ret!=null){
+                  
+                  int respuesta=JOptionPane.showConfirmDialog(this, "Seguro desea inactivar esta retención?");
+                  //si es 0,no es 1 cancela es 2
+                  if(respuesta==0){
+                      try {
+                          if(this.logs.eliminarRetencionFija(ret)){
+                              this.btnListar.doClick();
+                              
+                          }
+                      } catch (SQLException ex) {
+                          Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+                      } catch (ClassNotFoundException ex) {
+                          Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+                      }
+                  }
+              }
+          }
+          else{
+              JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
+          }
+      } catch (BDExcepcion ex) {
+         JOptionPane.showMessageDialog(null, "Ha ocurrido un problema, consulte a Desarrollo");
+      }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
     
     //Modificar
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        if(this.ret!=null){
-            try {
-                internalMod=InternalModRetencion.instancia(ret,this,logs);
-                frmPrin prin=frmPrin.instancia();
-                if (!internalMod.isVisible()) {
-                    prin.getDesktop().add(internalMod);
-                    internalMod.setLocation((prin.getDesktop().getWidth()/70)-(internalMod.getWidth()/70),(prin.getDesktop().getHeight()/70) - internalMod.getHeight()/70);
-                    internalMod.setVisible(true);
-                    internalMod.repaint();
-                    internalMod.revalidate();
-                }
-                else{
-                    internalMod.requestFocus();
-                    try {
-                        internalMod.setSelected(true);
-                        internalMod.setVisible(true);
-                        internalMod.repaint();
-                        internalMod.revalidate();
-
-                    } catch (PropertyVetoException ex) {
-                        //lblMensaje.setText(ex.getMessage());
-                    }
-                }
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SQLException ex) {
-                Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+      try {
+          if(this.logs.bloqueoContaduria()==0){
+              try {
+                  //        if(this.ret!=null){
+//            try {
+//                internalMod=InternalModRetencion.instancia(ret,this,logs);
+//                frmPrin prin=frmPrin.instancia();
+//                if (!internalMod.isVisible()) {
+//                    prin.getDesktop().add(internalMod);
+//                    internalMod.setLocation((prin.getDesktop().getWidth()/70)-(internalMod.getWidth()/70),(prin.getDesktop().getHeight()/70) - internalMod.getHeight()/70);
+//                    internalMod.setVisible(true);
+//                    internalMod.repaint();
+//                    internalMod.revalidate();
+//                }
+//                else{
+//                    internalMod.requestFocus();
+//                    try {
+//                        internalMod.setSelected(true);
+//                        internalMod.setVisible(true);
+//                        internalMod.repaint();
+//                        internalMod.revalidate();
+//
+//                    } catch (PropertyVetoException ex) {
+//                        //lblMensaje.setText(ex.getMessage());
+//                    }
+//                }
+//            } catch (ClassNotFoundException ex) {
+//                Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+//            } catch (SQLException ex) {
+//                Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
+            if(ret!=null){
+                ModalModRetencion modal=new ModalModRetencion(null, closable);
+                modal.setVisible(true);
             }
-        }
-        ret=null;
+            ret=null;
+              } catch (ClassNotFoundException ex) {
+                  Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+              } catch (SQLException ex) {
+                  Logger.getLogger(InternalRetencionesFijas.class.getName()).log(Level.SEVERE, null, ex);
+              }
+          }
+          else{
+              JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
+          }
+      } catch (BDExcepcion ex) {
+          JOptionPane.showMessageDialog(null, "Ha ocurrido un problema, consulte a Desarrollo");
+      }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void radioTipoTodoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_radioTipoTodoItemStateChanged
@@ -981,6 +1128,26 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
     private void radioInactivaItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_radioInactivaItemStateChanged
         this.LimpiarTabla();
     }//GEN-LAST:event_radioInactivaItemStateChanged
+
+    private void comboListarItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboListarItemStateChanged
+         this.LimpiarTabla();
+    }//GEN-LAST:event_comboListarItemStateChanged
+
+    private void comboListarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboListarMouseClicked
+         this.LimpiarTabla();
+    }//GEN-LAST:event_comboListarMouseClicked
+
+    private void comboNuevoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboNuevoMouseClicked
+       this.lblMsj.setText("");
+    }//GEN-LAST:event_comboNuevoMouseClicked
+
+    private void txtImporteKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtImporteKeyTyped
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtImporteKeyTyped
+
+    private void txtPorcenKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPorcenKeyTyped
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtPorcenKeyTyped
 
     private Boolean esNum(String num){
         Boolean es=true;
@@ -1026,6 +1193,7 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox checkSueldo;
     private javax.swing.JComboBox comboListar;
     private javax.swing.JComboBox comboNuevo;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1053,13 +1221,15 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton radioSueldo;
     private javax.swing.JRadioButton radioTipoTodo;
     private javax.swing.JTable tabla;
+    private org.edisoncor.gui.textField.TextFieldRound txtImporte;
     private org.edisoncor.gui.textField.TextFieldRound txtNombre;
     private org.edisoncor.gui.textField.TextFieldRound txtNumFunc;
     private org.edisoncor.gui.textField.TextFieldRound txtNumFuncNuevo;
+    private org.edisoncor.gui.textField.TextFieldRound txtPorcen;
     private org.edisoncor.gui.textField.TextFieldRound txtValor;
     // End of variables declaration//GEN-END:variables
 
-    private void cargarTabla(int activa, Funcionario f, Codigo cod, int aplica, int tipo) throws ClassNotFoundException, SQLException {
+    private void cargarTabla(int activa, Funcionario f, Codigo cod, int aplica, int tipo) throws BDExcepcion{
         this.Alinear_Grillas();
         ArrayList<Retencion> retenciones = this.logs.listarRetenciones(activa, f, cod);
          DefaultTableModel modelo = (DefaultTableModel)tabla.getModel();
@@ -1075,17 +1245,24 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                        }
                     }
                     filas[0]=i.getFunc().getCodFunc();
-                    filas[1]=i.getFunc().getNomCompleto();
+                    filas[1]=i.getFunc().getNomCompletoApe();
                     filas[2]=i.getCod().getCod();
                     filas[3]=i.getCod().getDescripcion();
-                    filas[4]=i.getImporte();
+                    filas[4]=this.decimales(i.getImporte());
                     filas[5]=i.getPorcentaje();
                     filas[6]=i.getTipo();
                     filas[7]=i.getSueldo();
                     filas[8]=i.getOtros();
-                    filas[9]=i.getActiva();
+                    if(i.getActiva()==0){
+                    filas[9]=false;
+                    }
+                    else{
+                    filas[9]=true;  
+                    }
                     cuenta++;
                     modelo.addRow(filas);
+                    this.sumaImpo+=i.getImporte();
+                    this.sumaPorcen+=i.getPorcentaje();
              }
              else if(aplica==1 && tipo==0){
                  if(i.getSueldo()==1 && i.getOtros()==0){
@@ -1095,10 +1272,10 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                        }
                     }
                     filas[0]=i.getFunc().getCodFunc();
-                    filas[1]=i.getFunc().getNomCompleto();
+                    filas[1]=i.getFunc().getNomCompletoApe();
                     filas[2]=i.getCod().getCod();
                     filas[3]=i.getCod().getDescripcion();
-                    filas[4]=i.getImporte();
+                    filas[4]=this.decimales(i.getImporte());
                     filas[5]=i.getPorcentaje();
                     filas[6]=i.getTipo();
                     filas[7]=i.getSueldo();
@@ -1106,6 +1283,8 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                     filas[9]=i.getActiva();
                     cuenta++;
                     modelo.addRow(filas);
+                    this.sumaImpo+=i.getImporte();
+                    this.sumaPorcen+=i.getPorcentaje();
                  }
                 }
              else if(aplica==2 && tipo==0){
@@ -1116,10 +1295,10 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                        }
                     }
                     filas[0]=i.getFunc().getCodFunc();
-                    filas[1]=i.getFunc().getNomCompleto();
+                    filas[1]=i.getFunc().getNomCompletoApe();
                     filas[2]=i.getCod().getCod();
                     filas[3]=i.getCod().getDescripcion();
-                    filas[4]=i.getImporte();
+                    filas[4]=this.decimales(i.getImporte());
                     filas[5]=i.getPorcentaje();
                     filas[6]=i.getTipo();
                     filas[7]=i.getSueldo();
@@ -1127,6 +1306,8 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                     filas[9]=i.getActiva();
                     cuenta++;
                     modelo.addRow(filas);
+                    this.sumaImpo+=i.getImporte();
+                    this.sumaPorcen+=i.getPorcentaje();
                  }
                 }
              
@@ -1138,7 +1319,7 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                        }
                     }
                     filas[0]=i.getFunc().getCodFunc();
-                    filas[1]=i.getFunc().getNomCompleto();
+                    filas[1]=i.getFunc().getNomCompletoApe();
                     filas[2]=i.getCod().getCod();
                     filas[3]=i.getCod().getDescripcion();
                     filas[4]=0;
@@ -1149,6 +1330,8 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                     filas[9]=i.getActiva();
                     cuenta++;
                     modelo.addRow(filas);
+                    this.sumaImpo+=i.getImporte();
+                    this.sumaPorcen+=i.getPorcentaje();
                  }
              }
              else if(aplica==0 && tipo==2){
@@ -1159,10 +1342,10 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                        }
                     }
                     filas[0]=i.getFunc().getCodFunc();
-                    filas[1]=i.getFunc().getNomCompleto();
+                    filas[1]=i.getFunc().getNomCompletoApe();
                     filas[2]=i.getCod().getCod();
                     filas[3]=i.getCod().getDescripcion();
-                    filas[4]=i.getImporte();
+                    filas[4]=this.decimales(i.getImporte());
                     filas[5]=0;
                     filas[6]=i.getTipo();
                     filas[7]=i.getSueldo();
@@ -1170,6 +1353,8 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                     filas[9]=i.getActiva();
                     cuenta++;
                     modelo.addRow(filas);
+                    this.sumaImpo+=i.getImporte();
+                    this.sumaPorcen+=i.getPorcentaje();
                  }
              }
              else if(aplica==1 && tipo==1){
@@ -1180,7 +1365,7 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                        }
                     }
                     filas[0]=i.getFunc().getCodFunc();
-                    filas[1]=i.getFunc().getNomCompleto();
+                    filas[1]=i.getFunc().getNomCompletoApe();
                     filas[2]=i.getCod().getCod();
                     filas[3]=i.getCod().getDescripcion();
                     filas[4]=0;
@@ -1191,15 +1376,17 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                     filas[9]=i.getActiva();
                     cuenta++;
                     modelo.addRow(filas);
+                    this.sumaImpo+=i.getImporte();
+                    this.sumaPorcen+=i.getPorcentaje();
                  }
              }
             else if(aplica==1 && tipo==2){
                  if(i.getSueldo()==1 && i.getOtros()==0 && i.getTipo()==0){
                     filas[0]=i.getFunc().getCodFunc();
-                    filas[1]=i.getFunc().getNomCompleto();
+                    filas[1]=i.getFunc().getNomCompletoApe();
                     filas[2]=i.getCod().getCod();
                     filas[3]=i.getCod().getDescripcion();
-                    filas[4]=i.getImporte();
+                    filas[4]=this.decimales(i.getImporte());
                     filas[5]=0;
                     filas[6]=i.getTipo();
                     filas[7]=i.getSueldo();
@@ -1207,12 +1394,14 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                     filas[9]=i.getActiva();
                     cuenta++;
                     modelo.addRow(filas);
+                    this.sumaImpo+=i.getImporte();
+                    this.sumaPorcen+=i.getPorcentaje();
                  }
              }
              else if(aplica==2 && tipo==1){
                  if(i.getSueldo()==0 && i.getOtros()==1 && i.getTipo()==1){
                     filas[0]=i.getFunc().getCodFunc();
-                    filas[1]=i.getFunc().getNomCompleto();
+                    filas[1]=i.getFunc().getNomCompletoApe();
                     filas[2]=i.getCod().getCod();
                     filas[3]=i.getCod().getDescripcion();
                     filas[4]=0;
@@ -1223,15 +1412,17 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                     filas[9]=i.getActiva();
                     cuenta++;
                     modelo.addRow(filas);
+                    this.sumaImpo+=i.getImporte();
+                    this.sumaPorcen+=i.getPorcentaje();
                  }
                 }
              else if(aplica==2 && tipo==2){
                  if(i.getSueldo()==0 && i.getOtros()==1 && i.getTipo()==0){
                     filas[0]=i.getFunc().getCodFunc();
-                    filas[1]=i.getFunc().getNomCompleto();
+                    filas[1]=i.getFunc().getNomCompletoApe();
                     filas[2]=i.getCod().getCod();
                     filas[3]=i.getCod().getDescripcion();
-                    filas[4]=i.getImporte();
+                    filas[4]=this.decimales(i.getImporte());
                     filas[5]=0;
                     filas[6]=i.getTipo();
                     filas[7]=i.getSueldo();
@@ -1239,6 +1430,8 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
                     filas[9]=i.getActiva();
                     cuenta++;
                     modelo.addRow(filas);
+                    this.sumaImpo+=i.getImporte();
+                    this.sumaPorcen+=i.getPorcentaje();
                  }
                 }
              
@@ -1254,7 +1447,17 @@ public class InternalRetencionesFijas extends javax.swing.JInternalFrame {
         tabla.setColumnSelectionAllowed(false);
         tabla.setRowSelectionAllowed(true);
         tabla.changeSelection(posicion, 0, false, false);
+        this.txtImporte.setText(this.decimales(sumaImpo));
+        this.txtPorcen.setText(this.decimales(sumaPorcen));
+    }
+    
+     private String decimales(Double sueldo) {
+    DecimalFormatSymbols simbolo= new DecimalFormatSymbols();
+    simbolo.setDecimalSeparator('.');
+    simbolo.setGroupingSeparator(',');
                 
+    DecimalFormat df=new DecimalFormat("#,###,##0.00",simbolo);
+    return df.format(sueldo);
     }
     
     private void Alinear_Grillas(){

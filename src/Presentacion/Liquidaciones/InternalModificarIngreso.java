@@ -3,9 +3,11 @@ package Presentacion.Liquidaciones;
 
 import Dominio.Ingreso;
 import Logica.LogCodigo;
+import Persistencia.BDExcepcion;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 
 public class InternalModificarIngreso extends javax.swing.JInternalFrame {
@@ -151,79 +153,77 @@ public class InternalModificarIngreso extends javax.swing.JInternalFrame {
     private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAceptarActionPerformed
         Double d=Double.parseDouble(this.txtValor.getText());
         if(this.ing.getEnPers()==1){
+            
             try {
                 if(this.log.actualizarPersIngresos(ing,d)==1){
-                    try {
-                        if(fr==1){
+                    
+                    if(fr==1){
                         this.internalCod.LimpiarTabla();
                         this.internalCod.recargaTabla(ing.getCodMov().getCod());
                         this.internalCod.getTxtNumFunc().requestFocus();
-                        }
-                        else if(fr==0){
+                    }
+                    else if(fr==0){
                         this.inte.LimpiarTabla();
                         this.inte.recargaTabla(ing.getCodFunc());
                         this.inte.getTxtCod().requestFocus();
-                        }
-                                 
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(InternalModificarIngreso.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(InternalModificarIngreso.class.getName()).log(Level.SEVERE, null, ex);
                     }
+                    
+                    
                 }
-            } catch (SQLException ex) {
-                Logger.getLogger(InternalModificarIngreso.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(InternalModificarIngreso.class.getName()).log(Level.SEVERE, null, ex);
+                
+                this.dispose();
+            } catch (BDExcepcion ex) {
+              JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
             }
-            this.dispose();
         }
         else{
-            try {
-                int i=0;
-                boolean esta=false;
-                if(fr==0){
-                while(i<this.inte.getCodigos().size()&&!esta){
-                    if(this.inte.getCodigos().get(i).getCodFunc().equals(ing.getCodFunc())&&this.inte.getCodigos().get(i).getCodMov().getCod().equals(ing.getCodMov().getCod())){
-                        if(ing.getCodMov().getTipoValor()==1){
-                            this.inte.getCodigos().get(i).setImporte(d);
-                            this.inte.getTxtCod().requestFocus();
+            int i=0;
+            boolean esta=false;
+            if(fr==0){
+                try {
+                    while(i<this.inte.getCodigos().size()&&!esta){
+                        if(this.inte.getCodigos().get(i).getCodFunc().equals(ing.getCodFunc())&&this.inte.getCodigos().get(i).getCodMov().getCod().equals(ing.getCodMov().getCod())){
+                            if(ing.getCodMov().getTipoValor()==1){
+                                this.inte.getCodigos().get(i).setImporte(d);
+                                this.inte.getTxtCod().requestFocus();
+                            }
+                            else{
+                                this.inte.getCodigos().get(i).setCantidad(d);
+                                this.inte.getTxtCod().requestFocus();
+                            }
+                            esta=true;
                         }
-                        else{
-                            this.inte.getCodigos().get(i).setCantidad(d);
-                            this.inte.getTxtCod().requestFocus();
-                        }
-                        esta=true;
+                        i++;
                     }
-                    i++;
+                    this.inte.LimpiarTabla();
+                    this.inte.recargaTabla(ing.getCodFunc());
+                    this.dispose();
+                } catch (BDExcepcion ex) {
+                   JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                 }
-                this.inte.LimpiarTabla();
-                this.inte.recargaTabla(ing.getCodFunc());
-                this.dispose();
-                }
-                else{
+            }
+            else{
+                try {
                     while(i<this.internalCod.getCodigos().size()&&!esta){
-                    if(this.internalCod.getCodigos().get(i).getCodFunc().equals(ing.getCodFunc())){
-                        if(ing.getCodMov().getTipoValor()==1){
-                            this.internalCod.getCodigos().get(i).setImporte(d);
-                            this.internalCod.getTxtNumFunc().requestFocus();
+                        if(this.internalCod.getCodigos().get(i).getCodFunc().equals(ing.getCodFunc())){
+                            if(ing.getCodMov().getTipoValor()==1){
+                                this.internalCod.getCodigos().get(i).setImporte(d);
+                                this.internalCod.getTxtNumFunc().requestFocus();
+                            }
+                            else{
+                                this.internalCod.getCodigos().get(i).setCantidad(d);
+                                this.internalCod.getTxtNumFunc().requestFocus();
+                            }
+                            esta=true;
                         }
-                        else{
-                            this.internalCod.getCodigos().get(i).setCantidad(d);
-                            this.internalCod.getTxtNumFunc().requestFocus();
-                        }
-                        esta=true;
+                        i++;
                     }
-                    i++;
+                    this.internalCod.LimpiarTabla();
+                    this.internalCod.recargaTabla(ing.getCodMov().getCod());
+                    this.dispose();
+                } catch (BDExcepcion ex) {
+                   JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                 }
-                this.internalCod.LimpiarTabla();
-                this.internalCod.recargaTabla(ing.getCodMov().getCod());
-                this.dispose();
-                }
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(InternalModificarIngreso.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SQLException ex) {
-                Logger.getLogger(InternalModificarIngreso.class.getName()).log(Level.SEVERE, null, ex);
             }
             
         }

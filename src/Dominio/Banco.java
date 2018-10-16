@@ -1,12 +1,6 @@
 
 package Dominio;
 
-import Persistencia.Conexion;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 
 
 public class Banco {
@@ -17,9 +11,28 @@ public class Banco {
     private String localidad; //Longitud: 25
     private String direccion;//Longitud: 50
     private String telefono;//Longitud: 20
-    private Conexion conexion;
+    private CodigoBcu codigoBcu;
+    private String codBcu;
      //<editor-fold defaultstate="collapsed" desc="Propiedades">
 
+    public String getCodBcu() {
+        return codBcu;
+    }
+
+    public void setCodBcu(String codBcu) {
+        this.codBcu = codBcu;
+    }
+
+    
+    public CodigoBcu getCodigoBcu() {
+        return codigoBcu;
+    }
+
+    public void setCodigoBcu(CodigoBcu codigoBcu) {
+        this.codigoBcu = codigoBcu;
+    }
+
+    
     public Integer getCodigo() {
         return codigo;
     }
@@ -27,8 +40,7 @@ public class Banco {
     public void setCodigo(Integer codigo) {
         this.codigo = codigo;
     }
-    
-    
+      
     
     
     public Integer getSucursal() {
@@ -85,4 +97,5 @@ public class Banco {
      return sucursal.toString() + " - " + nombre;
     }
     
+   
 }

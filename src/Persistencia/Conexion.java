@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 
 public class Conexion {
-            private static Connection cnn=null;
+    private static Connection cnn=null;
     
     public static Connection Cadena() throws ClassNotFoundException, SQLException{
         
@@ -15,6 +15,14 @@ public class Conexion {
         
         Class.forName("com.ibm.db2.jcc.DB2Driver");
         cnn=DriverManager.getConnection("jdbc:db2://10.136.1.3:50000/ACE1","admin","desadb2");
+        return cnn;
+    }
+    
+    public static Connection CadenaHist() throws ClassNotFoundException, SQLException{
+        Connection cnn=null;
+        
+        Class.forName("com.ibm.db2.jcc.DB2Driver");
+        cnn=DriverManager.getConnection("jdbc:db2://10.136.1.2:50000/ACEHIST","admin","desadb2");
         return cnn;
     }
     

@@ -3,6 +3,7 @@ package Presentacion;
 
 
 
+import Dominio.Usuario;
 import Logica.LogUsuario;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -28,7 +29,14 @@ public class frmLogin extends javax.swing.JFrame {
         Imagen Imagen = new Imagen();
         pnlLogo.add(Imagen);
         pnlLogo.repaint();       
-        
+        String name = System.getProperty("user.name");
+        if(name!=null){
+            if(!"".equals(name)){
+                 this.txtUsuario.setText(name);
+                 this.txtClave.requestFocus();
+            }
+        }
+       
         this.setVisible(true);
     }
 
@@ -178,13 +186,17 @@ public class Imagen extends javax.swing.JPanel {
     }
     else{
         try {
-
-            if(logU.login(usuario, contrasenia)!=null){
-                frmPrin frmP=frmPrin.instancia();
-                frmP.setUsuario(usuario);
-                frmP.cargaInfo();
+            Usuario us = logU.login(usuario, contrasenia);
+            if(us!=null){
+                if(us.getPermiso()!=null){
+                frmPrin frmP=frmPrin.instancia2(us);
+                //frmP.setUsuario(us);
+                //frmP.cargaInfo();
                 this.dispose();
-                
+                }
+                else{
+                   lblMensaje.setText("No tiene un permiso válido"); 
+                }
                 
             }
             else{

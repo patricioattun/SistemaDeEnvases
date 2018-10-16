@@ -7,7 +7,9 @@ import Dominio.Marca;
 import Logica.LogCodigo;
 import Logica.LogFuncionario;
 import Logica.LogTripaliare;
+import Persistencia.BDExcepcion;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -17,8 +19,11 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -27,6 +32,7 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -62,6 +68,8 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
         jLabel6 = new javax.swing.JLabel();
         checkPorCodigo = new javax.swing.JCheckBox();
         jSup = new javax.swing.JCheckBox();
+        btnExcFunc = new org.edisoncor.gui.button.ButtonIcon();
+        jLabel7 = new javax.swing.JLabel();
 
         setBorder(null);
         setClosable(true);
@@ -132,13 +140,29 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
 
         jSup.setText("Sin supervisar");
 
+        btnExcFunc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Excel_2013_23480.png"))); // NOI18N
+        btnExcFunc.setText("buttonIcon1");
+        btnExcFunc.setToolTipText("Exportar a Excel");
+        btnExcFunc.setMaximumSize(new java.awt.Dimension(160, 68));
+        btnExcFunc.setMinimumSize(new java.awt.Dimension(160, 68));
+        btnExcFunc.setPreferredSize(new java.awt.Dimension(160, 68));
+        btnExcFunc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExcFuncActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel7.setText("Planilla de Func. por Códigos");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -161,8 +185,13 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
                                 .addComponent(txtCod, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jSup, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addComponent(btnExc, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(10, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnExc, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnExcFunc, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -182,7 +211,10 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
                         .addComponent(txtCod, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jSup, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
-                .addComponent(btnExc, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnExc, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnExcFunc, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
                 .addContainerGap())
         );
 
@@ -270,11 +302,13 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
                            }
                            
                        } catch (ClassNotFoundException ex) {
-                           Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                          JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                        } catch (SQLException ex) {
-                           Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                        } catch (IOException ex) {
                          JOptionPane.showMessageDialog(this, "Tiene el documento abierto, ciérrelo y vuelva a intentar");
+                     } catch (BDExcepcion ex) {
+                         JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                      }
                    } 
                    else{
@@ -340,8 +374,99 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
         instancia=null;
     }//GEN-LAST:event_formInternalFrameClosed
 
+    private void btnExcFuncActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcFuncActionPerformed
+        Date hoy=new Date();
+       Date desde=this.txtFechaDesde.getDate();
+       Date hasta=this.txtFechahasta.getDate();
+       String cod=this.txtCod.getText();
+       Integer sup=null;
+       Integer codi=null;
+       if(this.jSup.isSelected()){
+           sup=0;
+       }
+       else{
+           sup=1;
+       }
+       if(this.checkPorCodigo.isSelected()){
+           codi=1;
+       }
+       else{
+           codi=0;
+       }
+       
+        if(desde!=null && hasta!=null){
+           if(hasta.after(desde)){
+                 if(hasta.before(hoy)){
+              
+                       
+                           if(!cod.equals("")){
+                               try {
+                                   Funcionario f=this.pers.funcParcial(cod);
+                                   if(f!=null){
+                                       marcas=this.trip.codigosFuncionarios(f,desde,hasta,sup);
+                                       this.codigos=this.trip.codigosDistintos(f, desde, hasta, sup);
+                                   }
+                                   else{
+                                       // this.lblMsg.setText("El funcionario que busca no existe");
+                                       this.txtCod.selectAll();
+                                   }
+                               } catch (BDExcepcion ex) {
+                                   Logger.getLogger(InternalListadosMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                               } catch (ClassNotFoundException ex) {
+                                   Logger.getLogger(InternalListadosMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                               } catch (SQLException ex) {
+                                   Logger.getLogger(InternalListadosMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                               }
+                               }
+                               else{
+                               try {
+                                   marcas=this.trip.codigosFuncionarios(null,desde,hasta,sup);
+                                   this.codigos=this.trip.codigosDistintos(null, desde, hasta, sup);
+                               } catch (ClassNotFoundException ex) {
+                                   Logger.getLogger(InternalListadosMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                               } catch (SQLException ex) {
+                                   Logger.getLogger(InternalListadosMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                               }
+                               }
+                               if(marcas!=null){
+                                   if(marcas.size()>0){
+                                       try {
+                                           this.procesarExcelFuncionarios();
+                                       } catch (BDExcepcion ex) {
+                                           Logger.getLogger(InternalListadosMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                                       } catch (ClassNotFoundException ex) {
+                                           Logger.getLogger(InternalListadosMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                                       } catch (SQLException ex) {
+                                           Logger.getLogger(InternalListadosMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                                       } catch (IOException ex) {
+                                           Logger.getLogger(InternalListadosMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                                       }
+                                   }
+                               }
+                           
+               
+                   
+                  
+             
+            }
+        else{
+            JOptionPane.showMessageDialog(this, "La fecha 'Desde' no puede ser posterior a 'Hasta'");
+            }
+       }
+        }
+     
+       
+       
+       
+       
+       
+       
+        
+
+    }//GEN-LAST:event_btnExcFuncActionPerformed
+
     
-    public void procesarExcel() throws IOException, ClassNotFoundException, SQLException{
+    public void procesarExcel() throws IOException, ClassNotFoundException, SQLException, BDExcepcion{
     
     javax.swing.filechooser.FileNameExtensionFilter filterXls = new javax.swing.filechooser.FileNameExtensionFilter("Documentosxcel 95/2003", "xls");
 
@@ -371,12 +496,21 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
               
               Workbook libro = new HSSFWorkbook();
               Sheet hoja = libro.createSheet("Mi hoja de trabajo 1");
+             
               HSSFCellStyle style = (HSSFCellStyle) libro.createCellStyle();
               style.setFillForegroundColor(HSSFColor.CORAL.index);
               style.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+              style.setBorderBottom(HSSFCellStyle.BORDER_MEDIUM);
+              
               HSSFCellStyle style1 = (HSSFCellStyle) libro.createCellStyle();
               style1.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
               style1.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+              style1.setBorderBottom(HSSFCellStyle.BORDER_MEDIUM);
+              
+              HSSFCellStyle style2 = (HSSFCellStyle) libro.createCellStyle();
+              style2.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+              
+                           
               Row fu=hoja.createRow(0);
               Cell cel = fu.createCell(0);
                       
@@ -398,7 +532,9 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
                   celd.setCellValue(headers[2]);
                   
                for(int s=0;s<=codigos.size()-1;s++){
-                   
+                   if(codigos.get(s).getCod()==15){
+                       String st = "";
+                   }
                   Row fi=hoja.createRow(r+1);
                   Cell ce = fi.createCell(0);
                   Cell ce1 = fi.createCell(1);
@@ -415,27 +551,30 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
                               r++;      
                   for(int c=0;c<headers.length+1;c++){
                     Cell celda = fila.createCell(c);
+                    
                     hoja.setColumnWidth(c, 5000);
                   
                             Marca m=marcas.get(i-3);
                                     switch(c)
                                     {                                       
                                         case 1:
-                                           
+                                            celda.setCellStyle(style2);
                                             celda.setCellValue(m.getFunCod());
                                             break;
                                         case 2:
+                                            celda.setCellStyle(style2);
                                             if(f!=null){
                                                 celda.setCellValue(f.getNomCompleto());
                                             }
                                             else{
-                                                Funcionario func=this.pers.funcParcial(String.valueOf(m.getFunCod()));
+                                                Funcionario func=this.pers.funcParcialTodos(String.valueOf(m.getFunCod()));
                                                 celda.setCellValue(func.getNomCompleto());
                                              
                                             }
                                             break;
                                         case 3:
-                                            if(m.getIncongruencia()!=10){
+                                            celda.setCellStyle(style2);
+                                            if(m.getIncongruencia()!=10 && m.getIncongruencia()!=15){
                                                 Double cantidad=this.trip.CantidadCodigo(this.txtFechaDesde.getDate(), this.txtFechahasta.getDate(), m.getFunCod(), m.getIncongruencia());
 
                                                     if(codigos.get(s).getTipoUnidad().equals(0)&& !codigos.get(s).getCod().equals(40)){
@@ -452,7 +591,14 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
                                                 Integer cantidad=m.getEditada();
                                                 celda.setCellValue(cantidad);
                                                 total+=cantidad;
+                                            } 
+                                            else if(m.getIncongruencia()==15){
+                                                Integer cantidad=m.getEditada();
+                                                celda.setCellValue(cantidad);
+                                                total+=cantidad;
                                             }
+                                            
+                                            
                                             break;
                                         
                                         
@@ -488,6 +634,178 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
                  
         }
     }
+    
+   public void procesarExcelFuncionarios() throws FileNotFoundException, BDExcepcion, ClassNotFoundException, SQLException, IOException {
+     Comparator<Marca> comparator=new Comparator<Marca>() {
+                    @Override
+                    public int compare(Marca a, Marca b) {
+                        int resultado = Integer.compare( a.getFunCod(), b.getFunCod());
+                        if ( resultado != 0 ) { return resultado; }
+                        
+                        resultado = Integer.compare( a.getIncongruencia(), b.getIncongruencia());
+                        if ( resultado != 0 ) { return resultado; }
+       
+                        
+                        return resultado;
+                    }
+                };
+                
+                Collections.sort( marcas, comparator );
+       
+       
+              
+       
+    javax.swing.filechooser.FileNameExtensionFilter filterXls = new javax.swing.filechooser.FileNameExtensionFilter("Documentosxcel 95/2003", "xls");
+        
+        File fileXLS = null;
+        final JFileChooser fc = new JFileChooser();
+        fc.setFileFilter(filterXls);
+        fc.setSelectedFile(fileXLS);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int seleccion = fc.showSaveDialog(null);
+        if (seleccion == JFileChooser.APPROVE_OPTION) {
+       
+             FileOutputStream fileOut = null;
+             
+             String[] headers = new String[]{
+                 "Cod. Func",//0
+                 "Nombre",//1
+                 
+                
+             };
+             
+             fileXLS = fc.getSelectedFile();
+             String name = fileXLS.getName();
+             if (name.indexOf('.') == -1) {
+                 name += ".xls";
+                 fileXLS = new File(fileXLS.getParentFile(), name);
+             }
+             fileOut = new FileOutputStream(fileXLS);
+             
+             Workbook libro = new HSSFWorkbook();
+             Sheet hoja = libro.createSheet("Mi hoja de trabajo 1");
+             
+             HSSFCellStyle style = (HSSFCellStyle) libro.createCellStyle();
+             style.setFillForegroundColor(HSSFColor.CORAL.index);
+             style.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+             style.setBorderBottom(HSSFCellStyle.BORDER_MEDIUM);
+             
+             HSSFCellStyle style1 = (HSSFCellStyle) libro.createCellStyle();
+             style1.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
+             style1.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+             style1.setBorderBottom(HSSFCellStyle.BORDER_MEDIUM);
+             
+             HSSFCellStyle style2 = (HSSFCellStyle) libro.createCellStyle();
+             style2.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+             
+            HSSFCellStyle style3 = (HSSFCellStyle) libro.createCellStyle();
+            Font font = libro.createFont();
+            font.setColor(HSSFColor.HSSFColorPredefined.BLACK.getIndex());
+            font.setBold(true);
+            style3.setFont(font);
+              
+             Row fu=hoja.createRow(0);
+             Cell cel = fu.createCell(0);
+             
+             if(f!=null){
+                 cel.setCellValue("Reporte de cantidad de codigos por funcionario del perídodo del "+this.formateo(this.txtFechaDesde.getDate())+" al "+this.formateo(this.txtFechahasta.getDate())+" de "+ f.getNomCompleto());
+                 cel.setCellStyle(style3);
+             }
+             else{
+                 cel.setCellValue("Reporte de cantidad de codigos por funcionario del perídodo del "+this.formateo(this.txtFechaDesde.getDate())+" al "+this.formateo(this.txtFechahasta.getDate())+" de todos los funcionarios");
+                 cel.setCellStyle(style3);
+             }
+             
+             int s=1;
+             Integer codF=0;
+             for(int i=0;i<=marcas.size()-1;i++){
+                 
+                 
+                 if(!Objects.equals(codF, marcas.get(i).getFunCod())){
+                     s++;
+                     s++;
+                     Row fila = hoja.createRow(s);
+                     s++;
+                     for(int c=0;c<headers.length;c++){
+                         Cell celda = fila.createCell(c);
+                         celda.setCellValue(headers[c]);
+                         celda.setCellStyle(style);
+                     }
+                     
+                     fila = hoja.createRow(s);
+                     
+                     Cell celda = fila.createCell(0);
+                     celda.setCellValue(marcas.get(i).getFunCod());
+                     celda.setCellStyle(style3);
+                     celda = fila.createCell(1);
+                     Funcionario func=this.pers.funcParcialTodos(String.valueOf(marcas.get(i).getFunCod()));
+                                    
+              
+                     celda.setCellValue(func.getNomCompleto());
+                     celda.setCellStyle(style3);
+                     
+                     codF=marcas.get(i).getFunCod();
+                     s++;
+                     fila = hoja.createRow(s);
+                     celda = fila.createCell(1);
+                     celda.setCellValue("Descripción");
+                     celda.setCellStyle(style1);
+                     celda = fila.createCell(2);
+                     celda.setCellValue("Código");
+                     celda.setCellStyle(style1);
+                     celda = fila.createCell(3);
+                     celda.setCellValue("Cantidad");
+                     celda.setCellStyle(style1);
+                 }
+                 s++;
+                 Row fila = hoja.createRow(s);
+                 
+                 
+                 for(Codigo c:codigos){
+                     if(Objects.equals(marcas.get(i).getIncongruencia(), c.getCod())){
+                         Cell celda = fila.createCell(1);
+                         celda.setCellStyle(style2);
+                         hoja.setColumnWidth(1, 10000);
+                         celda.setCellValue(c.getDescripcion());
+                         celda = fila.createCell(2);
+                         celda.setCellStyle(style2);
+                         celda.setCellValue(marcas.get(i).getIncongruencia());
+                         celda = fila.createCell(3);
+                         celda.setCellStyle(style2);
+                         Double cantidad=this.trip.CantidadCodigo(this.txtFechaDesde.getDate(), this.txtFechahasta.getDate(), marcas.get(i).getFunCod(), marcas.get(i).getIncongruencia());
+                         if(c.getTipoUnidad().equals(0)&& !c.getCod().equals(40)){
+                            cantidad=this.recalculaCantidad(cantidad);
+                            celda.setCellValue(cantidad);
+
+                            }
+                            else{
+                            celda.setCellValue(cantidad);
+                            }
+                                          
+                     }
+                 }
+              }
+             
+             
+             
+             libro.write(fileOut);
+             
+             
+             
+             
+             
+             //Cerramos nuestro archivo
+             fileOut.close();
+             
+             Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + fileXLS.getAbsolutePath());
+         
+
+                 
+        }
+    }
+    
+    
+    
     
      private Double recalculaCantidad(Double cant){
          Double retorno=0.0;
@@ -550,7 +868,7 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
                cel.setCellValue("Reporte de marcas del perídodo del "+this.formateo(this.txtFechaDesde.getDate())+" al "+this.formateo(this.txtFechahasta.getDate())+" de "+ f.getNomCompleto());
                }
                else{
-               cel.setCellValue("Reporte de amrcas del perídodo del "+this.formateo(this.txtFechaDesde.getDate())+" al "+this.formateo(this.txtFechahasta.getDate())+" de todos los funcionarios");    
+               cel.setCellValue("Reporte de marcas del perídodo del "+this.formateo(this.txtFechaDesde.getDate())+" al "+this.formateo(this.txtFechahasta.getDate())+" de todos los funcionarios");    
                }
               for(int i=2;i<=marcas.size()+1;i++){
                  
@@ -693,7 +1011,7 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
 
     private String obtenerHora(Timestamp marcaFecha) {
         String retorno="";
-      if(marcaFecha!=null){   
+      if(marcaFecha!=null){     
         SimpleDateFormat formateador = new SimpleDateFormat("HH:mm:ss");
          retorno=formateador.format(marcaFecha);
       }
@@ -735,10 +1053,12 @@ public class InternalListadosMarcas extends javax.swing.JInternalFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.edisoncor.gui.button.ButtonIcon btnExc;
+    private org.edisoncor.gui.button.ButtonIcon btnExcFunc;
     private javax.swing.JCheckBox checkPorCodigo;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JCheckBox jSup;
     private org.edisoncor.gui.textField.TextFieldRound txtCod;
     private com.toedter.calendar.JDateChooser txtFechaDesde;

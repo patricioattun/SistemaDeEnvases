@@ -7,6 +7,7 @@ import Dominio.Ingreso;
 import Logica.LogCodigo;
 import Logica.LogFuncionario;
 import Logica.LogHorario;
+import Persistencia.BDExcepcion;
 import Presentacion.Marcas.InternalListadoCod;
 import Presentacion.Marcas.InternalMarcaCodigo;
 import Presentacion.RenderCodigos;
@@ -16,6 +17,8 @@ import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,10 +100,10 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
      codIng.setCod(Integer.valueOf(String.valueOf(tmMov.getValueAt(m, 0))));
      codIng.setDescripcion(String.valueOf(tmMov.getValueAt(m,1)));
      String cantidad=String.valueOf(tmMov.getValueAt(m,2));
-     String importe=String.valueOf(tmMov.getValueAt(m,3));
+     String importe=String.valueOf(tmMov.getValueAt(m,3)).replace(",", "");
      if(!cantidad.equals("1.0")){
          ingres.setCantidad(Double.valueOf(cantidad));
-         ingres.setImporte(1.0);
+         ingres.setImporte(0.0);
          codIng.setTipoValor(0);
      }
      else if(!importe.equals("1.0")){
@@ -231,6 +234,11 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
         txtNumFunc.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         txtNumFunc.setCaretColor(new java.awt.Color(255, 255, 255));
         txtNumFunc.setSelectionColor(new java.awt.Color(102, 102, 102));
+        txtNumFunc.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtNumFuncFocusGained(evt);
+            }
+        });
         txtNumFunc.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 txtNumFuncKeyTyped(evt);
@@ -285,6 +293,11 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
         txtCod.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         txtCod.setCaretColor(new java.awt.Color(255, 255, 255));
         txtCod.setSelectionColor(new java.awt.Color(102, 102, 102));
+        txtCod.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtCodFocusGained(evt);
+            }
+        });
         txtCod.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 txtCodKeyTyped(evt);
@@ -317,6 +330,11 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
         txtValor.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         txtValor.setCaretColor(new java.awt.Color(255, 255, 255));
         txtValor.setSelectionColor(new java.awt.Color(255, 255, 255));
+        txtValor.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtValorFocusGained(evt);
+            }
+        });
         txtValor.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 txtValorKeyTyped(evt);
@@ -450,11 +468,9 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(6, 6, 6)
-                                .addComponent(txtFechaLiq, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(txtFechaLiq, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
                             .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(19, 19, 19))
                     .addGroup(layout.createSequentialGroup()
@@ -503,6 +519,9 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
         this.LimpiarTabla();
         int k = (int) evt.getKeyChar();
 
+         if(this.txtNumFunc.getText().length()>3){
+             evt.consume();
+        }
         if (k >= 97 && k <= 122 || k >= 65 && k <= 90 || k==32||k==46||k==45||k==8||k==47||k==42||k==43)  {
 
             evt.consume();
@@ -558,10 +577,11 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
         this.cod=null;
         this.codigos=null;
         if(this.esNum(numFunc)){
-          try {
+          
+            try {
                 f = this.log.funcParcial(numFunc);
                 if(f!=null){
-                    this.txtNombre.setText(f.getNomCompleto());
+                    this.txtNombre.setText(f.getNomCompletoApe());
                     this.txtCod.requestFocus();
                     this.inicializo(true);
                     this.LimpiarTabla();  
@@ -576,13 +596,12 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
                     this.inicializo(false);
                     
                 }
+            } catch (BDExcepcion ex) {
+                JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+            }
                 
               
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SQLException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            
                           
                 }
                 
@@ -590,7 +609,7 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
         
     }//GEN-LAST:event_btnBuscarActionPerformed
 
-    public void recargaTabla(Integer cod) throws ClassNotFoundException, SQLException{
+    public void recargaTabla(Integer cod) throws BDExcepcion{
         
         ArrayList<Ingreso> ingresos=this.logs.traePersIngresos(cod);
                    if(ingresos.size()>0){
@@ -616,7 +635,7 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
                        }
                        }
                    }
-    }
+   }
     
     private void txtNombreKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombreKeyTyped
         // TODO add your handling code here:
@@ -632,6 +651,9 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
         this.txtValor.setText("");
         if(!Character.isDigit(c)){
             evt.consume();
+        }
+         if(this.txtCod.getText().length()>3){
+             evt.consume();
         }
         int k = (int) evt.getKeyChar();
         if(k==10){
@@ -677,23 +699,22 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
         String str=this.txtCod.getText().trim();
         
         if(this.esNum(str)){
-           try {
-               Integer codigo=Integer.valueOf(this.txtCod.getText().trim());
-               this.cod=this.logs.obtenerCodigoTipoLiq(codigo);
-               if(cod!=null){
-                   this.txtDescripcion.setText(cod.toString());
-                   this.txtValor.requestFocus();
-               }
-               else{
-                   this.txtDescripcion.setText("Código Incorrecto");
-                   this.txtCod.requestFocus();
-                   this.txtCod.selectAll();
-                   this.cod=null;
-               }} catch (ClassNotFoundException ex) {
-               Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-           } catch (SQLException ex) {
-               Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-           }
+            try {
+                Integer codigo=Integer.valueOf(this.txtCod.getText().trim());
+                this.cod=this.logs.obtenerCodigoTipoLiq1(codigo);
+                if(cod!=null){
+                    this.txtDescripcion.setText(cod.toString());
+                    this.txtValor.requestFocus();
+                }
+                else{
+                    this.txtDescripcion.setText("Código Incorrecto");
+                    this.txtCod.requestFocus();
+                    this.txtCod.selectAll();
+                    this.cod=null;
+                }
+            } catch (BDExcepcion ex) {
+                JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+            }
         }
         else{
             if(!str.equals("")){
@@ -735,8 +756,8 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
                             ing.setCantidad(1.0);
                         }
                         else if(cod.getTipoValor()==0){
-                            ing.setCantidad(Double.parseDouble(str));    
-                            ing.setImporte(1.0);
+                            ing.setCantidad(Double.parseDouble(str));
+                            ing.setImporte(0.0);
                         }
                         ing.setEnPers(0);
                         this.cargaTabla(cod,str,0);
@@ -753,10 +774,8 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
                         this.txtValor.setText("");
                         this.txtCod.requestFocus();
                     }
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SQLException ex) {
-                    Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (BDExcepcion ex) {
+                   JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                 }
             }
         }
@@ -771,13 +790,13 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
                             filas[0]=c.getCod().toString();
                             filas[1]=c.getDescripcion();
                             if(c.getTipoValor()==1){
-                                filas[3]=Double.parseDouble(str); 
+                                filas[3]=this.decimales(Double.parseDouble(str)); 
                                 filas[2]=1.0;
                                 filas[4]=EnPers;
                             }
                             else if(c.getTipoValor()==0){
                                 filas[2]=Double.parseDouble(str);
-                                filas[3]=1.0;
+                                filas[3]=0.0;
                                 filas[4]=EnPers;
                             }
                             RenderCodigos rr=new RenderCodigos(4);
@@ -801,67 +820,91 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
         instancia=null;
     }//GEN-LAST:event_formInternalFrameClosed
-
+    private String decimales(Double sueldo) {
+    DecimalFormatSymbols simbolo= new DecimalFormatSymbols();
+    simbolo.setDecimalSeparator('.');
+    simbolo.setGroupingSeparator(',');
+                
+    DecimalFormat df=new DecimalFormat("#,###,##0.00",simbolo);
+    return df.format(sueldo);
+    }
     //eliminar
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-       if(ingres!=null){
-           int respuesta=JOptionPane.showConfirmDialog(this, "Seguro desea eliminar esta línea?");
-           //si es 0,no es 1 cancela es 2
-           if(respuesta==0){
-                if(ingres.getEnPers()==1){
-                    try {
-                        if(this.logs.borrarCodigoEnPersIngresos(ingres)){
-                            this.LimpiarTabla();  
-                            this.recargaTabla(ingres.getCodFunc());
+        try {
+            if(this.logs.bloqueoContaduria()==0){
+                if(ingres!=null){
+                    int respuesta=JOptionPane.showConfirmDialog(this, "Seguro desea eliminar esta línea?");
+                    //si es 0,no es 1 cancela es 2
+                    if(respuesta==0){
+                        if(ingres.getEnPers()==1){
+                            
+                            try {
+                                if(this.logs.borrarCodigoEnPersIngresos(ingres)){
+                                    this.LimpiarTabla();
+                                    this.recargaTabla(ingres.getCodFunc());
+                                }
+                            } catch (BDExcepcion ex) {
+                                JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                            }
+                            
                         }
-                    } catch (SQLException ex) {
-                        Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                        else if(ingres.getEnPers()==0){
+                            try {
+                                int i=0;
+                                boolean esta=false;
+                                while(i<codigos.size()&&!esta){
+                                    if(codigos.get(i).getCodFunc().equals(ingres.getCodFunc()) && codigos.get(i).getCodMov().getCod().equals(ingres.getCodMov().getCod())){
+                                        codigos.remove(i);
+                                        esta=true;
+                                    }
+                                    i++;
+                                }
+                                
+                                this.LimpiarTabla();
+                                this.recargaTabla(ingres.getCodFunc());
+                            } catch (BDExcepcion ex) {
+                                JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                            }
+
+                        }
                     }
                 }
-                else if(ingres.getEnPers()==0){
-                     int i=0;
-                     boolean esta=false;
-                         while(i<codigos.size()&&!esta){
-                             if(codigos.get(i).getCodFunc().equals(ingres.getCodFunc()) && codigos.get(i).getCodMov().getCod().equals(ingres.getCodMov().getCod())){
-                                codigos.remove(i);
-                                esta=true;
-                             }
-                             i++;
-                         }
-
-                    try {
-                        this.LimpiarTabla();  
-                        this.recargaTabla(ingres.getCodFunc());
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-
-                }
-           }
-       }
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
+            }
+        } catch (BDExcepcion ex) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+        }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void btnConfirmarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmarActionPerformed
-       if(codigos!=null){
-           if(codigos.size()>0){
-               try {
-                   int i;
-                   
-                   i = this.logs.insertarEnPersIngresos(codigos);
-                   JOptionPane.showMessageDialog(this, "Se han insertado "+i+" líneas.");
-                   this.btnLimpiar.doClick();
-                   
-               } catch (SQLException ex) {
-                   Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-               }
-              
-               
-           }
-       }
+        try {
+            String fechaLiq = this.txtFechaLiq.getText();
+            if(this.logs.bloqueoContaduria()==0){
+                if(codigos!=null){
+                    if(codigos.size()>0){
+                        try {
+                            int i;
+                            
+                            i = this.logs.insertarEnPersIngresos(codigos,fechaLiq);
+                            JOptionPane.showMessageDialog(this, "Se han insertado "+i+" líneas.");
+                            this.btnLimpiar.doClick();
+                            
+                        } catch (SQLException ex) {
+                            Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        
+                        
+                    }
+                }
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
+            }
+        } catch (BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+        }
     }//GEN-LAST:event_btnConfirmarActionPerformed
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
@@ -881,36 +924,57 @@ public class InternalIngresoPorFunc extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        if(this.ingres!=null){
-            try {
-                this.internalIng=InternalModificarIngreso.instancia(logs,this,ingres,0);
-                frmPrin prin=frmPrin.instancia();
-                if (!internalIng.isVisible()) {
-                    prin.getDesktop().add(internalIng);
-                    internalIng.setLocation((prin.getDesktop().getWidth()/2)-(internalIng.getWidth()/2),(prin.getDesktop().getHeight()/2) - internalIng.getHeight()/2);
-                    internalIng.setVisible(true);
-              
-                    internalIng.repaint();
-                    internalIng.revalidate();
-                    
+        try {
+            if(this.logs.bloqueoContaduria()==0){
+                if(this.ingres!=null){
+                    try {
+                        this.internalIng=InternalModificarIngreso.instancia(logs,this,ingres,0);
+                        frmPrin prin=frmPrin.instancia();
+                        if (!internalIng.isVisible()) {
+                            prin.getDesktop().add(internalIng);
+                            internalIng.setLocation((prin.getDesktop().getWidth()/2)-(internalIng.getWidth()/2),(prin.getDesktop().getHeight()/2) - internalIng.getHeight()/2);
+                            internalIng.setVisible(true);
+                            
+                            internalIng.repaint();
+                            internalIng.revalidate();
+                            
+                        }
+                        else{
+                            internalIng.setSelected(true);
+                            internalIng.requestFocus();
+                            internalIng.setVisible(true);
+                            internalIng.repaint();
+                            internalIng.revalidate();
+                            
+                        }
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (PropertyVetoException ex) {
+                        Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
-                else{
-                    internalIng.setSelected(true);
-                    internalIng.requestFocus();
-                    internalIng.setVisible(true);
-                    internalIng.repaint();
-                    internalIng.revalidate();
-                    
-                }
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SQLException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (PropertyVetoException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
             }
+            else{
+                JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
+            }
+        } catch (BDExcepcion ex) { 
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
         }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void txtNumFuncFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtNumFuncFocusGained
+        this.txtNumFunc.selectAll();
+    }//GEN-LAST:event_txtNumFuncFocusGained
+
+    private void txtCodFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtCodFocusGained
+       this.txtCod.selectAll();
+    }//GEN-LAST:event_txtCodFocusGained
+
+    private void txtValorFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtValorFocusGained
+       this.txtValor.selectAll();
+    }//GEN-LAST:event_txtValorFocusGained
 
     
     private Boolean esNum(String num){

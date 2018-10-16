@@ -362,10 +362,14 @@
             <Component class="javax.swing.JComboBox" name="comboDias">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="3">
+                  <StringArray count="7">
                     <StringItem index="0" value="LUNES A VIERNES"/>
-                    <StringItem index="1" value="SABADO"/>
-                    <StringItem index="2" value="DOMINGO"/>
+                    <StringItem index="1" value="MARTES,JUEVES Y VIERNES"/>
+                    <StringItem index="2" value="LUNES,MIERCOLES Y VIERNES"/>
+                    <StringItem index="3" value="LUNES Y MIERCOLES"/>
+                    <StringItem index="4" value="MARTES Y JUEVES"/>
+                    <StringItem index="5" value="SABADO"/>
+                    <StringItem index="6" value="DOMINGO"/>
                   </StringArray>
                 </Property>
               </Properties>

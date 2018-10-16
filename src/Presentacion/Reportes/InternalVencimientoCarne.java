@@ -3,11 +3,13 @@ package Presentacion.Reportes;
 
 import Dominio.Funcionario;
 import Logica.LogFuncionario;
+import Persistencia.BDExcepcion;
 import Presentacion.Licencias.InternalAdelantado;
 import Presentacion.Renderizado;
 import Presentacion.frmPrin;
 import java.awt.Color;
 import java.awt.Font;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -27,6 +30,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.edisoncor.gui.button.ButtonIcon;
 
 
 public class InternalVencimientoCarne extends javax.swing.JInternalFrame {
@@ -52,6 +56,14 @@ public class InternalVencimientoCarne extends javax.swing.JInternalFrame {
       
    }
 
+    public ButtonIcon getBtnListar() {
+        return btnListar;
+    }
+
+    public void setBtnListar(ButtonIcon btnListar) {
+        this.btnListar = btnListar;
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -61,6 +73,8 @@ public class InternalVencimientoCarne extends javax.swing.JInternalFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPopupMenu1 = new javax.swing.JPopupMenu();
+        Editar = new javax.swing.JMenuItem();
         jPanel1 = new javax.swing.JPanel();
         buttonIcon1 = new org.edisoncor.gui.button.ButtonIcon();
         btnListar = new org.edisoncor.gui.button.ButtonIcon();
@@ -69,6 +83,14 @@ public class InternalVencimientoCarne extends javax.swing.JInternalFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tablaFunc = new javax.swing.JTable();
         lblMsg = new javax.swing.JLabel();
+
+        Editar.setText("Editar");
+        Editar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                EditarActionPerformed(evt);
+            }
+        });
+        jPopupMenu1.add(Editar);
 
         setClosable(true);
         setIconifiable(true);
@@ -120,7 +142,7 @@ public class InternalVencimientoCarne extends javax.swing.JInternalFrame {
 
         check.setText("Vencidos y por vencerse");
         jPanel1.add(check);
-        check.setBounds(186, 109, 158, 28);
+        check.setBounds(186, 109, 168, 24);
 
         tablaFunc.setAutoCreateRowSorter(true);
         tablaFunc.setModel(new javax.swing.table.DefaultTableModel(
@@ -146,6 +168,7 @@ public class InternalVencimientoCarne extends javax.swing.JInternalFrame {
                 return canEdit [columnIndex];
             }
         });
+        tablaFunc.setComponentPopupMenu(jPopupMenu1);
         jScrollPane1.setViewportView(tablaFunc);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -215,12 +238,42 @@ public class InternalVencimientoCarne extends javax.swing.JInternalFrame {
                 Logger.getLogger(InternalVencimientoCarne.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        Alinear_Grillas();
+        //Alinear_Grillas();
     }//GEN-LAST:event_btnListarActionPerformed
 
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
         instancia=null;
     }//GEN-LAST:event_formInternalFrameClosed
+
+    private void EditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditarActionPerformed
+         try {
+             Integer i = this.tablaFunc.getSelectedRow();
+             Funcionario e = this.listado.get(i);
+             InternalDatosSecretaria frm =InternalDatosSecretaria.instancia(e.getCodFunc().toString());
+             frmPrin prin=frmPrin.instancia();
+             if (!frm.isVisible()) {
+                 prin.getDesktop().add(frm);
+                 frm.setLocation((prin.getDesktop().getWidth()/2)-(frm.getWidth()/2),(prin.getDesktop().getHeight()/2) - frm.getHeight()/2);
+                 frm.setVisible(true);
+             }
+             else{
+                 frm.requestFocus();
+                 frm.setSelected(true);
+                 
+                 
+             }
+             this.repaint();
+             this.revalidate();
+         } catch (ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+         } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+         } catch (PropertyVetoException ex) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+         } catch (BDExcepcion ex) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+         }
+    }//GEN-LAST:event_EditarActionPerformed
 
     private void cargarTablaVencidos() throws ClassNotFoundException, SQLException{
         this.LimpiarTablaFuncionarios();
@@ -460,11 +513,13 @@ public class InternalVencimientoCarne extends javax.swing.JInternalFrame {
         this.jPanel1.setVisible(true);
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem Editar;
     private org.edisoncor.gui.button.ButtonIcon btnListar;
     private org.edisoncor.gui.button.ButtonIcon buttonIcon1;
     private javax.swing.JCheckBox check;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblMsg;
     private javax.swing.JTable tablaFunc;

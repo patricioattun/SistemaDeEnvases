@@ -3,6 +3,7 @@ package Presentacion.Liquidaciones;
 
 import Dominio.Codigo;
 import Logica.LogCodigo;
+import Persistencia.BDExcepcion;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -23,17 +24,25 @@ public class InternalListadoCodLiq extends javax.swing.JInternalFrame {
     private LogCodigo log;
     private InternalIngresoPorFunc internal;
     private InternalIngresoPorCod internalCod;
+    private InternalListadoPorCodigos internalList;
     private int fr;
     DefaultTableModel tmMov=null;
     public InternalListadoCodLiq(LogCodigo cod, Object inte,int fram) throws ClassNotFoundException, SQLException {
         initComponents();
         this.log=cod;
         fr=fram;
-        if(fram==1){
-            this.internalCod=(InternalIngresoPorCod) inte;
-        }
-        else if(fram==0){
-            this.internal=(InternalIngresoPorFunc) inte;
+        switch (fram) {
+            case 1:
+                this.internalCod=(InternalIngresoPorCod) inte;
+                break;
+            case 0:
+                this.internal=(InternalIngresoPorFunc) inte;
+                break;
+            case 2:
+                this.internalList=(InternalListadoPorCodigos)inte;
+                break;
+            default:
+                break;
         }
         
         ArrayList<Codigo> listaCod=log.cargaComboCodigoFullLiq();
@@ -47,6 +56,8 @@ public class InternalListadoCodLiq extends javax.swing.JInternalFrame {
                     } catch (ClassNotFoundException ex) {
                         Logger.getLogger(InternalListadoCodLiq.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (SQLException ex) {
+                        Logger.getLogger(InternalListadoCodLiq.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (BDExcepcion ex) {
                         Logger.getLogger(InternalListadoCodLiq.class.getName()).log(Level.SEVERE, null, ex);
                     }
                  }
@@ -65,7 +76,7 @@ public class InternalListadoCodLiq extends javax.swing.JInternalFrame {
       
    }
      
-     private void cargarCod(MouseEvent e) throws ClassNotFoundException, SQLException{
+     private void cargarCod(MouseEvent e) throws ClassNotFoundException, SQLException, BDExcepcion{
         Integer m=this.tablaCod.rowAtPoint(e.getPoint());
         String cod=String.valueOf(tmMov.getValueAt(m, 0));
         if(fr==0){
@@ -73,10 +84,14 @@ public class InternalListadoCodLiq extends javax.swing.JInternalFrame {
         internal.getTxtCod().requestFocus();
         internal.getBtnBuscaCod().doClick();
         }
-        else{
+        else if(fr==1){
         internalCod.getTxtCod().setText(cod);
         internalCod.getTxtCod().requestFocus();
         internalCod.getBtnBuscaCod().doClick(); 
+        }else if(fr==2){
+        internalList.getTxtCod().setText(cod);
+        internalList.getTxtCod().requestFocus();
+        internalList.buscarCodigo();
         }
         
         this.dispose();
@@ -130,6 +145,9 @@ public class InternalListadoCodLiq extends javax.swing.JInternalFrame {
         tablaCod.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 tablaCodKeyPressed(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                tablaCodKeyTyped(evt);
             }
         });
         jScrollPane1.setViewportView(tablaCod);
@@ -187,14 +205,17 @@ public class InternalListadoCodLiq extends javax.swing.JInternalFrame {
 
     private void tablaCodKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tablaCodKeyPressed
         int k = (int) evt.getKeyChar();
-        if(k==27||k==43){
+        if(k==27){
             if(fr==0){
             internal.getTxtCod().requestFocus();
             internal.getTxtCod().selectAll();
             }
-            else{
+            else if(fr==1){
             internalCod.getTxtCod().requestFocus();
             internalCod.getTxtCod().selectAll();
+            }else if(fr==2){
+            internalList.getTxtCod().requestFocus(); 
+            internalList.getTxtCod().selectAll();
             }
             this.dispose();
         }
@@ -222,6 +243,41 @@ public class InternalListadoCodLiq extends javax.swing.JInternalFrame {
         
     }//GEN-LAST:event_txtBuscarKeyTyped
 
+    private void tablaCodKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tablaCodKeyTyped
+       int fila = tablaCod.getSelectedRow();
+       int k = (int) evt.getKeyChar();
+       if(k==43){
+            String cod=String.valueOf(tmMov.getValueAt(fila, 0));
+           switch (fr) {
+               case 0:
+                   internal.getTxtCod().setText(cod);
+                   internal.getTxtCod().requestFocus();
+                   internal.getBtnBuscaCod().doClick();
+                   break;
+               case 1:
+                   internalCod.getTxtCod().setText(cod);
+                   internalCod.getTxtCod().requestFocus();
+                   internalCod.getBtnBuscaCod().doClick();
+                   break;
+               case 2:
+                   internalList.getTxtCod().setText(cod);
+                   internalList.getTxtCod().requestFocus();
+            {
+                try {
+                    internalList.buscarCodigo();
+                } catch (BDExcepcion ex) {
+                    Logger.getLogger(InternalListadoCodLiq.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+                   break;
+               default:
+                   break;
+           }
+
+            this.dispose();
+       }
+    }//GEN-LAST:event_tablaCodKeyTyped
+
    private void LimpiarTabla() {
     DefaultTableModel modelo=(DefaultTableModel) tablaCod.getModel();
         //primero limpio todas las filas
@@ -241,7 +297,7 @@ public class InternalListadoCodLiq extends javax.swing.JInternalFrame {
     // End of variables declaration//GEN-END:variables
 
     private void cargaTabla(ArrayList<Codigo> listaCod) {
-        this.LimpiarTabla();
+         this.LimpiarTabla();
          DefaultTableModel modelo = (DefaultTableModel)tablaCod.getModel();
         
         Object[] filas=new Object[modelo.getColumnCount()];

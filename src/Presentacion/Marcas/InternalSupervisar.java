@@ -91,6 +91,9 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
         comboTipo = new javax.swing.JComboBox<>();
         jLabel9 = new javax.swing.JLabel();
         txtDiferencia = new org.edisoncor.gui.textField.TextFieldRound();
+        jLabel4 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        txtArea = new javax.swing.JTextArea();
 
         setClosable(true);
         setIconifiable(true);
@@ -191,6 +194,18 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
             }
         });
 
+        jLabel4.setFont(new java.awt.Font("Euphemia", 1, 14)); // NOI18N
+        jLabel4.setText("Observación:");
+
+        txtArea.setColumns(20);
+        txtArea.setRows(5);
+        txtArea.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtAreaKeyTyped(evt);
+            }
+        });
+        jScrollPane1.setViewportView(txtArea);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -204,9 +219,8 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
                         .addGap(261, 261, 261)
                         .addComponent(btnAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(lblMensaje, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(jLabel2)
                                     .addGap(64, 64, 64)
@@ -220,17 +234,21 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
                                     .addComponent(txtFechaActualiz, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createSequentialGroup()
-                                    .addGap(4, 4, 4)
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGap(62, 62, 62)
+                                        .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGap(66, 66, 66)
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                         .addComponent(txtHora, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(comboTipo, 0, 190, Short.MAX_VALUE)
-                                        .addComponent(txtDiferencia, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addGap(7, 7, 7)))
+                                        .addComponent(txtDiferencia, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(lblMensaje, javax.swing.GroupLayout.PREFERRED_SIZE, 376, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(10, 10, 10)))
                 .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -247,11 +265,11 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
                     .addComponent(jLabel7)
                     .addComponent(txtFecha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(21, 21, 21)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6)
-                    .addComponent(txtHora, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtHora, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtDiferencia, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel9))
                 .addGap(20, 20, 20)
@@ -264,13 +282,17 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(10, 10, 10)
                         .addComponent(jLabel8)))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblMensaje, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(22, 22, 22)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnInvisible)
                     .addComponent(btnAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         pack();
@@ -285,6 +307,9 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
            this.txtFechaActualiz.setDate(this.marca.getFecha());
            this.txtDiferencia.setText(this.marca.getIncongruencia().toString());
            this.txtFechaActualiz.setEnabled(false);
+          
+          
+           this.txtArea.setText(this.marca.getObservacion()); 
            
            switch(marca.getTipo()){
                case "RELOJ":
@@ -321,6 +346,7 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
         m.setFunCod(marca.getFunCod());
         m.setTipo(this.comboTipo.getSelectedItem().toString());
         m.setIncongruencia(Integer.valueOf(this.txtDiferencia.getText()));
+        m.setObservacion(this.txtArea.getText());
         
         Date marc=marca.getFechaUso();
         Date marc1=m.getFechaUso();
@@ -330,8 +356,9 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
         String tipo1=m.getTipo();
         Integer m1=marca.getIncongruencia();
         Integer m2=m.getIncongruencia();
+        String obs=marca.getObservacion();
         
-        if(!this.convertirFecha(marc).equals(this.convertirFecha(marc1))|| !hor.equals(hor1)|| !tipo.equals(tipo1)|| !m2.equals(m1)){
+        if(!this.convertirFecha(marc).equals(this.convertirFecha(marc1))|| !hor.equals(hor1)|| !tipo.equals(tipo1)|| !m2.equals(m1) || !obs.equals(m.getObservacion())){
             if(this.validarHora(m.getHoraUso())){
                 m.setSupervisado(1);
                 m.setMarcaFecha(this.fijaHora(m.getFechaUso(), m.getHoraUso()));
@@ -396,6 +423,18 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
         }
     }//GEN-LAST:event_txtFechaKeyPressed
 
+    private void txtAreaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtAreaKeyTyped
+        String texto = this.txtArea.getText();
+        if(texto.length()>0){
+            if(texto.length()%25==0){
+                this.txtArea.setText(texto+"\n");
+            }
+        }
+        if(texto.length()>=299){
+            evt.consume();
+        }
+    }//GEN-LAST:event_txtAreaKeyTyped
+
     private Timestamp fijaHora(Date date, String hora){
     Calendar c=Calendar.getInstance();
     c.setTimeInMillis(date.getTime());
@@ -430,12 +469,15 @@ public class InternalSupervisar extends javax.swing.JInternalFrame {
     private javax.swing.JComboBox<String> comboTipo;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblMensaje;
     private javax.swing.JLabel lblNombres;
+    private javax.swing.JTextArea txtArea;
     private org.edisoncor.gui.textField.TextFieldRound txtCodFunc;
     private org.edisoncor.gui.textField.TextFieldRound txtDiferencia;
     private com.toedter.calendar.JDateChooser txtFecha;

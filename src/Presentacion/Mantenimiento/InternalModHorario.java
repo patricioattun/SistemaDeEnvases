@@ -173,7 +173,7 @@ public class InternalModHorario extends javax.swing.JInternalFrame {
             }
         });
 
-        comboDias.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "LUNES A VIERNES", "SABADO", "DOMINGO" }));
+        comboDias.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "LUNES A VIERNES", "MARTES,JUEVES Y VIERNES", "LUNES,MIERCOLES Y VIERNES", "LUNES Y MIERCOLES", "MARTES Y JUEVES", "SABADO", "DOMINGO" }));
 
         lblNuevo.setFont(new java.awt.Font("Ebrima", 1, 12)); // NOI18N
         lblNuevo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -210,7 +210,7 @@ public class InternalModHorario extends javax.swing.JInternalFrame {
                                 .addComponent(txtSalida, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addComponent(txtSalidaInter, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(lblNuevo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
         pnlNuevoHorarioLayout.setVerticalGroup(
             pnlNuevoHorarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -242,7 +242,7 @@ public class InternalModHorario extends javax.swing.JInternalFrame {
                     .addComponent(btnNuevo, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buttonAqua2, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buttonAqua4, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(22, Short.MAX_VALUE))
         );
 
         lblMsg.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -263,7 +263,7 @@ public class InternalModHorario extends javax.swing.JInternalFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(17, Short.MAX_VALUE)
+                .addContainerGap(19, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(lblMsg, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(pnlNuevoHorario, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
@@ -284,7 +284,7 @@ public class InternalModHorario extends javax.swing.JInternalFrame {
                 .addComponent(pnlNuevoHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 407, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addContainerGap(8, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());

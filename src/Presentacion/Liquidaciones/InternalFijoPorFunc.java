@@ -6,6 +6,7 @@ import Dominio.Funcionario;
 import Dominio.Ingreso;
 import Logica.LogCodigo;
 import Logica.LogFuncionario;
+import Persistencia.BDExcepcion;
 import Presentacion.frmPrin;
 import java.awt.Color;
 import java.awt.Font;
@@ -335,6 +336,9 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
         if(k==10){
             this.btnBuscar.doClick();
         }
+        if(this.txtNumFunc.getText().length()>3){
+             evt.consume();
+        }
         if(evt.getKeyChar()==43){
 
             try {
@@ -380,10 +384,11 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
         String numFunc=this.txtNumFunc.getText();
         this.LimpiarTabla();
         if(this.esNum(numFunc)){
+            
             try {
                 f = this.log.funcParcial(numFunc);
                 if(f!=null){
-                    this.txtNombre.setText(f.getNomCompleto());
+                    this.txtNombre.setText(f.getNomCompletoApe());
                     this.comboCodigos.requestFocus();
                     this.habilita(true);
                     this.cargaTabla();
@@ -396,12 +401,11 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
                     this.LimpiarTabla();
                     
                 }
-
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SQLException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BDExcepcion ex) {
+                Logger.getLogger(InternalFijoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
             }
+
+            
 
         }
     }//GEN-LAST:event_btnBuscarActionPerformed
@@ -441,43 +445,52 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
             }
         }
         if(k==10){
-            if(cod!=null){
-                try {
-                    String str=this.txtVal.getText().trim();
-                    if(!this.logs.estaEnCodigosFijos(f,cod)&&!str.equals("0")&&!str.equals("")){
-                        Ingreso ing=new Ingreso();
-                        ing.setCodMov(cod);
-                        ing.setFecha(fecha);
-                        ing.setFunc(f);
-                        if(!cod.getCod().equals(44)){
-                            ing.setCantidad(Double.parseDouble("1"));
+            try {
+                if(this.logs.bloqueoContaduria()==0){
+                    if(cod!=null){
+                        
+                        try {
+                            String str=this.txtVal.getText().trim();
+                            if(!this.logs.estaEnCodigosFijos(f,cod)&&!str.equals("0")&&!str.equals("")){
+                                Ingreso ing=new Ingreso();
+                                ing.setCodMov(cod);
+                                ing.setFecha(fecha);
+                                ing.setFunc(f);
+                                if(!cod.getCod().equals(44)){
+                                    ing.setCantidad(Double.parseDouble("1"));
+                                }
+                                else{
+                                    ing.setCantidad(Double.parseDouble(str));
+                                }
+                                this.txtVal.requestFocus();
+                                
+                                if(this.logs.insertaEnCodigosFijos(ing)){
+                                    this.LimpiarTabla();
+                                    this.cargaTabla();
+                                    this.txtVal.setText("");
+                                    this.comboCodigos.setSelectedIndex(0);
+                                    this.comboCodigos.requestFocus();
+                                }
+                            }
+                            else{
+                                JOptionPane.showMessageDialog(this, "Este código ya fue ingresado");
+                                this.comboCodigos.setSelectedIndex(0);
+                                this.comboCodigos.requestFocus();
+                                this.cod=null;
+                                this.txtVal.setText("");
+                                
+                            }
+                        } catch (BDExcepcion ex) {
+                            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                         }
-                        else{
-                            ing.setCantidad(Double.parseDouble(str));
-                        }
-                        this.txtVal.requestFocus();
-
-                        if(this.logs.insertaEnCodigosFijos(ing)){
-                            this.LimpiarTabla();
-                            this.cargaTabla();
-                            this.txtVal.setText("");
-                            this.comboCodigos.setSelectedIndex(0);
-                            this.comboCodigos.requestFocus();
-                        }
-                    }
-                    else{
-                        JOptionPane.showMessageDialog(this, "Este código ya fue ingresado");
-                        this.comboCodigos.setSelectedIndex(0);
-                        this.comboCodigos.requestFocus();
-                        this.cod=null;
-                        this.txtVal.setText("");
                         
                     }
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SQLException ex) {
-                    Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                else{
+                    JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
+                }
+            } catch (BDExcepcion ex) {
+                JOptionPane.showMessageDialog(null, "Ha ocurrido un problema, consulte a Desarrollo");
             }
         }
     }//GEN-LAST:event_txtValKeyTyped
@@ -516,25 +529,32 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_comboCodigosItemStateChanged
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-         if(ingres!=null){
-           int respuesta=JOptionPane.showConfirmDialog(this, "Seguro desea eliminar esta línea?");
-           //si es 0,no es 1 cancela es 2
-           if(respuesta==0){
-               
-                    try {
+        try {
+            if(this.logs.bloqueoContaduria()==0){
+                if(ingres!=null){
+                    int respuesta=JOptionPane.showConfirmDialog(this, "Seguro desea eliminar esta línea?");
+                    //si es 0,no es 1 cancela es 2
+                    if(respuesta==0){
                         
-                        if(this.logs.borrarCodigoEnPersCodFijo(ingres)){
-                            this.LimpiarTabla();  
-                            this.cargaTabla();
+                        try {
+                            if(this.logs.borrarCodigoEnPersCodFijo(ingres)){
+                                this.LimpiarTabla();
+                                this.cargaTabla();
+                            }
+                        } catch (BDExcepcion ex) {
+                            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                         }
-                    } catch (SQLException ex) {
-                        Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                        
+                        
                     }
-                
-             }
-       }
+                }
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
+            }
+        } catch (BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema, consulte a Desarrollo");
+        }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
@@ -542,43 +562,52 @@ public class InternalFijoPorFunc extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_formInternalFrameClosed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-       if(this.ingres!=null){
-           if(ingres.getCodMov().getCod()==44){
-            try {
-                this.internalIng=InternalModCodFijo.instancia(logs,ingres,1);
-                frmPrin prin=frmPrin.instancia();
-                if (!internalIng.isVisible()) {
-                    prin.getDesktop().add(internalIng);
-                    internalIng.setLocation((prin.getDesktop().getWidth()/2)-(internalIng.getWidth()/2),(prin.getDesktop().getHeight()/2) - internalIng.getHeight()/2);
-                    internalIng.setVisible(true);
-              
-                    internalIng.repaint();
-                    internalIng.revalidate();
-                    
+        try {
+            if(this.logs.bloqueoContaduria()==0){
+                if(this.ingres!=null){
+                    if(ingres.getCodMov().getCod()==44){
+                        try {
+                            this.internalIng=InternalModCodFijo.instancia(logs,ingres,1);
+                            frmPrin prin=frmPrin.instancia();
+                            if (!internalIng.isVisible()) {
+                                prin.getDesktop().add(internalIng);
+                                internalIng.setLocation((prin.getDesktop().getWidth()/2)-(internalIng.getWidth()/2),(prin.getDesktop().getHeight()/2) - internalIng.getHeight()/2);
+                                internalIng.setVisible(true);
+                                
+                                internalIng.repaint();
+                                internalIng.revalidate();
+                                
+                            }
+                            else{
+                                internalIng.setSelected(true);
+                                internalIng.requestFocus();
+                                internalIng.setVisible(true);
+                                internalIng.repaint();
+                                internalIng.revalidate();
+                                
+                            }
+                        } catch (ClassNotFoundException ex) {
+                            Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (SQLException ex) {
+                            Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (PropertyVetoException ex) {
+                            Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    else{
+                        JOptionPane.showInternalMessageDialog(this, "Este código no es modificable");
+                    }
                 }
-                else{
-                    internalIng.setSelected(true);
-                    internalIng.requestFocus();
-                    internalIng.setVisible(true);
-                    internalIng.repaint();
-                    internalIng.revalidate();
-                    
-                }
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SQLException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (PropertyVetoException ex) {
-                Logger.getLogger(InternalIngresoPorFunc.class.getName()).log(Level.SEVERE, null, ex);
             }
+            else{
+                JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
+            }
+        } catch (BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema, consulte a Desarrollo");
         }
-           else{
-               JOptionPane.showInternalMessageDialog(this, "Este código no es modificable");
-           }
-       }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
-     private void cargaTabla() throws SQLException, ClassNotFoundException {
+     private void cargaTabla() throws BDExcepcion{
          this.Alinear_Grillas();
          ArrayList<Ingreso> lista=this.logs.cargaMovimientosFijoFunc(f.getCodFunc());
          DefaultTableModel modelo = (DefaultTableModel)tabla.getModel();

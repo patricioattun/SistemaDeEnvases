@@ -42,6 +42,19 @@ public class Funcionario {
     private ArrayList<Horario> horarios;
     private Sns sns;
     private CodigoDesvinc codigoDesvinc;
+    
+    private ArrayList<Ingreso> ingresos;
+    
+    private Liquidacion liquidacion;
+
+    public Liquidacion getLiquidacion() {
+        return liquidacion;
+    }
+
+    public void setLiquidacion(Liquidacion liquidacion) {
+        this.liquidacion = liquidacion;
+    }
+       
 
     public CodigoDesvinc getCodigoDesvinc() {
         return codigoDesvinc;
@@ -318,6 +331,16 @@ public class Funcionario {
     public void setSns(Sns sns) {
         this.sns = sns;
     }
+
+    public ArrayList<Ingreso> getIngresos() {
+        return ingresos;
+    }
+
+    public void setIngresos(ArrayList<Ingreso> ingresos) {
+        this.ingresos = ingresos;
+    }
+    
+    
     
     public String getNomCompleto(){
         String nom="";
@@ -329,6 +352,20 @@ public class Funcionario {
         }
         if(this.apellido2==null&&this.nombre2!=null){
         nom= this.nombre1.trim()+" "+this.nombre2.trim()+" "+this.apellido1.trim();
+        }
+        return nom;
+    }
+    
+    public String getNomCompletoApe(){
+        String nom="";
+        if(this.nombre2!=null && this.apellido2!=null){
+        nom= this.apellido1.trim()+" "+this.apellido2.trim()+" "+this.nombre1.trim()+" "+this.nombre2.trim();
+        }
+        if(this.nombre2==null&&this.apellido2!=null){
+        nom= this.apellido1.trim()+" "+this.apellido2.trim()+" "+this.nombre1.trim();
+        }
+        if(this.apellido2==null&&this.nombre2!=null){
+        nom= this.apellido1.trim()+" "+ this.nombre1.trim()+" "+this.nombre2.trim();
         }
         return nom;
     }

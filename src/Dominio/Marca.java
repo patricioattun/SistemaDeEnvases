@@ -18,6 +18,7 @@ public class Marca {
     private Integer incongruencia;
     private Date procesado;
     private Integer editada;
+    private String observacion;
 
     public Integer getEditada() {
         return editada;
@@ -25,6 +26,14 @@ public class Marca {
 
     public void setEditada(Integer editada) {
         this.editada = editada;
+    }
+
+    public String getObservacion() {
+        return observacion;
+    }
+
+    public void setObservacion(String observacion) {
+        this.observacion = observacion;
     }
 
     

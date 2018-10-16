@@ -12,9 +12,11 @@ import Dominio.Funcionario;
 import Dominio.Horario;
 import Dominio.Sns;
 import Dominio.Sucursal;
+import Logica.LogCodigo;
 import Logica.LogFuncionario;
 import Logica.LogHorario;
 import Logica.logPdf;
+import Persistencia.BDExcepcion;
 import Presentacion.Liquidaciones.InternalListadoFuncFiltro;
 import Presentacion.Marcas.InternalMarcaCodigo;
 import Presentacion.Reportes.InternalListadoMovLic;
@@ -43,7 +45,9 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.table.DefaultTableModel;
 import static jdk.nashorn.internal.objects.NativeString.trim;
 import org.edisoncor.gui.button.ButtonIcon;
 import org.edisoncor.gui.textField.TextFieldRound;
@@ -58,12 +62,13 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
     private logPdf logPdf;
     private static InternalModFunc instancia=null;
     private CodigoDesvinc codDes=null;
+    private LogCodigo logs;
     private InternalModFunc() throws ClassNotFoundException, SQLException {
         initComponents();
         this.txtNumFunc.requestFocus();
         log=new LogFuncionario();
         logH=new LogHorario();
-        
+        logs=new LogCodigo();
         this.jPanel2.setVisible(true);
         this.cargaCombos();
         this.txtNumFunc.requestFocus();
@@ -232,7 +237,6 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
         txtNumCuenta = new org.edisoncor.gui.textField.TextFieldRound();
         jLabel28 = new javax.swing.JLabel();
         jLabel29 = new javax.swing.JLabel();
-        pnlLista = new javax.swing.JPanel();
         fechaIngr = new com.toedter.calendar.JDateChooser();
         vigenciaCarg = new com.toedter.calendar.JDateChooser();
         fechaEgreso = new com.toedter.calendar.JDateChooser();
@@ -262,13 +266,15 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
         jLabel32 = new javax.swing.JLabel();
         txtEgreso = new org.edisoncor.gui.textField.TextFieldRound();
         txtDescMotivo = new org.edisoncor.gui.textField.TextFieldRound();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tabla = new javax.swing.JTable();
         btnBuscar = new org.edisoncor.gui.button.ButtonIcon();
         btnPdf = new org.edisoncor.gui.button.ButtonIcon();
 
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
-        setPreferredSize(new java.awt.Dimension(985, 670));
+        setPreferredSize(new java.awt.Dimension(985, 680));
         addInternalFrameListener(new javax.swing.event.InternalFrameListener() {
             public void internalFrameActivated(javax.swing.event.InternalFrameEvent evt) {
             }
@@ -897,19 +903,6 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
         jLabel29.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
         jLabel29.setText("SNS");
 
-        pnlLista.setToolTipText("");
-
-        javax.swing.GroupLayout pnlListaLayout = new javax.swing.GroupLayout(pnlLista);
-        pnlLista.setLayout(pnlListaLayout);
-        pnlListaLayout.setHorizontalGroup(
-            pnlListaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 416, Short.MAX_VALUE)
-        );
-        pnlListaLayout.setVerticalGroup(
-            pnlListaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 36, Short.MAX_VALUE)
-        );
-
         fechaIngr.setDateFormatString("dd/MM/yyyy");
         fechaIngr.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
@@ -1081,256 +1074,264 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
         txtDescMotivo.setCaretColor(new java.awt.Color(255, 255, 255));
         txtDescMotivo.setSelectionColor(new java.awt.Color(51, 51, 51));
 
+        tabla.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Horarios"
+            }
+        ));
+        jScrollPane1.setViewportView(tabla);
+
         javax.swing.GroupLayout pnlDatosLaboralesLayout = new javax.swing.GroupLayout(pnlDatosLaborales);
         pnlDatosLaborales.setLayout(pnlDatosLaboralesLayout);
         pnlDatosLaboralesLayout.setHorizontalGroup(
             pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                        .addGap(5, 5, 5)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(jLabel29)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel58, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(295, 295, 295)
-                                .addComponent(jLabel31, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel60, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                        .addComponent(comboCentroCosto, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDatosLaboralesLayout.createSequentialGroup()
-                                        .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jLabel59, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(193, 193, 193)))
-                                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(comboBanco, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel28)
-                                    .addComponent(txtNumCuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(32, 32, 32)
-                                .addComponent(afap, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(cuentaCorriente, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(10, 10, 10)
-                                .addComponent(cajaDeAhorro, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDatosLaboralesLayout.createSequentialGroup()
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(comboSns, javax.swing.GroupLayout.PREFERRED_SIZE, 337, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(comboHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 414, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(lblHorarioMensaje, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addComponent(lblMsg, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(pnlLista, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(33, 33, 33)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(btnAgregarHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnQuitarHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(buttonAqua4, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(27, 27, 27)))
-                        .addGap(8, 8, 8)))
-                .addGap(18, 18, 18))
+                .addGap(9, 9, 9)
+                .addComponent(jLabel17)
+                .addGap(6, 6, 6)
+                .addComponent(jLabel50, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(59, 59, 59)
+                .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(92, 92, 92)
+                .addComponent(jLabel32, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(6, 6, 6)
+                .addComponent(fechaIngr, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(6, 6, 6)
+                .addComponent(fechaEgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(33, 33, 33)
+                .addComponent(txtEgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(txtDescMotivo, javax.swing.GroupLayout.PREFERRED_SIZE, 402, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                .addGap(8, 8, 8)
                 .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addGap(2, 2, 2)
-                                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                        .addGap(48, 48, 48)
-                                        .addComponent(jLabel57, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(131, 131, 131)
-                                .addComponent(jLabel20)
-                                .addGap(0, 0, 0)
-                                .addComponent(jLabel56, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(79, 79, 79)
-                                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                        .addGap(84, 84, 84)
-                                        .addComponent(jLabel49, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(comboCargo, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(vigenciaCarg, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtSueldo, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(4, 4, 4)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(jLabel23)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel51, javax.swing.GroupLayout.PREFERRED_SIZE, 9, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(44, 44, 44)
-                                .addComponent(jLabel24)
-                                .addGap(0, 0, 0)
-                                .addComponent(jLabel55, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(27, 27, 27)
-                                .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel53, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(txtBaseHoraria, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtBaseHoras, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(comboSucursal, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(48, 48, 48)
+                        .addComponent(jLabel57, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(131, 131, 131)
+                .addComponent(jLabel20)
+                .addGap(0, 0, 0)
+                .addComponent(jLabel56, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(79, 79, 79)
+                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addGap(3, 3, 3)
-                                .addComponent(jLabel17)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel50, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(59, 59, 59)
-                                .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(fechaIngr, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(6, 6, 6)
-                                .addComponent(fechaEgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(33, 33, 33)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel32, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(txtEgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtDescMotivo, javax.swing.GroupLayout.PREFERRED_SIZE, 402, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(84, 84, 84)
+                        .addComponent(jLabel49, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(17, 17, 17)
+                .addComponent(jLabel23)
+                .addGap(6, 6, 6)
+                .addComponent(jLabel51)
+                .addGap(44, 44, 44)
+                .addComponent(jLabel24)
+                .addGap(0, 0, 0)
+                .addComponent(jLabel55, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addComponent(jLabel25)
+                .addGap(6, 6, 6)
+                .addComponent(jLabel53, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addComponent(comboCargo, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(vigenciaCarg, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(txtSueldo, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(4, 4, 4)
+                .addComponent(txtBaseHoraria, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(6, 6, 6)
+                .addComponent(txtBaseHoras, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(comboSucursal, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23)
+                .addComponent(jLabel59, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(193, 193, 193)
+                .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(216, 216, 216)
+                .addComponent(jLabel28))
+            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(comboCentroCosto, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(16, 16, 16)
+                .addComponent(comboBanco, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(16, 16, 16)
+                .addComponent(txtNumCuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(32, 32, 32)
+                .addComponent(afap, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                    .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(lblHorarioMensaje, javax.swing.GroupLayout.PREFERRED_SIZE, 343, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                            .addGap(6, 6, 6)
+                            .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(comboSns, javax.swing.GroupLayout.PREFERRED_SIZE, 337, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 337, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGap(18, 18, 18)
+                    .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 414, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                            .addComponent(comboHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 414, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(6, 6, 6)
+                            .addComponent(btnAgregarHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(buttonAqua4, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnQuitarHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap())
+                .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                    .addGap(5, 5, 5)
+                    .addComponent(jLabel29)
+                    .addGap(6, 6, 6)
+                    .addComponent(jLabel58, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(307, 307, 307)
+                    .addComponent(jLabel31, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(3, 3, 3)
+                    .addComponent(jLabel60, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(192, 192, 192)
+                    .addComponent(cuentaCorriente, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(10, 10, 10)
+                    .addComponent(cajaDeAhorro, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
         pnlDatosLaboralesLayout.setVerticalGroup(
             pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
                 .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel30)
-                        .addComponent(jLabel32))
+                    .addComponent(jLabel30)
+                    .addComponent(jLabel32)
                     .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
                         .addGap(4, 4, 4)
                         .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel17)
                             .addComponent(jLabel50, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(7, 7, 7)
-                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(fechaIngr, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(fechaEgreso, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtEgreso, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtDescMotivo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(fechaIngr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fechaEgreso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtEgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtDescMotivo, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(8, 8, 8)
                 .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
                         .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel56, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel49, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addGap(6, 6, 6)
-                                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                        .addGap(4, 4, 4)
-                                        .addComponent(jLabel57, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jLabel19)
-                                    .addComponent(jLabel20)
-                                    .addComponent(jLabel21))))
-                        .addGap(2, 2, 2)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(comboCargo, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(vigenciaCarg, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(txtSueldo, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtBaseHoraria, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtBaseHoras, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(comboSucursal, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addGap(4, 4, 4)
+                                .addComponent(jLabel57, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel19)))
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(jLabel20))
+                    .addComponent(jLabel56, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(jLabel21))
+                    .addComponent(jLabel49, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(jLabel23))
                     .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
                         .addGap(3, 3, 3)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel23)
-                            .addComponent(jLabel51, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel24)
-                            .addComponent(jLabel55, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel25)
-                            .addComponent(jLabel53, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jLabel51, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(jLabel26)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(comboBanco, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtNumCuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(jLabel28)
-                                .addGap(12, 12, 12)
-                                .addComponent(afap))))
+                        .addGap(7, 7, 7)
+                        .addComponent(jLabel24))
                     .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(jLabel59, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(4, 4, 4))
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(jLabel22)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addComponent(comboCentroCosto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(6, 6, 6)
+                        .addGap(3, 3, 3)
+                        .addComponent(jLabel55, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(jLabel25))
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(3, 3, 3)
+                        .addComponent(jLabel53, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(2, 2, 2)
+                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(comboCargo, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vigenciaCarg, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(comboSucursal, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(2, 2, 2)
+                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtSueldo, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtBaseHoraria, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtBaseHoras, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(10, 10, 10)
                 .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel31)
-                            .addComponent(jLabel60, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel29, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel58, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(comboSns, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(1, 1, 1)
+                        .addComponent(jLabel22))
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(2, 2, 2)
+                        .addComponent(jLabel59, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel26)
+                    .addComponent(jLabel28))
+                .addGap(4, 4, 4)
+                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(comboCentroCosto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(comboBanco, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(2, 2, 2)
+                        .addComponent(txtNumCuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(afap)))
+                .addGap(3, 3, 3)
+                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(jLabel29))
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(3, 3, 3)
+                        .addComponent(jLabel58, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(jLabel31))
+                    .addComponent(jLabel60, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(3, 3, 3)
+                        .addComponent(cuentaCorriente))
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(3, 3, 3)
+                        .addComponent(cajaDeAhorro)))
+                .addGap(1, 1, 1)
+                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                                .addComponent(comboSns, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(11, 11, 11)
+                                .addComponent(lblHorarioMensaje, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(6, 6, 6)
+                                .addComponent(lblMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(comboHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDatosLaboralesLayout.createSequentialGroup()
+                                .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                                        .addGap(0, 62, Short.MAX_VALUE)
+                                        .addComponent(buttonAqua4, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                                        .addGap(26, 26, 26)
+                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                                .addContainerGap())))
+                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
+                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnAgregarHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btnQuitarHorario, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(buttonAqua4, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(lblHorarioMensaje, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(28, 28, 28))))
-                    .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                        .addGroup(pnlDatosLaboralesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnlDatosLaboralesLayout.createSequentialGroup()
-                                .addComponent(cajaDeAhorro)
-                                .addGap(42, 42, 42)
-                                .addComponent(pnlLista, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(cuentaCorriente))
-                        .addContainerGap(46, Short.MAX_VALUE))))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
         jPanel2.add(pnlDatosLaborales);
-        pnlDatosLaborales.setBounds(10, 270, 950, 360);
+        pnlDatosLaborales.setBounds(10, 270, 950, 370);
 
         btnBuscar.setBackground(new java.awt.Color(102, 153, 255));
         btnBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/lupa.png"))); // NOI18N
@@ -1357,7 +1358,7 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
         btnPdf.setBounds(290, 20, 40, 30);
 
         getContentPane().add(jPanel2);
-        jPanel2.setBounds(0, 0, 970, 640);
+        jPanel2.setBounds(0, 0, 970, 650);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1687,63 +1688,62 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
         }
     }//GEN-LAST:event_vigenciaCargKeyTyped
 
+    private void LimpiarTabla() {
+        
+        DefaultTableModel modelo=(DefaultTableModel) tabla.getModel();
+        //primero limpio todas las filas
+        for (int i = 0; i < tabla.getRowCount(); i++) {
+            modelo.removeRow(i);
+            i-=1;
+        }
+    }
+    
     private void btnAgregarHorarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarHorarioActionPerformed
         this.lblHorarioMensaje.setVisible(false);
-
+        
         if(this.comboHorario.getSelectedIndex()>-1){
             String s=this.comboHorario.getSelectedItem().toString();
-            if(listaHorarios.size()<2){
+            if(listaHorarios.size()<3){
                 Horario hor=(Horario) this.comboHorario.getSelectedItem();
-                if(this.listaHorarios.size()==0){
-
-                    this.listaHorarios.add((Horario) this.comboHorario.getSelectedItem());
-                    JLabel j=new JLabel(s,JLabel.CENTER);
-                    j.setVisible(true);
-                    j.setText(s);
-                    this.pnlLista.setLayout(new GridLayout(5,1));
-                    this.pnlLista.add(j);
-                    this.pnlLista.repaint();
-                    this.pnlLista.revalidate();
-                    this.lblHorarioMensaje.setText("");
-
-                }
-                else if(this.listaHorarios.get(0).getCodigo()!=hor.getCodigo()) {
-                    this.listaHorarios.add((Horario) this.comboHorario.getSelectedItem());
-                    JLabel j=new JLabel(s,JLabel.CENTER);
-                    j.setVisible(true);
-                    j.setText(s);
-                    this.pnlLista.setLayout(new GridLayout(5,1));
-                    this.pnlLista.add(j);
-                    this.pnlLista.repaint();
-                    this.pnlLista.revalidate();
-                    this.lblHorarioMensaje.setText("");
-
+                if(!this.horarioEsta(hor)){
+                        this.listaHorarios.add(hor);
+                        this.recargaTabla();
+                    
+                 
                 }
                 else{
-                    this.lblHorarioMensaje.setText("No puede repetir horarios");
-                    this.lblHorarioMensaje.setVisible(true);
+                     this.lblHorarioMensaje.setText("Este horario ya está");
+                     this.lblHorarioMensaje.setVisible(true);
                 }
-            }
-            else{
-                this.lblHorarioMensaje.setText("No puede agregar mas de 2 horarios");
+
+                }
+             else{
+                this.lblHorarioMensaje.setText("No puede agregar mas de 3 horarios");
                 this.lblHorarioMensaje.setVisible(true);
+             }
+                
             }
-        }
         else{
             this.lblHorarioMensaje.setText("Seleccione un horario");
             this.lblHorarioMensaje.setVisible(true);
         }
+            
+        
+        
     }//GEN-LAST:event_btnAgregarHorarioActionPerformed
 
     private void btnQuitarHorarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQuitarHorarioActionPerformed
         this.lblHorarioMensaje.setVisible(false);
-        Integer pos=(this.listaHorarios.size())-1;
-        if(pos>=0){
+        Integer pos=this.tabla.getSelectedRow();
+       if(pos!=null){
+           if(pos>=0){
             this.listaHorarios.remove((int)pos);
-            this.pnlLista.remove(pos);
-            this.pnlLista.repaint();
-            this.pnlLista.revalidate();
-            this.pnlLista.setVisible(true);
+            this.recargaTabla();
+           }
+           else{
+            this.lblHorarioMensaje.setText("Seleccione un horario");
+            this.lblHorarioMensaje.setVisible(true);
+           }
         }
         else{
             this.lblHorarioMensaje.setText("No hay mas elementos para quitar");
@@ -1752,134 +1752,143 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_btnQuitarHorarioActionPerformed
 
     private void buttonAqua4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAqua4ActionPerformed
-       String numFunc=this.txtNumFunc.getText();
-        String apellidoUno=this.txtApellidoUno.getText().toUpperCase().trim();
-        String apellidoDos=this.txtApellidoDos.getText().toUpperCase().trim();
-        String nombreUno=this.txtNombreUno1.getText().toUpperCase().trim();
-        String nombreDos=this.txtNombreDos.getText().toUpperCase().trim();
-        String direccion=this.txtDireccion.getText().toUpperCase().trim();
-        String localidad=this.txtLocalidad.getText().toUpperCase().trim();
-        Departamento depto= (Departamento) this.comboDepto.getSelectedItem();
-        String telefono=this.txtTel.getText().trim();
-        String celular="";
-        if(!txtCelular.getText().equals("")){
-        celular=this.txtCelular.getText().trim();
-        }
-        String cedula=this.txtCedula.getText().trim();
-        String credencial=this.txtCred.getText().toUpperCase();
-        Date fechaNac=this.fechaNacimiento.getDate();
-        Date vencimientoCarne=this.vencimientoCarneSalud.getDate();
-        EstadoCivil estado =(EstadoCivil) this.comboEstadoCivil.getSelectedItem();
-        String se=(String) this.comboSexo.getSelectedItem();
-        Character sexo=this.procesarSexo(se);
-        String iniciales=this.txtIniciales.getText().toUpperCase().trim();
-        Date fechaIngreso=this.fechaIngr.getDate();
-        Date fechaEgreso=this.fechaEgreso.getDate();
-        if(fechaEgreso!=null){
-           this.txtEgreso.setEditable(true);
-        }
-        Cargo cargo=(Cargo) this.comboCargo.getSelectedItem();
-        Date vigenciaCargo=this.vigenciaCarg.getDate();
-        Double sueldo=0.0;
-        if(!this.txtSueldo.getText().equals("")){
-            String st=this.txtSueldo.getText();
-            st=this.txtSueldo.getText().replace(",", "");
-            sueldo=Double.parseDouble(st);
-        }
-
-        CentroCosto centro=(CentroCosto) this.comboCentroCosto.getSelectedItem();
-        String baseHoraria=this.txtBaseHoraria.getText().trim();
-        String baseHoras=this.txtBaseHoras.getText().trim();
-        Sucursal sucursal= (Sucursal) this.comboSucursal.getSelectedItem();
-        Sns sns=(Sns) this.comboSns.getSelectedItem();
-        Banco banco=(Banco) this.comboBanco.getSelectedItem();
-        Double numeroCuenta=0.0;
-        if(!this.txtNumCuenta.getText().trim().equals("")){
-            String st=this.txtNumCuenta.getText();
-            numeroCuenta=Double.parseDouble(st);
-        }
-        String cuenta="";
-        if(this.cuentaCorriente.isSelected()){
-            cuenta="CC";
-        }
-        else{
-            if(this.cajaDeAhorro.isSelected())
-            cuenta="CA";
-        }
-        Integer afap=0;
-        if(this.afap.isSelected()){
-            afap=1;
-        }
-        if((fechaEgreso!=null&codDes!=null) ||(fechaEgreso==null&codDes==null)){
-            if(this.verificarDif(fechaIngreso, vigenciaCargo)){
-                if( sns!=null&&vigenciaCargo!=null&&fechaIngreso!=null&&fechaNac!=null&&cargo!=null&& centro!=null&&sucursal!=null&&depto!=null&&estado!=null&& this.esNum(numFunc)&& !apellidoUno.equals("")&&!nombreUno.equals("") &&!localidad.equals("")&& !direccion.equals("")&&this.EsCIValida(cedula)&&!iniciales.equals("")&&esNum(baseHoras)&&esNum(baseHoraria)&& sueldo!=0.0&& this.listaHorarios.size()>0&&this.EsCIValida(cedula)){
-                    try {
-                        Integer num=Integer.valueOf(numFunc);
-                        if(this.log.funcionarioExiste(num)==1){
-                             if(this.log.modFuncionario(f,numFunc, apellidoUno, apellidoDos, nombreUno, nombreDos, direccion, localidad, depto, telefono, celular, cedula,credencial,fechaNac,estado,sexo,iniciales,fechaIngreso, fechaEgreso,cargo,vigenciaCargo,sueldo, centro, baseHoraria,baseHoras, sucursal,sns, banco,numeroCuenta,cuenta,afap,listaHorarios,vencimientoCarne,codDes)){
-                                this.lblMsg.setText("Modificacion exitosa");
-                                this.limpiar();
-                                this.comboBanco.setEditable(true);
-                                this.comboDepto.setEditable(true);
-                                this.comboCargo.setEditable(true);
-                                this.comboCentroCosto.setEditable(true);
-                                this.comboEstadoCivil.setEditable(true);
-                                this.comboHorario.setEditable(true);
-                                this.comboSexo.setEditable(true);
-                                this.comboSns.setEditable(true);
-                                this.comboSucursal.setEditable(true);
-                                f=null;
-                                this.inicializar();
-                            }
-                            else{
-                                this.lblMsg.setText("No se pudo modificar este funcionario");
-                            }
-                        }
-                        else{
-                            if( sns!=null&&vigenciaCargo!=null&&fechaIngreso!=null&&fechaNac!=null&&cargo!=null&& centro!=null&&sucursal!=null&&depto!=null&&estado!=null&& this.esNum(numFunc)&& !apellidoUno.equals("")&&!nombreUno.equals("") &&!localidad.equals("")&& !direccion.equals("")&&!cedula.equals("")&&!iniciales.equals("")&&esNum(baseHoras)&&esNum(baseHoraria)&& sueldo!=0.0&& this.listaHorarios.size()>0&&this.EsCIValida(cedula)){
-
-                                try {
-
-                                    if(this.log.funcionarioExiste(num)==0){
-                                        if(this.log.altaFuncionario(numFunc, apellidoUno, apellidoDos, nombreUno, nombreDos, direccion, localidad, depto, telefono, celular, cedula,credencial,fechaNac,estado,sexo,iniciales,fechaIngreso,cargo,vigenciaCargo,sueldo, centro, baseHoraria,baseHoras, sucursal,sns, banco,numeroCuenta,cuenta,afap,listaHorarios,vencimientoCarne)){
-                                            this.lblMsg.setText("Alta exitosa");
-                                            this.limpiar();
-                                            f=null;
-                                        }
-                                        else{
-                                            this.lblMsg.setText("No se pudo ingresar el nuevo funcionario");
+        try {
+                if(this.logs.bloqueoContaduria()==0){
+                String numFunc=this.txtNumFunc.getText();
+                String apellidoUno=this.txtApellidoUno.getText().toUpperCase().trim();
+                String apellidoDos=this.txtApellidoDos.getText().toUpperCase().trim();
+                String nombreUno=this.txtNombreUno1.getText().toUpperCase().trim();
+                String nombreDos=this.txtNombreDos.getText().toUpperCase().trim();
+                String direccion=this.txtDireccion.getText().toUpperCase().trim();
+                String localidad=this.txtLocalidad.getText().toUpperCase().trim();
+                Departamento depto= (Departamento) this.comboDepto.getSelectedItem();
+                String telefono=this.txtTel.getText().trim();
+                String celular="";
+                if(!txtCelular.getText().equals("")){
+                    celular=this.txtCelular.getText().trim();
+                }
+                String cedula=this.txtCedula.getText().trim();
+                String credencial=this.txtCred.getText().toUpperCase();
+                Date fechaNac=this.fechaNacimiento.getDate();
+                Date vencimientoCarne=this.vencimientoCarneSalud.getDate();
+                EstadoCivil estado =(EstadoCivil) this.comboEstadoCivil.getSelectedItem();
+                String se=(String) this.comboSexo.getSelectedItem();
+                Character sexo=this.procesarSexo(se);
+                String iniciales=this.txtIniciales.getText().toUpperCase().trim();
+                Date fechaIngreso=this.fechaIngr.getDate();
+                Date fechaEgreso=this.fechaEgreso.getDate();
+                if(fechaEgreso!=null){
+                    this.txtEgreso.setEditable(true);
+                }
+                Cargo cargo=(Cargo) this.comboCargo.getSelectedItem();
+                Date vigenciaCargo=this.vigenciaCarg.getDate();
+                Double sueldo=0.0;
+                if(!this.txtSueldo.getText().equals("")){
+                    String st=this.txtSueldo.getText();
+                    st=this.txtSueldo.getText().replace(",", "");
+                    sueldo=Double.parseDouble(st);
+                }
+                
+                CentroCosto centro=(CentroCosto) this.comboCentroCosto.getSelectedItem();
+                String baseHoraria=this.txtBaseHoraria.getText().trim();
+                String baseHoras=this.txtBaseHoras.getText().trim();
+                Sucursal sucursal= (Sucursal) this.comboSucursal.getSelectedItem();
+                Sns sns=(Sns) this.comboSns.getSelectedItem();
+                Banco banco=(Banco) this.comboBanco.getSelectedItem();
+                Double numeroCuenta=0.0;
+                if(!this.txtNumCuenta.getText().trim().equals("")){
+                    String st=this.txtNumCuenta.getText();
+                    numeroCuenta=Double.parseDouble(st);
+                }
+                String cuenta="";
+                if(this.cuentaCorriente.isSelected()){
+                    cuenta="CC";
+                }
+                else{
+                    if(this.cajaDeAhorro.isSelected())
+                        cuenta="CA";
+                }
+                Integer afap=0;
+                if(this.afap.isSelected()){
+                    afap=1;
+                }
+                if((fechaEgreso!=null&codDes!=null) ||(fechaEgreso==null&codDes==null)){
+                    if(this.verificarDif(fechaIngreso, vigenciaCargo)){
+                        if( sns!=null&&vigenciaCargo!=null&&fechaIngreso!=null&&fechaNac!=null&&cargo!=null&& centro!=null&&sucursal!=null&&depto!=null&&estado!=null&& this.esNum(numFunc)&& !apellidoUno.equals("")&&!nombreUno.equals("") &&!localidad.equals("")&& !direccion.equals("")&&this.EsCIValida(cedula)&&!iniciales.equals("")&&esNum(baseHoras)&&esNum(baseHoraria)&& sueldo!=0.0&& this.listaHorarios.size()>0&&this.EsCIValida(cedula)){
+                            try {
+                                Integer num=Integer.valueOf(numFunc);
+                                if(this.log.funcionarioExiste(num)==1){
+                                    if(this.log.modFuncionario(f,numFunc, apellidoUno, apellidoDos, nombreUno, nombreDos, direccion, localidad, depto, telefono, celular, cedula,credencial,fechaNac,estado,sexo,iniciales,fechaIngreso, fechaEgreso,cargo,vigenciaCargo,sueldo, centro, baseHoraria,baseHoras, sucursal,sns, banco,numeroCuenta,cuenta,afap,listaHorarios,vencimientoCarne,codDes)){
+                                        this.lblMsg.setText("Modificacion exitosa");
+                                        this.limpiar();
+                                        this.comboBanco.setEditable(true);
+                                        this.comboDepto.setEditable(true);
+                                        this.comboCargo.setEditable(true);
+                                        this.comboCentroCosto.setEditable(true);
+                                        this.comboEstadoCivil.setEditable(true);
+                                        this.comboHorario.setEditable(true);
+                                        this.comboSexo.setEditable(true);
+                                        this.comboSns.setEditable(true);
+                                        this.comboSucursal.setEditable(true);
+                                        f=null;
+                                        this.inicializar();
+                                    }
+                                    else{
+                                        this.lblMsg.setText("No se pudo modificar este funcionario");
+                                    }
+                                }
+                                else{
+                                    if( sns!=null&&vigenciaCargo!=null&&fechaIngreso!=null&&fechaNac!=null&&cargo!=null&& centro!=null&&sucursal!=null&&depto!=null&&estado!=null&& this.esNum(numFunc)&& !apellidoUno.equals("")&&!nombreUno.equals("") &&!localidad.equals("")&& !direccion.equals("")&&!cedula.equals("")&&!iniciales.equals("")&&esNum(baseHoras)&&esNum(baseHoraria)&& sueldo!=0.0&& this.listaHorarios.size()>0&&this.EsCIValida(cedula)){
+                                        
+                                        try {
+                                            
+                                            if(this.log.funcionarioExiste(num)==0){
+                                                if(this.log.altaFuncionario(numFunc, apellidoUno, apellidoDos, nombreUno, nombreDos, direccion, localidad, depto, telefono, celular, cedula,credencial,fechaNac,estado,sexo,iniciales,fechaIngreso,cargo,vigenciaCargo,sueldo, centro, baseHoraria,baseHoras, sucursal,sns, banco,numeroCuenta,cuenta,afap,listaHorarios,vencimientoCarne)){
+                                                    this.lblMsg.setText("Alta exitosa");
+                                                    this.limpiar();
+                                                    f=null;
+                                                }
+                                                else{
+                                                    this.lblMsg.setText("No se pudo ingresar el nuevo funcionario");
+                                                }
+                                            }
+                                            else{
+                                                this.lblMsg.setText("El número de funcionario ingresado ya existe");
+                                            }
+                                        } catch (SQLException ex) {
+                                            Logger.getLogger(InternalModFunc.class.getName()).log(Level.SEVERE, null, ex);
+                                        } catch (ClassNotFoundException ex) {
+                                            Logger.getLogger(InternalModFunc.class.getName()).log(Level.SEVERE, null, ex);
                                         }
                                     }
                                     else{
-                                        this.lblMsg.setText("El número de funcionario ingresado ya existe");
+                                        this.lblMsg.setText("Verifique los campos obligatorios");
                                     }
-                                } catch (SQLException ex) {
-                                    Logger.getLogger(InternalModFunc.class.getName()).log(Level.SEVERE, null, ex);
-                                } catch (ClassNotFoundException ex) {
-                                    Logger.getLogger(InternalModFunc.class.getName()).log(Level.SEVERE, null, ex);
-                                } 
+                                    
+                                }
+                            } catch (SQLException ex) {
+                                Logger.getLogger(InternalModFunc.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (ClassNotFoundException ex) { 
+                                Logger.getLogger(InternalModFunc.class.getName()).log(Level.SEVERE, null, ex);
                             }
-                            else{
-                                this.lblMsg.setText("Verifique los campos obligatorios");
-                            }
-
                         }
-                    } catch (SQLException ex) {
-                        Logger.getLogger(InternalModFunc.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(InternalModFunc.class.getName()).log(Level.SEVERE, null, ex);
+                        else{
+                            this.lblMsg.setText("Verifique los campos obligatorios");
+                        }
+                    }
+                    else{
+                        this.lblMsg.setText("Vigencia cargo es anterior a la fecha de ingreso");
                     }
                 }
                 else{
-                    this.lblMsg.setText("Verifique los campos obligatorios");
+                    this.lblMsg.setText("No puede ingresar fecha de egreso sin motivo");
                 }
             }
             else{
-                this.lblMsg.setText("Vigencia cargo es anterior a la fecha de ingreso");
+                JOptionPane.showMessageDialog(null, "En estos momentos no puede ingresar ni modificar ningún dato.");
             }
-        }
-        else{
-            this.lblMsg.setText("No puede ingresar fecha de egreso sin motivo");
+        } catch (BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema, consulte a Desarrollo");
         }
     }//GEN-LAST:event_buttonAqua4ActionPerformed
 
@@ -2316,8 +2325,7 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
     }
     
     public void limpiar(){
-        this.pnlLista.removeAll();
-        this.pnlLista.repaint();
+        this.LimpiarTabla();
         this.txtNumFunc.setText("");
         this.comboDepto.setSelectedIndex(-1);
         this.comboBanco.setSelectedIndex(-1);
@@ -2358,9 +2366,8 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
         this.txtDescMotivo.setText("");      
     }
     public void limpiar2(){
-        this.pnlLista.removeAll();
-        this.pnlLista.repaint();
         //this.txtNumFunc.setText("");
+        this.LimpiarTabla();
         this.comboDepto.setSelectedIndex(-1);
         this.comboBanco.setSelectedIndex(-1);
         this.comboCentroCosto.setSelectedIndex(-1);
@@ -2452,8 +2459,6 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
                    this.comboSns.setEditable(true);
                    this.comboSucursal.setEditable(true);
                    this.listaHorarios=null;
-                   this.pnlLista.removeAll();
-                   this.pnlLista.repaint();
                    this.txtNumFunc.setText(f.getCodFunc().toString());
                    this.comboDepto.setSelectedItem(f.getDepartamento());
                    this.comboBanco.setSelectedItem(f.getBanco());
@@ -2477,7 +2482,12 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
                            this.codDes=f.getCodigoDesvinc();
                        }
                    }
-                   this.txtApellidoDos.setText((f.getApellido2()));
+                   if(!"".equals(f.getApellido2())){
+                   this.txtApellidoDos.setText((f.getApellido2().trim()));
+                   }
+                   else{
+                   this.txtApellidoDos.setText((f.getApellido2()));    
+                   }
                    this.txtApellidoUno.setText(trim(f.getApellido1()));
                    this.txtBaseHoraria.setText(f.getBaseHoraria().toString());
                    this.txtBaseHoras.setText(f.getBaseHoras().toString());
@@ -2487,9 +2497,16 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
                    this.txtDireccion.setText((f.getDireccion()));
                    this.txtIniciales.setText((f.getIniciales()));
                    this.txtLocalidad.setText(trim(f.getLocalidad()));
+                   if(!f.getNombre2().equals("")){
+                       this.txtNombreDos.setText((f.getNombre2().trim()));
+                   }
+                   else{
                    this.txtNombreDos.setText((f.getNombre2()));
+                   }
                    this.txtNombreUno1.setText(trim(f.getNombre1()));
-                   this.txtNumCuenta.setText(f.getCuenta().toString());
+                   DecimalFormat df = new DecimalFormat("##0");
+                
+                   this.txtNumCuenta.setText(df.format(f.getCuenta()));
                    this.txtSueldo.setText(this.decimales(f.getSueldoCargo()));
                    this.txtTel.setText(f.getTelefono());
                    if(f.getAfap()==1){
@@ -2517,16 +2534,7 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
                            }
                        }
                    
-                   for(Integer i=0;i<f.getHorarios().size();i++){
-                       String s=f.getHorarios().get(i).toString();
-                       JLabel j=new JLabel(s,JLabel.LEFT);
-                        j.setVisible(true);
-                        j.setText(s);
-                        this.pnlLista.setLayout(new GridLayout(5,1));
-                        this.pnlLista.add(j);
-                        this.pnlLista.repaint();
-                        this.pnlLista.revalidate();
-                   }
+                   
                    
                    if(f.getSexo()=='M'){
                        this.comboSexo.setSelectedIndex(0);
@@ -2538,6 +2546,7 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
                    }
                    this.listaHorarios=new ArrayList<>();
                    this.listaHorarios=f.getHorarios();
+                   this.recargaTabla();
                    this.comboBanco.setEditable(false);
                    this.comboDepto.setEditable(false);
                    this.comboCargo.setEditable(false);
@@ -2633,11 +2642,12 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblHorarioMensaje;
     private javax.swing.JLabel lblMsg;
     private javax.swing.JPanel pnlDatosLaborales;
     private javax.swing.JPanel pnlDatosPers;
-    private javax.swing.JPanel pnlLista;
+    private javax.swing.JTable tabla;
     private org.edisoncor.gui.textField.TextFieldRound txtApellidoDos;
     private org.edisoncor.gui.textField.TextFieldRound txtApellidoUno;
     private org.edisoncor.gui.textField.TextFieldRound txtBaseHoraria;
@@ -2659,4 +2669,31 @@ public class InternalModFunc extends javax.swing.JInternalFrame {
     private com.toedter.calendar.JDateChooser vencimientoCarneSalud;
     private com.toedter.calendar.JDateChooser vigenciaCarg;
     // End of variables declaration//GEN-END:variables
+
+    private boolean horarioEsta(Horario hor) {
+        boolean esta = false;
+        int i = 0;
+        if(listaHorarios.size()>0){
+            while(i<this.listaHorarios.size()&&!esta){
+                if(hor.getCodigo().equals(listaHorarios.get(i).getCodigo())){
+                    esta=true;
+                }
+                i++;
+            }
+        }
+        return esta;
+    }
+
+    
+
+    private void recargaTabla() {
+        this.LimpiarTabla();
+        DefaultTableModel modelo = (DefaultTableModel)tabla.getModel();
+        Object[] filas=new Object[modelo.getColumnCount()];
+    
+       for(Horario h: listaHorarios){
+              filas[0]=h.toString();
+              modelo.addRow(filas);
+       }
+    }
 }

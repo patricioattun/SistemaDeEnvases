@@ -9,58 +9,26 @@ import java.sql.SQLException;
 
 
 public class Permiso {
-    private Integer codigo;
-    private String perfil; //Longitud: 20
-    private Conexion conexion;
-    
-    //Crear tabla PERS_PERMISOS_USUARIOS
+    private Integer permiso;
+    private String nombre; //Longitud: 20
 
-    public Integer getCodigo() {
-        return codigo;
+    public Integer getPermiso() {
+        return permiso;
     }
 
-    public void setCodigo(Integer codigo) {
-        this.codigo = codigo;
+    public void setPermiso(Integer permiso) {
+        this.permiso = permiso;
     }
 
-    public String getPerfil() {
-        return perfil;
+    public String getNombre() {
+        return nombre;
     }
 
-    public void setPerfil(String perfil) {
-        this.perfil = perfil;
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
-
 
     
-    public Permiso cargaPermiso(Integer id) throws SQLException, ClassNotFoundException {
-       Connection cnn=null;
-         Permiso per=null;
-       try{
-         
-           cnn=conexion.Cadena();
-           String consulta="Select * from PERS_PERMISOS where CODIGO=?";
-           PreparedStatement ps=cnn.prepareStatement(consulta);
-           ps.setInt(1, id);
-
-           ResultSet rs=ps.executeQuery();
-           if(rs.next()){
-               per=new Permiso();
-               per.setCodigo(rs.getInt("USUARIO"));
-               per.setPerfil(rs.getString("PERFIL").trim());
-                    
-           }                        
-        }
-       catch(SQLException e1){
-           throw new SQLException(e1.getMessage());
-       }
-       finally{
-               if(cnn!=null){
-                   cnn.close();
-              return per;
-           }
-       }
-        return per;
-           
-    }
+    
+ 
 }

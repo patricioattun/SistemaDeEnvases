@@ -3,6 +3,7 @@ package Presentacion.Liquidaciones;
 
 import Dominio.Funcionario;
 import Logica.LogFuncionario;
+import Presentacion.Declaraciones.InternalMantenimientoDecla;
 import Presentacion.Mantenimiento.InternalModFunc;
 import java.awt.Color;
 import java.awt.Font;
@@ -50,7 +51,8 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tablaCod = new javax.swing.JTable();
 
-        setPreferredSize(new java.awt.Dimension(316, 577));
+        setClosable(true);
+        setPreferredSize(new java.awt.Dimension(400, 577));
         addInternalFrameListener(new javax.swing.event.InternalFrameListener() {
             public void internalFrameActivated(javax.swing.event.InternalFrameEvent evt) {
             }
@@ -88,7 +90,7 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
 
             },
             new String [] {
-                "Num. Funcionario", "Nombre"
+                "Num. Func.", "Nombre"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -103,10 +105,15 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 tablaCodKeyPressed(evt);
             }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                tablaCodKeyTyped(evt);
+            }
         });
         jScrollPane1.setViewportView(tablaCod);
         if (tablaCod.getColumnModel().getColumnCount() > 0) {
-            tablaCod.getColumnModel().getColumn(0).setPreferredWidth(50);
+            tablaCod.getColumnModel().getColumn(0).setMinWidth(75);
+            tablaCod.getColumnModel().getColumn(0).setPreferredWidth(75);
+            tablaCod.getColumnModel().getColumn(0).setMaxWidth(75);
             tablaCod.getColumnModel().getColumn(1).setPreferredWidth(150);
         }
 
@@ -119,7 +126,7 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(263, 312, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(txtBuscar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -188,6 +195,34 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
                 InternalRetencionesFijas.instancia().getTxtNumFunc2().setText(cod);
                 InternalRetencionesFijas.instancia().getTxtNumFunc2().requestFocus(); 
                 break;
+            case 7:
+                InternalMantenimientoDecla.instancia().getTxtNumFunc().setText(cod);
+                InternalMantenimientoDecla.instancia().getTxtNumFunc().requestFocus(); 
+                InternalMantenimientoDecla.instancia().getBtnBuscar().doClick();
+                break;
+            case 8:
+                
+                break;
+            case 9:
+                InternalFechasPrelacion.instancia().getTxtNumFunc().setText(cod);
+                InternalFechasPrelacion.instancia().getTxtNumFunc().requestFocus(); 
+                InternalFechasPrelacion.instancia().buscarFuncionario();
+                break;
+            case 10:
+                InternalFechaPrelacionFunc.instancia().getTxtNumFunc().setText(cod);
+                InternalFechaPrelacionFunc.instancia().getTxtNumFunc().requestFocus(); 
+                InternalFechaPrelacionFunc.instancia().buscarFuncionario();
+                break;
+            case 11:
+                InternalLiquidaSueldo.instancia().getTxtNumFunc().setText(cod);
+                InternalLiquidaSueldo.instancia().getTxtNumFunc().requestFocus(); 
+                InternalLiquidaSueldo.instancia().getBtnBuscar().doClick();
+                break;
+            case 12:
+                InternalReLiquidaSueldos.instancia().getTxtNumFunc().setText(cod);
+                InternalReLiquidaSueldos.instancia().getTxtNumFunc().requestFocus(); 
+                InternalReLiquidaSueldos.instancia().getBtnBuscar().doClick(); 
+                break;
             default:
                 break;
         }
@@ -201,7 +236,7 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
             String buscar="";
             int p =(int) evt.getKeyChar();
             char k = evt.getKeyChar();
-            if(k==27||k==43){
+            if(k==27){
                 switch (fr) {
                     case 0:
                         try {
@@ -246,6 +281,30 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
                         InternalRetencionesFijas.instancia().getTxtNumFunc2().requestFocus();
                         InternalRetencionesFijas.instancia().getTxtNumFunc2().selectAll();
                         break;
+                    case 7:
+                        InternalMantenimientoDecla.instancia().getTxtNumFunc().requestFocus();
+                        InternalMantenimientoDecla.instancia().getTxtNumFunc().selectAll();
+                        break;
+                    case 8:
+                        
+                        break;
+                    case 9:
+                        InternalFechasPrelacion.instancia().getTxtNumFunc().requestFocus(); 
+                        InternalFechasPrelacion.instancia().getTxtNumFunc().selectAll();
+                        break;
+                    case 10:
+                        InternalFechaPrelacionFunc.instancia().getTxtNumFunc().requestFocus(); 
+                        InternalFechaPrelacionFunc.instancia().getTxtNumFunc().selectAll();
+                       
+                        break;
+                    case 11:
+                        InternalLiquidaSueldo.instancia().getTxtNumFunc().requestFocus(); 
+                        InternalLiquidaSueldo.instancia().getTxtNumFunc().selectAll();
+                        break;
+                    case 12:
+                        InternalReLiquidaSueldos.instancia().getTxtNumFunc().requestFocus(); 
+                        InternalReLiquidaSueldos.instancia().getTxtNumFunc().selectAll();
+                        break;
                     default:
                         break;
                 }
@@ -274,7 +333,7 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
 
     private void tablaCodKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tablaCodKeyPressed
         int k = (int) evt.getKeyChar();
-        if(k==27||k==43){
+        if(k==27){
             if(fr==0){
                 try {
                     InternalIngresoPorFunc.instancia().getTxtNumFunc().requestFocus();
@@ -323,6 +382,65 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
        instancia=null;
     }//GEN-LAST:event_formInternalFrameClosed
 
+    private void tablaCodKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tablaCodKeyTyped
+       int k = evt.getKeyChar();
+       int m = this.tablaCod.getSelectedRow();
+       if(k==43){
+           try {
+               String cod=String.valueOf(tmMov.getValueAt(m, 0));
+               switch (fr) {
+                   case 0:
+                       InternalIngresoPorFunc.instancia().getTxtNumFunc().setText(cod);
+                       InternalIngresoPorFunc.instancia().getTxtNumFunc().requestFocus();
+                       InternalIngresoPorFunc.instancia().getBtnBuscar().doClick();
+                       break;
+                   case 1:
+                       InternalIngresoPorCod.instancia().getTxtNumFunc().setText(cod);
+                       InternalIngresoPorCod.instancia().getTxtNumFunc().requestFocus();
+                       InternalIngresoPorCod.instancia().getBtnBuscar().doClick();
+                       break;
+                   case 2:
+                       InternalModFunc.instancia().getTxtNumFunc().setText(cod);
+                       InternalModFunc.instancia().getTxtNumFunc().requestFocus();
+                       InternalModFunc.instancia().getBtnBuscar().doClick();
+                       break;
+                   case 3:
+                       InternalFijoPorCod.instancia().getTxtNumFunc().setText(cod);
+                       InternalFijoPorCod.instancia().getTxtNumFunc().requestFocus();
+                       InternalFijoPorCod.instancia().getBtnBuscar().doClick();
+                       break;
+                   case 4:
+                       InternalFijoPorFunc.instancia().getTxtNumFunc().setText(cod);
+                       InternalFijoPorFunc.instancia().getTxtNumFunc().requestFocus();
+                       InternalFijoPorFunc.instancia().getBtnBuscar().doClick();
+                       break;
+                   case 5:
+                       InternalRetencionesFijas.instancia().getTxtNumFunc().setText(cod);
+                       InternalRetencionesFijas.instancia().getTxtNumFunc().requestFocus();
+                       break;
+                   case 6:
+                       InternalRetencionesFijas.instancia().getTxtNumFunc2().setText(cod);
+                       InternalRetencionesFijas.instancia().getTxtNumFunc2().requestFocus();
+                       break;
+                   case 7:
+                       InternalMantenimientoDecla.instancia().getTxtNumFunc().setText(cod);
+                       InternalMantenimientoDecla.instancia().getTxtNumFunc().requestFocus();
+                       InternalMantenimientoDecla.instancia().getBtnBuscar().doClick();
+                       
+                       break;
+                   default:
+                       break;
+               }
+               
+               this.dispose();
+           } catch (ClassNotFoundException ex) {
+               Logger.getLogger(InternalListadoFuncFiltro.class.getName()).log(Level.SEVERE, null, ex);
+           } catch (SQLException ex) {
+               Logger.getLogger(InternalListadoFuncFiltro.class.getName()).log(Level.SEVERE, null, ex);
+           }
+       }
+    }//GEN-LAST:event_tablaCodKeyTyped
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel2;
@@ -341,7 +459,7 @@ public class InternalListadoFuncFiltro extends javax.swing.JInternalFrame {
                                                           
                     for(Funcionario c:lista){                       
                             filas[0]=c.getCodFunc();
-                            filas[1]=c.getNomCompleto();
+                            filas[1]=c.getNomCompletoApe();
                             
                             modelo.addRow(filas);
                            

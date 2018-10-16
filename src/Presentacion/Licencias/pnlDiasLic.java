@@ -3,6 +3,7 @@ package Presentacion.Licencias;
 
 import Dominio.Licencia;
 import Logica.LogFuncionario;
+import Persistencia.BDExcepcion;
 import Presentacion.frmPrin;
 import java.awt.Color;
 import java.awt.Component;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -165,23 +167,23 @@ public class pnlDiasLic extends javax.swing.JPanel {
        String cod=this.txtCod.getText();
        Date fecha=this.fecha.getDate();
        if(cod!=""){
-           Integer codigo=Integer.valueOf(cod);
            try {
+               Integer codigo=Integer.valueOf(cod);
+               
                Licencia lic=this.log.calculaLicenciaIndividual(codigo, fecha);
                if(lic!=null){
                    this.cargarTabla(lic,fecha);
-                   this.lblMsg.setText(lic.getFuncionario().getNomCompleto());
+                   this.lblMsg.setText(lic.getFuncionario().getNomCompletoApe());
                }
                else{
                    this.lblMsg.setText("Este funcionario no existe");
                }
+           } catch (BDExcepcion ex) {
+             JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
            } catch (ParseException ex) {
-               Logger.getLogger(pnlDiasLic.class.getName()).log(Level.SEVERE, null, ex);
-           } catch (ClassNotFoundException ex) {
-               Logger.getLogger(pnlDiasLic.class.getName()).log(Level.SEVERE, null, ex);
-           } catch (SQLException ex) {
-               Logger.getLogger(pnlDiasLic.class.getName()).log(Level.SEVERE, null, ex);
+               JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
            }
+           
        }
     }//GEN-LAST:event_btnListarActionPerformed
 
@@ -202,7 +204,7 @@ public class pnlDiasLic extends javax.swing.JPanel {
         return reportDate;
     }
     
-    private void cargarTabla(Licencia f, Date fecha) throws ClassNotFoundException, SQLException{
+    private void cargarTabla(Licencia f, Date fecha){
         DefaultTableModel modelo = (DefaultTableModel)tablaLic.getModel();
         String fech=this.convierteFecha(fecha);
         this.jScrollPane1.setVisible(true);

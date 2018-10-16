@@ -48,7 +48,7 @@ public class LogTripaliare {
         this.diferenciaMarca=trip.obtieneDiferencia();
     }  
     
-    public ArrayList<Integer> funcionariosSoloTrip(Date desde,Date hasta) throws SQLException, ClassNotFoundException{
+  public ArrayList<Integer> funcionariosSoloTrip(Date desde,Date hasta) throws SQLException, ClassNotFoundException{
         ArrayList<Integer>listaTrip=this.trip.funcDistintos(desde, hasta);
         ArrayList<Integer>listaFun=this.pers.listaCodFunc();
         ArrayList<Integer> listado=new ArrayList<>();
@@ -79,12 +79,10 @@ public class LogTripaliare {
     public void comparaFunYMarcas(Date desde,Date hasta,ArrayList<Date> listaFechas) throws ClassNotFoundException, SQLException{
         cnn=conexion.Cadena();
         Marca marca=null;
-        
-        
         this.listaFeriados=this.pers.listarFeriadosRango(desde, hasta);
         Integer contador=0;
         for(Funcionario f:listadoFunc){
-            if(f.getCodFunc()==6100){
+            if(f.getCodFunc()==100){
             String str= "prueba";
             }
              listaAuxiliar=new ArrayList<>();
@@ -175,7 +173,7 @@ public class LogTripaliare {
                                 }
                             }
                             else if(h.getDescripcion().equals("DOMINGO")&&cal.get(Calendar.DAY_OF_WEEK)==1){
-                                   if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraEntrada()),marcas)==null){
+                                if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraEntrada()),marcas)==null){
                                     marca=new Marca();
                                     marca.setFunCod(f.getCodFunc());
                                     marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
@@ -195,7 +193,87 @@ public class LogTripaliare {
                                 }
                             }
                             else if(h.getDescripcion().equals("LUNES A VIERNES")&&cal.get(Calendar.DAY_OF_WEEK)!=1&&cal.get(Calendar.DAY_OF_WEEK)!=7){
-                                    if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraEntrada()),marcas)==null){
+                                  if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraEntrada()),marcas)==null){
+                                    marca=new Marca();
+                                    marca.setFunCod(f.getCodFunc());
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
+                                    marca.setTipo("INTERIOR");
+                                    marca.setFecha(hoy);
+                                    marca.setSupervisado(0);
+                                    this.trip.insertarMarcas(marca);
+                                }
+                                if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraSalida()),marcas)==null){
+                                    marca=new Marca();
+                                    marca.setFunCod(f.getCodFunc());
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraSalida()));
+                                    marca.setTipo("INTERIOR");
+                                    marca.setFecha(hoy);
+                                    marca.setSupervisado(0);
+                                    this.trip.insertarMarcas(marca);
+                                }
+                            }
+                            else if(h.getDescripcion().equals("MARTES,JUEVES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                                  if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraEntrada()),marcas)==null){
+                                    marca=new Marca();
+                                    marca.setFunCod(f.getCodFunc());
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
+                                    marca.setTipo("INTERIOR");
+                                    marca.setFecha(hoy);
+                                    marca.setSupervisado(0);
+                                    this.trip.insertarMarcas(marca);
+                                }
+                                if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraSalida()),marcas)==null){
+                                    marca=new Marca();
+                                    marca.setFunCod(f.getCodFunc());
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraSalida()));
+                                    marca.setTipo("INTERIOR");
+                                    marca.setFecha(hoy);
+                                    marca.setSupervisado(0);
+                                    this.trip.insertarMarcas(marca);
+                                }
+                            }
+                            else if(h.getDescripcion().equals("LUNES,MIERCOLES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                                  if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraEntrada()),marcas)==null){
+                                    marca=new Marca();
+                                    marca.setFunCod(f.getCodFunc());
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
+                                    marca.setTipo("INTERIOR");
+                                    marca.setFecha(hoy);
+                                    marca.setSupervisado(0);
+                                    this.trip.insertarMarcas(marca);
+                                }
+                                if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraSalida()),marcas)==null){
+                                    marca=new Marca();
+                                    marca.setFunCod(f.getCodFunc());
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraSalida()));
+                                    marca.setTipo("INTERIOR");
+                                    marca.setFecha(hoy);
+                                    marca.setSupervisado(0);
+                                    this.trip.insertarMarcas(marca);
+                                }
+                            }
+                            else if(h.getDescripcion().equals("LUNES Y MIERCOLES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4)){
+                                  if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraEntrada()),marcas)==null){
+                                    marca=new Marca();
+                                    marca.setFunCod(f.getCodFunc());
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
+                                    marca.setTipo("INTERIOR");
+                                    marca.setFecha(hoy);
+                                    marca.setSupervisado(0);
+                                    this.trip.insertarMarcas(marca);
+                                }
+                                if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraSalida()),marcas)==null){
+                                    marca=new Marca();
+                                    marca.setFunCod(f.getCodFunc());
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraSalida()));
+                                    marca.setTipo("INTERIOR");
+                                    marca.setFecha(hoy);
+                                    marca.setSupervisado(0);
+                                    this.trip.insertarMarcas(marca);
+                                }
+                            }
+                             else if(h.getDescripcion().equals("MARTES Y JUEVES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5)){
+                                  if(this.encuentraMarca(this.fijaHoraInterior(date,h.getHoraEntrada()),marcas)==null){
                                     marca=new Marca();
                                     marca.setFunCod(f.getCodFunc());
                                     marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
@@ -313,6 +391,10 @@ public class LogTripaliare {
    
 
     private void verificaLicencias(Funcionario f, ArrayList<Marca> marcas, Date desde,ArrayList<Date> listaFechas,ArrayList<String> listaAuxiliar) throws ClassNotFoundException, SQLException {
+        
+          if(f.getCodFunc()==5670){
+               String str="";
+        }
         ArrayList<MovimientoLicencia> listadoMov=this.pers.listadoMovimientosMarcas(f.getCodFunc(), desde);
         GregorianCalendar cal = new GregorianCalendar();
         ArrayList<String> listaAux=new ArrayList<>();
@@ -324,6 +406,7 @@ public class LogTripaliare {
                     Date per = li.next();
                     String lic=this.convertirFecha(per);
                     cal.setTime(per);
+                    //VER LO DE LICENCIA ENFERMEDAD
                     if(cal.get(Calendar.DAY_OF_WEEK)!=1){
                             for (it = listaFechas.iterator(); it.hasNext();) {
                                      Date date = it.next();
@@ -331,12 +414,16 @@ public class LogTripaliare {
                                          if(this.encuentraMarca(this.fijaHora(per), marcas)==null){
                                                                                                   
                                                 Marca marca=new Marca();
+                                                
                                                 marca.setFunCod(f.getCodFunc());
                                                 marca.setMarcaFecha(this.fijaHora(per));
                                                 marca.setTipo("LICENCIA");
                                                 marca.setFecha(hoy);
                                                 marca.setSupervisado(0);
-                                                //this.codPer.insertarCodigoMarca(this.trip.obtenerMaxCodFunc(f.getCodFunc()),marca.getFunCod(),m.getTipoLic(),1.0);
+                                                if(m.getTipoLic()==15){
+                                               // this.codPer.insertarCodigoMarca(this.trip.obtenerMaxCodFunc(f.getCodFunc()),marca.getFunCod(),m.getTipoLic(),1.0);
+                                                this.codPer.insertarCodigoMarca(this.trip.obtenerMaxCodFunc(f.getCodFunc()),marca.getFunCod(),m.getTipoLic(),1.0,marca.getFecha());
+                                                }
                                                 this.trip.insertarMarcas(marca);
                                                 listaAux.add(lic);
                                              
@@ -380,6 +467,9 @@ public class LogTripaliare {
 
     private void insertaFaltas(ArrayList<String> listaAuxiliar, ArrayList<Date> listaFechas, ArrayList<String> listaAux, Funcionario f,ArrayList<Marca> marcas) throws ClassNotFoundException, SQLException {
         
+        if(f.getCodFunc()==100){
+            String str="";
+        }
         GregorianCalendar cal = new GregorianCalendar();
         for (it = listaFechas.iterator(); it.hasNext();) {
             Date date=it.next();
@@ -433,8 +523,12 @@ public class LogTripaliare {
     }
     
     private void insertaMarcasFaltaFuncMdv(Funcionario f,Marca marca,Calendar cal,Date date,ArrayList<Marca> marcas) throws ClassNotFoundException, SQLException{
-         if(f.getHorarios().size()>0){
+       if(f.getCodFunc()==100){
+            String st="";
+        }
+        if(f.getHorarios().size()>0){
                        for(Horario h:f.getHorarios()){
+                           Date d = cal.getTime();
                              if(h.getDescripcion().equals("SABADO")&&cal.get(Calendar.DAY_OF_WEEK)==7){
                                     marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
                                     this.trip.insertarMarcas(marca);
@@ -450,6 +544,34 @@ public class LogTripaliare {
                                 
                             }
                             else if(h.getDescripcion().equals("LUNES A VIERNES")&&cal.get(Calendar.DAY_OF_WEEK)!=1&&cal.get(Calendar.DAY_OF_WEEK)!=7){
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
+                                    this.trip.insertarMarcas(marca);
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraSalida()));
+                                    this.trip.insertarMarcas(marca);
+                                
+                            }
+                            else if(h.getDescripcion().equals("MARTES,JUEVES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
+                                    this.trip.insertarMarcas(marca);
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraSalida()));
+                                    this.trip.insertarMarcas(marca);
+                                
+                            }
+                            else if(h.getDescripcion().equals("LUNES,MIERCOLES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
+                                    this.trip.insertarMarcas(marca);
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraSalida()));
+                                    this.trip.insertarMarcas(marca);
+                                
+                            }
+                            else if(h.getDescripcion().equals("LUNES Y MIERCOLES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4)){
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
+                                    this.trip.insertarMarcas(marca);
+                                    marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraSalida()));
+                                    this.trip.insertarMarcas(marca);
+                                
+                            }
+                            else if(h.getDescripcion().equals("MARTES Y JUEVES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5)){
                                     marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraEntrada()));
                                     this.trip.insertarMarcas(marca);
                                     marca.setMarcaFecha(this.fijaHoraInterior(date,h.getHoraSalida()));
@@ -490,6 +612,9 @@ public class LogTripaliare {
     private void comparaConHorarios(Date desde, Date hasta,ArrayList<Date> listaFechas) throws ClassNotFoundException, SQLException {
         
         for(Funcionario f: listadoFunc){
+             if(f.getCodFunc()==100){
+                         String agua="";
+                     }
             if(f.getLugarTrabajo().getNumero()==1 && f.getCodFunc()!=1200){
                 ArrayList<Marca> marcas=this.trip.traerTablaLocal(desde, hasta,f);
                 for (it = listaFechas.iterator(); it.hasNext();) {
@@ -497,9 +622,7 @@ public class LogTripaliare {
                      String fec=this.convertirFecha(date);
                      ArrayList<Marca>marcs=this.cantMarcas(marcas, fec);
                     
-                     if(f.getCodFunc()==150){
-                         String agua="";
-                     }
+                    
                      switch (marcs.size()) {
                         case 2:
                             if(marcs.get(0).getTipo().equals("VACIA")){
@@ -577,6 +700,9 @@ public class LogTripaliare {
         }
 
     private void fijaIncongruencia(Marca m, Funcionario f,String str) throws SQLException, ClassNotFoundException {
+        if(m.getFunCod()==6095){
+            String st="";
+        }
         if(m.getIncongruencia()==0){    
             Date date = new Date(m.getMarcaFecha().getTime());
             Time time=new Time(m.getMarcaFecha().getTime());
@@ -593,6 +719,18 @@ public class LogTripaliare {
                         else if(h.getDescripcion().equals("LUNES A VIERNES")&&cal.get(Calendar.DAY_OF_WEEK)!=1&&cal.get(Calendar.DAY_OF_WEEK)!=7){
                            this.comparaFechas(time, h.getHoraEntrada(), m);
                         }
+                        else if(h.getDescripcion().equals("MARTES,JUEVES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                           this.comparaFechas(time, h.getHoraEntrada(), m);
+                        }
+                        else if(h.getDescripcion().equals("LUNES,MIERCOLES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                           this.comparaFechas(time, h.getHoraEntrada(), m);
+                        }
+                        else if(h.getDescripcion().equals("LUNES Y MIERCOLES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4)){
+                           this.comparaFechas(time, h.getHoraEntrada(), m);
+                        }
+                        else if(h.getDescripcion().equals("MARTES Y JUEVES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5)){
+                           this.comparaFechas(time, h.getHoraEntrada(), m);
+                        }
                 }
                     else if(str.equals("Salida")){
                         if(h.getDescripcion().equals("SABADO")&&cal.get(Calendar.DAY_OF_WEEK)==7){
@@ -602,6 +740,18 @@ public class LogTripaliare {
                            this.comparaFechas(time, h.getHoraSalida(), m);
                         }
                         else if(h.getDescripcion().equals("LUNES A VIERNES")&&cal.get(Calendar.DAY_OF_WEEK)!=1&&cal.get(Calendar.DAY_OF_WEEK)!=7){
+                           this.comparaFechas(time, h.getHoraSalida(), m);
+                        }
+                         else if(h.getDescripcion().equals("MARTES,JUEVES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                           this.comparaFechas(time, h.getHoraSalida(), m);
+                        }
+                        else if(h.getDescripcion().equals("LUNES,MIERCOLES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                           this.comparaFechas(time, h.getHoraSalida(), m);
+                        }
+                        else if(h.getDescripcion().equals("LUNES Y MIERCOLES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4)){
+                           this.comparaFechas(time, h.getHoraSalida(), m);
+                        }
+                        else if(h.getDescripcion().equals("MARTES Y JUEVES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5)){
                            this.comparaFechas(time, h.getHoraSalida(), m);
                         }
                     }
@@ -629,16 +779,17 @@ public class LogTripaliare {
     
     
     private void actualizaDiferenciaMinutos(Integer dif, Marca m) throws SQLException, ClassNotFoundException{
-              if(dif>0||dif<0){
+            if(m.getFunCod()==100){
+                String str="";
+            }  
+        if(dif>0||dif<0){
                         //parametrizar el tiempo
                         //if(dif>=this.diferenciaMarca){
                             m.setIncongruencia(dif);
                             if(!m.getTipo().equals("FALTA")){
                                  m.setSupervisado(0);
                             }
-                            if(m.getFunCod()==510&&(m.getId()==146 || m.getId()==145|| m.getId()==147||m.getId()==148)){
-                                                int e=0;
-                                            }
+                            
                             this.trip.actualizarMarca(m,null);
                        // }
                     }
@@ -648,9 +799,7 @@ public class LogTripaliare {
                             if(!m.getTipo().equals("FALTA")){
                                  m.setSupervisado(0);
                            }
-                            if(m.getFunCod()==510 && (m.getId()==146 || m.getId()==145|| m.getId()==147||m.getId()==148)){
-                                                int e=0;
-                                            }
+                            
                            this.trip.actualizarMarca(m,null);
                         //}
                     }
@@ -702,12 +851,24 @@ public class LogTripaliare {
                      if(h.getDescripcion().equals("SABADO")&&cal.get(Calendar.DAY_OF_WEEK)==7){
                          retorno=this.cercania(time,date,h.getHoraEntrada(),h.getHoraSalida());
                      }
-                     else if(h.getDescripcion().equals("DOMINGO")&&cal.get(Calendar.DAY_OF_WEEK)==2){
+                     else if(h.getDescripcion().equals("DOMINGO")&&cal.get(Calendar.DAY_OF_WEEK)==1){
                          retorno=this.cercania(time,date,h.getHoraEntrada(),h.getHoraSalida());
                      }
                      else if(h.getDescripcion().equals("LUNES A VIERNES")&&cal.get(Calendar.DAY_OF_WEEK)!=1&&cal.get(Calendar.DAY_OF_WEEK)!=7){
                          retorno=this.cercania(time,date,h.getHoraEntrada(),h.getHoraSalida());
                      }
+                     else if(h.getDescripcion().equals("MARTES,JUEVES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                           retorno=this.cercania(time,date,h.getHoraEntrada(),h.getHoraSalida());
+                        }
+                     else if(h.getDescripcion().equals("LUNES,MIERCOLES Y VIERNES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4||cal.get(Calendar.DAY_OF_WEEK)==6)){
+                          retorno=this.cercania(time,date,h.getHoraEntrada(),h.getHoraSalida());
+                        }
+                     else if(h.getDescripcion().equals("LUNES Y MIERCOLES")&&(cal.get(Calendar.DAY_OF_WEEK)==2||cal.get(Calendar.DAY_OF_WEEK)==4)){
+                           retorno=this.cercania(time,date,h.getHoraEntrada(),h.getHoraSalida());
+                        }
+                     else if(h.getDescripcion().equals("MARTES Y JUEVES")&&(cal.get(Calendar.DAY_OF_WEEK)==3||cal.get(Calendar.DAY_OF_WEEK)==5)){
+                          retorno=this.cercania(time,date,h.getHoraEntrada(),h.getHoraSalida());
+                        }
                 }
                 return retorno;
     }
@@ -812,6 +973,7 @@ private boolean cercania(Time time, Date date, Time horaEntrada, Time horaSalida
            }
         return str;
          }
+     
    public Date ultimaMarca() throws SQLException, ClassNotFoundException{
       Date fecha=this.trip.ultimaMarca();
       
@@ -832,13 +994,19 @@ private boolean cercania(Time time, Date date, Time horaEntrada, Time horaSalida
     
    public ArrayList<Marca> codigosFuncionarios(Funcionario f,Date desde,Date hasta,Integer sup) throws ClassNotFoundException, SQLException{
        ArrayList<Marca> marcas = this.trip.codigosFuncionarios(f, desde, hasta, sup);
-       ArrayList<Marca> marcasDiez=this.trip.codigoDiezDiasGenerado(f, this.obtieneMes());
-       return fusionaMarcas(marcas,marcasDiez);
+       ArrayList<Marca> marcasDiez=this.trip.codigoDiezDiasGenerado(f, this.obtieneMes(),this.obtieneAño(desde));
+       ArrayList<Marca> marcasQuince=this.trip.codigoQuince(f, desde, hasta, 15);
+       return fusionaMarcas(marcas,marcasDiez,marcasQuince);
    } 
    
-   private ArrayList<Marca> fusionaMarcas(ArrayList<Marca> marcas, ArrayList<Marca> marcasDiez){
+   private ArrayList<Marca> fusionaMarcas(ArrayList<Marca> marcas, ArrayList<Marca> marcasDiez,ArrayList<Marca> marcasQuince){
        if(!marcasDiez.isEmpty()){
             for(Marca m : marcasDiez){
+                    marcas.add(m);
+            }
+       }
+       if(!marcasQuince.isEmpty()){
+            for(Marca m : marcasQuince){
                     marcas.add(m);
             }
        }
@@ -846,12 +1014,20 @@ private boolean cercania(Time time, Date date, Time horaEntrada, Time horaSalida
    }
    
     private Integer obtieneMes(){
-    Date fecha = new Date();
+        Date fecha= new Date();
     Calendar c=Calendar.getInstance();
     c.setTimeInMillis(fecha.getTime());
     int mes = c.get(Calendar.MONTH)+1;
     return mes;
     }
+    private Integer obtieneAño(Date fecha){
+  
+    Calendar c=Calendar.getInstance();
+    c.setTimeInMillis(fecha.getTime());
+    int mes = c.get(Calendar.YEAR);
+    return mes;
+    }
+     
    public ArrayList<Codigo> codigosDistintos(Funcionario f,Date desde,Date hasta,Integer sup) throws ClassNotFoundException, SQLException{
        return this.trip.codigosDistintos(f, desde, hasta, sup);
    }

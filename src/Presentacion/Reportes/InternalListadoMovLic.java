@@ -8,6 +8,7 @@ import Dominio.MovimientoLicencia;
 import Logica.LogCodigo;
 import Logica.LogFuncionario;
 import Logica.logPdf;
+import Persistencia.BDExcepcion;
 import Presentacion.frmPrin;
 import com.itextpdf.text.DocumentException;
 import java.awt.Color;
@@ -49,7 +50,7 @@ public class InternalListadoMovLic extends javax.swing.JInternalFrame {
     private logPdf logPdf;
     private ArrayList<Codigo> listaCodigos;
     
-    public InternalListadoMovLic() throws ClassNotFoundException, SQLException {
+    public InternalListadoMovLic() throws ClassNotFoundException, SQLException, BDExcepcion {
         initComponents();
         this.log=new LogFuncionario();
         this.logCod=new LogCodigo();
@@ -77,7 +78,7 @@ public class InternalListadoMovLic extends javax.swing.JInternalFrame {
         this.txtCod = txtCod;
     }
     
-    public static InternalListadoMovLic instancia() throws ClassNotFoundException, SQLException
+    public static InternalListadoMovLic instancia() throws ClassNotFoundException, SQLException, BDExcepcion
    {    
          if (instancia== null)
          {
@@ -96,11 +97,13 @@ public class InternalListadoMovLic extends javax.swing.JInternalFrame {
                     try {
                         cargarMovimiento(e);
                     } catch (SQLException ex) {
-                        Logger.getLogger(InternalListadoMovLic.class.getName()).log(Level.SEVERE, null, ex);
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(InternalListadoMovLic.class.getName()).log(Level.SEVERE, null, ex);
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     } catch (ParseException ex) {
-                        Logger.getLogger(InternalListadoMovLic.class.getName()).log(Level.SEVERE, null, ex);
+                        JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                    } catch (BDExcepcion ex) {
+                        JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     } 
                  }
          }});
@@ -110,11 +113,13 @@ public class InternalListadoMovLic extends javax.swing.JInternalFrame {
                     try {
                         cargarAdel(e);
                     }  catch (ParseException ex) {
-                        Logger.getLogger(InternalListadoMovLic.class.getName()).log(Level.SEVERE, null, ex);
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     } catch (SQLException ex) {
-                        Logger.getLogger(InternalListadoMovLic.class.getName()).log(Level.SEVERE, null, ex);
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(InternalListadoMovLic.class.getName()).log(Level.SEVERE, null, ex);
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                    } catch (BDExcepcion ex) {
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     } 
                  }
          }});
@@ -451,10 +456,8 @@ public class InternalListadoMovLic extends javax.swing.JInternalFrame {
             this.lic=log.listarLicAdelantada(cod,l);
             this.cargaTablaAdelantada(lic);
             Alinear_Grillas();
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(InternalListadoMovLic.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(InternalListadoMovLic.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException | SQLException | BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
         }
     }//GEN-LAST:event_btnListarActionPerformed
 
@@ -573,7 +576,7 @@ public class InternalListadoMovLic extends javax.swing.JInternalFrame {
             }
     }
     
-    private void cargarMovimiento(java.awt.event.MouseEvent e) throws SQLException, ClassNotFoundException, ParseException{
+    private void cargarMovimiento(java.awt.event.MouseEvent e) throws SQLException, ClassNotFoundException, ParseException, BDExcepcion{
      Integer m=this.tablaLic.rowAtPoint(e.getPoint());
      this.mov=new MovimientoLicencia();
      mov.setAñoSaldo(Integer.valueOf(String.valueOf(tmMov.getValueAt(m,1))));
@@ -605,7 +608,7 @@ public class InternalListadoMovLic extends javax.swing.JInternalFrame {
      }
     }    
     
-    private void cargarAdel(java.awt.event.MouseEvent e) throws SQLException, ClassNotFoundException, ParseException{
+    private void cargarAdel(java.awt.event.MouseEvent e) throws SQLException, ClassNotFoundException, ParseException, BDExcepcion{
      Integer m=this.tablaLic1.rowAtPoint(e.getPoint());
      this.mov=new MovimientoLicencia();
      mov.setFuncionario(this.log.funcParcial(String.valueOf(tmAdel.getValueAt(m,0))));
@@ -662,6 +665,9 @@ public class InternalListadoMovLic extends javax.swing.JInternalFrame {
                     }
                     for(MovimientoLicencia f:listado){                       
                             
+                        if(f.getFuncionario().getCodFunc()==510){
+                            int e=7;
+                        }
                             filas[0]=f.getFuncionario().getCodFunc();
                             if(f.getTipoLic().equals(10)){
                             filas[1]=f.getAñoSaldo()-1;

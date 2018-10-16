@@ -10,7 +10,27 @@ public class Retencion {
     private Integer sueldo;
     private Integer otros;
     private Integer activa;
+    private Integer orden;
+    private Integer sobre;
 
+    public Integer getOrden() {
+        return orden;
+    }
+
+    public void setOrden(Integer orden) {
+        this.orden = orden;
+    }
+
+    public Integer getSobre() {
+        return sobre;
+    }
+
+    public void setSobre(Integer sobre) {
+        this.sobre = sobre;
+    }
+    
+
+    
     public Integer getActiva() {
         return activa;
     }

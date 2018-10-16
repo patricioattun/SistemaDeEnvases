@@ -9,6 +9,7 @@ import Dominio.Horario;
 import Dominio.Licencia;
 import Logica.LogCodigo;
 import Logica.LogFuncionario;
+import Persistencia.BDExcepcion;
 import Presentacion.frmPrin;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 
 public class InternalMovLicencia extends javax.swing.JInternalFrame {
@@ -34,22 +36,30 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
     private Funcionario f=null;
    private static InternalMovLicencia instancia=null;
    
-    public InternalMovLicencia() throws ClassNotFoundException, SQLException {
-        initComponents();
-        this.txtSaldo.setEditable(false);
-        this.btnAceptar.setEnabled(false);
-        this.comboAño.setEnabled(false);
-        this.txtFechaFIn.setEnabled(false);
-        this.txtFechaIni.setEnabled(false);
-        this.btnCalc.setEnabled(false);
-        this.txtdias.setEnabled(false);
-        log=new LogFuncionario();
-        logC=new LogCodigo();
-        this.listaFeriados=this.log.listarTodosFeriados();
-        this.lblGen.setVisible(false);
-        this.comboAño.setVisible(false);
-        this.cargaComboTipo();
-        this.comboTipo.setEnabled(false);
+    public InternalMovLicencia() {
+        try {
+            initComponents();
+            this.txtSaldo.setEditable(false);
+            this.btnAceptar.setEnabled(false);
+            this.comboAño.setEnabled(false);
+            this.txtFechaFIn.setEnabled(false);
+            this.txtFechaIni.setEnabled(false);
+            this.btnCalc.setEnabled(false);
+            this.txtdias.setEnabled(false);
+            log=new LogFuncionario();
+            logC=new LogCodigo();
+            this.listaFeriados=this.log.listarTodosFeriados();
+            this.lblGen.setVisible(false);
+            this.comboAño.setVisible(false);
+            this.cargaComboTipo();
+            this.comboTipo.setEnabled(false);
+        } catch (BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+        } catch (ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+        } catch (SQLException ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+        }
     }
     
     public static InternalMovLicencia instancia() throws ClassNotFoundException, SQLException
@@ -390,8 +400,9 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
         this.limpiar();
         String codFunc=this.txtCodFunc.getText();
-        try {
+        
             if(!codFunc.equals("")){
+            try {
                 this.txtdias.requestFocus();
                 f=this.log.funcParcial(codFunc);
                 lista=log.cargaComboLicencia(codFunc);
@@ -406,7 +417,7 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
                         //this.comboAño.setSelectedIndex(1);
                     }
                     this.lblMsg.setText("");
-                    this.lblNombres.setText(f.getNomCompleto());
+                    this.lblNombres.setText(f.getNomCompletoApe());
                     if(!lista.isEmpty()){
                         this.txtSaldo.setText(lista.get(0).getSaldo().toString());
                     }
@@ -437,7 +448,7 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
                         this.comboTipo.removeItemAt(0);
                         this.lblGen.setVisible(false);
                         this.comboAño.setVisible(false);
-                        this.lblNombres.setText(f.getNomCompleto());
+                        this.lblNombres.setText(f.getNomCompletoApe());
                         this.btnAceptar.setEnabled(true);
                         this.btnCalc.setEnabled(true);
                         this.comboAño.setEnabled(true);
@@ -449,24 +460,23 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
                         this.txtdias.requestFocus();
                     }
                 }
+            } catch (BDExcepcion ex) {
+                Logger.getLogger(InternalMovLicencia.class.getName()).log(Level.SEVERE, null, ex);
+            }
             }
             else{
                 this.lblMsg.setText("Ingrese un número de funcionario");
                 this.comboTipo.setEnabled(false);
             }
 
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(InternalMovLicencia.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(InternalMovLicencia.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void comboAñoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboAñoItemStateChanged
         this.txtdias.requestFocus();
         this.txtSaldo.setText("");
         Codigo c=(Codigo) this.comboTipo.getSelectedItem();
-        if(c.getCod().equals(10)){
+        if(!c.getCod().equals(16)){
             Licencia l=(Licencia) this.comboAño.getSelectedItem();
             if(l!=null){
                 this.txtSaldo.setText(l.getSaldo().toString());
@@ -593,7 +603,7 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
                                 Funcionario Func=l.getFuncionario();
                                 Integer saldoPos=saldo-diasTomar;
                                 try {
-                                    if(this.log.insertarMovLicencia(ini,fin,saldo,diasTomar,hoy,añoSacar,Func,saldoPos,c.getCod())){
+                                    if(this.log.insertarMovLicencia(ini,fin,saldo,diasTomar,hoy,añoSacar,Func,saldoPos,c.getCod(),null)){
                                         this.lblNombres.setText("");
                                         this.btnAceptar.setEnabled(false);
                                         this.comboAño.setEnabled(false);
@@ -658,10 +668,15 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
             Codigo c=(Codigo) this.comboTipo.getSelectedItem();
             if(c.getCod().equals(10)){
                 if(lista!=null){
-                    this.comboAño.removeAllItems();
-                    for(int i=0;i<lista.size();i++){
-                        this.comboAño.addItem(lista.get(i));
-                        //this.comboAño.setSelectedIndex(1);
+                    if(lista.size()>0){
+                        this.comboAño.removeAllItems();
+                        for(int i=0;i<lista.size();i++){
+                            this.comboAño.addItem(lista.get(i));
+                            //this.comboAño.setSelectedIndex(1);
+                        }
+                    }
+                    else{
+                        this.lblMsg.setText("Seleccione licencia de años anteriores");
                     }
                 }
                 this.lblGen.setText("Año Licencia Generada");
@@ -670,7 +685,7 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
                 if(lista!=null){
                     if(!lista.isEmpty()){
                         this.lblMsg.setText("");
-                        this.lblNombres.setText(lista.get(0).getFuncionario().getNomCompleto());
+                        this.lblNombres.setText(lista.get(0).getFuncionario().getNomCompletoApe());
                         this.txtSaldo.setText(lista.get(0).getSaldo().toString());
                     }
                 }
@@ -689,7 +704,7 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
                 if(listaPasado!=null){
                     if(!listaPasado.isEmpty()){
                         this.lblMsg.setText("");
-                        this.lblNombres.setText(listaPasado.get(0).getFuncionario().getNomCompleto());
+                        this.lblNombres.setText(listaPasado.get(0).getFuncionario().getNomCompletoApe());
                         this.txtSaldo.setText(listaPasado.get(0).getSaldo().toString());
                     }
                 }
@@ -814,8 +829,9 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_formInternalFrameClosed
 
     
-    private void cargaComboTipo() throws SQLException, ClassNotFoundException {
+    private void cargaComboTipo() throws BDExcepcion {
       ArrayList<Codigo> codigos=this.logC.cargaComboCodigoLic();
+      
       for(Codigo c:codigos){
           if(c.getCod()!=1001){
             this.comboTipo.addItem(c);
@@ -881,7 +897,11 @@ public class InternalMovLicencia extends javax.swing.JInternalFrame {
         
         for(Feriado f:this.listaFeriados){
             if((fechaIni.equals(f.getFecha())||fechaIni.before(f.getFecha()))&& (fechaFin.equals(f.getFecha())||fechaFin.after(f.getFecha()))){
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(f.getFecha());
+                if(cal.get(Calendar.DAY_OF_WEEK)!=1){
                 aux.add(f);
+                }
             }
         }
         

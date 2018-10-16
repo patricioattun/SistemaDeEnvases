@@ -12,9 +12,10 @@ public class Usuario {
     private String contraseña; //Longitud:25
     private Permiso permiso;
 
-    public Usuario(String nombre, String contraseña) {
+    public Usuario(String nombre, String contraseña,Permiso permiso) {
         this.nombre = nombre;
         this.contraseña = contraseña;
+        this.permiso = permiso;
     }
 
  

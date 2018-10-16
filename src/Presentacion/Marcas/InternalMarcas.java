@@ -86,11 +86,13 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                         cargaCodigo(e);
                         
                     } catch (ParseException ex) {
-                        Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     } catch (SQLException ex) {
-                        Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                    } catch (BDExcepcion ex) {
+                       JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     }
                  }
                 else if(e.getClickCount()==1){
@@ -108,30 +110,31 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
     }
 
     
-    private void cargaCodigo(MouseEvent e) throws ParseException, ClassNotFoundException, SQLException{
-     Integer m=this.tablaLic.rowAtPoint(e.getPoint());
-     this.marca=this.cargarMovimientoMultiple(m);
-     marcaCod=InternalMarcaCodigo.instancia(trip,cod,this);
-     
-     if(marca.getProcesado()==null){
-     frmPrin prin=frmPrin.instancia();
-     Funcionario f=this.pers.funcParcial(String.valueOf(tmMov.getValueAt(m,9)));
-             if (!marcaCod.isVisible()) {
-                 prin.getDesktop().add(marcaCod);
-                 marcaCod.setLocation((prin.getDesktop().getWidth()/2)-(marcaCod.getWidth()/2),(prin.getDesktop().getHeight()/2) - marcaCod.getHeight()/2);
-                 marcaCod.setVisible(true);
-                 marcaCod.setMarcas(null);
-                 
-                 marcaCod.setMarca(marca);
-                 marcaCod.getLblNombres().setText(f.getNomCompleto());
-                 marcaCod.getLblMarca().setText(marca.toString());
-                 marcaCod.repaint();
-                 marcaCod.revalidate();
-
-             }
-             else{
-                 marcaCod.requestFocus();
-                 try {
+    private void cargaCodigo(MouseEvent e) throws ParseException, ClassNotFoundException, SQLException, BDExcepcion{
+        
+            Integer m=this.tablaLic.rowAtPoint(e.getPoint());
+            this.marca=this.cargarMovimientoMultiple(m);
+            marcaCod=InternalMarcaCodigo.instancia(trip,cod,this,this.pers);
+            
+            if(marca.getProcesado()==null){
+                frmPrin prin=frmPrin.instancia();
+                Funcionario f=this.pers.funcParcial(String.valueOf(tmMov.getValueAt(m,9)));
+                if (!marcaCod.isVisible()) {
+                    prin.getDesktop().add(marcaCod);
+                    marcaCod.setLocation((prin.getDesktop().getWidth()/2)-(marcaCod.getWidth()/2),(prin.getDesktop().getHeight()/2) - marcaCod.getHeight()/2);
+                    marcaCod.setVisible(true);
+                    marcaCod.setMarcas(null);
+                    marcaCod.setF(f);
+                    marcaCod.setMarca(marca);
+                    marcaCod.getLblNombres().setText(f.getNomCompleto());
+                    marcaCod.getLblMarca().setText(marca.toString());
+                    marcaCod.repaint();
+                    marcaCod.revalidate();
+                    
+                }
+                else{
+                    marcaCod.requestFocus();
+                    try {
                         marcaCod.setSelected(true);
                         marcaCod.setVisible(true);
                         marcaCod.setMarcas(null);
@@ -140,15 +143,15 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                         marcaCod.getLblMarca().setText(marca.toString());
                         marcaCod.repaint();
                         marcaCod.revalidate();
-
-                 } catch (PropertyVetoException ex) {
-                     //lblMensaje.setText(ex.getMessage());
-                 }
-             }
-     }
-     else{
-         JOptionPane.showMessageDialog(this, "Esta marca no se puede editar");
-     }
+                        
+                    } catch (PropertyVetoException ex) {
+                        //lblMensaje.setText(ex.getMessage());
+                    }
+                }
+            }
+            else{
+                JOptionPane.showMessageDialog(this, "Esta marca no se puede editar");
+            }  
     }
     
     
@@ -190,6 +193,7 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
      marca.setFunCod(Integer.valueOf(String.valueOf(tmMov.getValueAt(m,9))));
      marca.setProcesado(this.stringADate(String.valueOf(tmMov.getValueAt(m,11))));
      marca.setMarcaFecha((Timestamp) tmMov.getValueAt(m, 12));
+     marca.setObservacion(String.valueOf(tmMov.getValueAt(m,13)));
     }
      
    
@@ -413,11 +417,11 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
 
             },
             new String [] {
-                "Día", "Fecha", "Marca", "Diferencia", "Supervisado", "Responsable", "Fecha Actualizado", "Tipo", "Id", "Num. Funcionario", "Códigos", "Procesado", "MarcaReal"
+                "Día", "Fecha", "Marca", "Diferencia", "Supervisado", "Responsable", "Fecha Actualizado", "Tipo", "Id", "Num. Funcionario", "Códigos", "Procesado", "MarcaReal", "Observacion"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -427,12 +431,15 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
         tablaLic.setComponentPopupMenu(jPopupMenu1);
         jScrollPane2.setViewportView(tablaLic);
         if (tablaLic.getColumnModel().getColumnCount() > 0) {
-            tablaLic.getColumnModel().getColumn(8).setMinWidth(0);
-            tablaLic.getColumnModel().getColumn(8).setPreferredWidth(0);
-            tablaLic.getColumnModel().getColumn(8).setMaxWidth(0);
+            tablaLic.getColumnModel().getColumn(8).setMinWidth(100);
+            tablaLic.getColumnModel().getColumn(8).setPreferredWidth(100);
+            tablaLic.getColumnModel().getColumn(8).setMaxWidth(100);
             tablaLic.getColumnModel().getColumn(12).setMinWidth(0);
             tablaLic.getColumnModel().getColumn(12).setPreferredWidth(0);
             tablaLic.getColumnModel().getColumn(12).setMaxWidth(0);
+            tablaLic.getColumnModel().getColumn(13).setMinWidth(100);
+            tablaLic.getColumnModel().getColumn(13).setPreferredWidth(100);
+            tablaLic.getColumnModel().getColumn(13).setMaxWidth(100);
         }
 
         lblNombre.setFont(new java.awt.Font("Ebrima", 1, 12)); // NOI18N
@@ -463,7 +470,7 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
         jLabel10.setFont(new java.awt.Font("Ebrima", 1, 12)); // NOI18N
         jLabel10.setText("Feriado");
 
-        lblHorarios.setFont(new java.awt.Font("Ebrima", 0, 11)); // NOI18N
+        lblHorarios.setFont(new java.awt.Font("Ebrima", 0, 8)); // NOI18N
         lblHorarios.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
         btnListar1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/procesar.png"))); // NOI18N
@@ -500,7 +507,15 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
             new String [] {
                 "Código", "Total", "Fechas"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(tablaCodes);
         if (tablaCodes.getColumnModel().getColumnCount() > 0) {
             tablaCodes.getColumnModel().getColumn(0).setMinWidth(100);
@@ -516,8 +531,8 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 688, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 702, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -534,6 +549,12 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnListar1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(7, 7, 7)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -593,17 +614,12 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(767, 767, 767)
-                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(btnListar1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(50, 50, 50))
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 950, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 977, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(17, 17, 17))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -646,9 +662,6 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                         .addGap(36, 36, 36)
                         .addComponent(buttonIcon1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(149, 149, 149)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(40, 40, 40)
                         .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -677,14 +690,17 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, 0)
-                                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(149, 149, 149)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(15, 15, 15)
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGap(59, 59, 59)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnListar1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel11))
                         .addGap(80, 80, 80))))
@@ -696,7 +712,7 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1001, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -844,9 +860,12 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                            
                            
                                
-                                   this.lblNombre.setText(f.getNomCompleto());
+                                   this.lblNombre.setText(f.getNomCompletoApe());
                                    if(f.getHorarios().size()==2){
                                        this.lblHorarios.setText(f.getHorarios().get(0).toString()+" - " +f.getHorarios().get(1).toString());
+                                   }
+                                   else if(f.getHorarios().size()==3){
+                                       this.lblHorarios.setText(f.getHorarios().get(0).toString()+" - " +f.getHorarios().get(1).toString()+" - " +f.getHorarios().get(2).toString());
                                    }
                                    else{
                                        this.lblHorarios.setText(f.getHorarios().get(0).toString());
@@ -871,9 +890,11 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                            }
                            
                        } catch (ClassNotFoundException ex) {
-                           Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                        } catch (SQLException ex) {
-                           Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                       } catch (BDExcepcion ex) {
+                           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                        }
                    } 
                    else{
@@ -968,10 +989,12 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
         }
            
        } catch (ClassNotFoundException ex) {
-           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+          JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
        } catch (SQLException ex) {
-           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
-       }
+          JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+       } catch (BDExcepcion ex) {
+          JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+        }
        
        // this.pnlContenido.add(pnlAjustes);
         this.repaint();
@@ -1001,7 +1024,17 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                                 }
                                 }
                                 else{
-                                 JOptionPane.showMessageDialog(this, "La marca del día "+this.formateo(marca.getFechaUso())+", "+marca.getHoraUso()+" no se puede editar");
+                                Date date=new Date();
+                                this.marca.setSupervisado(0);
+                                this.marca.setFecha(date);
+                                    try {
+                                        total+=this.trip.actualizaMarca(marca,null);
+            //                                 JOptionPane.showMessageDialog(this, "La marca del día "+this.formateo(marca.getFechaUso())+", "+marca.getHoraUso()+" no se puede editar");
+                                    } catch (SQLException ex) {
+                                        Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (ClassNotFoundException ex) {
+                                        Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
                              }
                 } catch (ParseException ex) {
                     Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
@@ -1212,7 +1245,7 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                 Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
             }
             try {
-                marcaCod=InternalMarcaCodigo.instancia(trip,cod,this);
+                marcaCod=InternalMarcaCodigo.instancia(trip,cod,this,this.pers);
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
             } catch (SQLException ex) {
@@ -1224,6 +1257,7 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                  marcaCod.setVisible(true);
                  marcaCod.setMarca(null);
                  marcaCod.setMarcas(aux);
+                 marcaCod.setF(feMa);
                  if(aux.size()>1){
                  marcaCod.getLblNombres().setText("Ingreso de código a múltiples marcas");
                  marcaCod.getLblMarca().setText("");
@@ -1232,12 +1266,10 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                      
                      try {
                          marcaCod.getLblNombres().setText(this.pers.funcParcial(String.valueOf(aux.get(0).getFunCod())).getNomCompleto());
-                     } catch (ClassNotFoundException ex) {
-                         Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
-                     } catch (SQLException ex) {
-                         Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
+                         marcaCod.getLblMarca().setText(aux.get(0).toString());
+                     } catch (BDExcepcion ex) {
+                         JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                      }
-                 marcaCod.getLblMarca().setText(aux.get(0).toString());
                  }
                  marcaCod.repaint();
                  marcaCod.revalidate();
@@ -1256,13 +1288,7 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                         }
                         else if(aux.size()==1){
 
-                            try {
-                                marcaCod.getLblNombres().setText(this.pers.funcParcial(String.valueOf(aux.get(0).getFunCod())).getNomCompleto());
-                            } catch (ClassNotFoundException ex) {
-                                Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
-                            } catch (SQLException ex) {
-                                Logger.getLogger(InternalMarcas.class.getName()).log(Level.SEVERE, null, ex);
-                            }
+                            marcaCod.getLblNombres().setText(this.pers.funcParcial(String.valueOf(aux.get(0).getFunCod())).getNomCompleto());
                         marcaCod.getLblMarca().setText(aux.get(0).toString());
                         }
                                marcaCod.repaint();
@@ -1270,7 +1296,9 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
 
                         } catch (PropertyVetoException ex) {
                             //lblMensaje.setText(ex.getMessage());
-                        }
+                        } catch (BDExcepcion ex) {
+                   JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                }
                     }
      }
     
@@ -1423,8 +1451,11 @@ public class InternalMarcas extends javax.swing.JInternalFrame {
                             
                             filas[11]=this.formateo(m.getProcesado());
                             filas[12]=m.getMarcaFecha();
-                           
-                                    
+                            if(m.getObservacion()==null){
+                                filas[13]="";
+                            }else{
+                            filas[13]=m.getObservacion();
+                            }                                 
                             RenderMarca rr=new RenderMarca(7,4,3);
                             tablaLic.setDefaultRenderer(Object.class, rr);
                             modelo.addRow(filas);

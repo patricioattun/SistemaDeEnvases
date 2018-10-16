@@ -341,7 +341,8 @@ public class InternalListadoLicencia extends javax.swing.JInternalFrame {
         String año=this.obtenerAño(d);
 
         try {
-            boolean lics;  lics = this.log.insertarLicencia();
+            boolean lics;  
+            lics = this.log.insertarLicencia();
             if(lics==true){
                 this.cargaCombo();
                 this.lblMsg.setText("Licencia de "+año + ", Generada Exitosamente");

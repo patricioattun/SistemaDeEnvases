@@ -37,7 +37,7 @@ public class PersistenciaTripaliare {
         this.cnn=Conexion.Cadena();
         
     }
-    private String convertirFecha(){
+  private String convertirFecha(){
    String str=null;
    Date fecha=new Date();
         if(fecha!=null){
@@ -53,6 +53,7 @@ public class PersistenciaTripaliare {
         ArrayList<Marca> marcasLocal=this.traerTablaLocal(desde, hasta,null);
         ArrayList<Marca> auxiliar=new ArrayList<>();
         this.eliminarMarca();
+        this.eliminarMarcaInterior();
          
         for(Marca m:marcas){
             for(Marca s:marcasLocal){
@@ -67,7 +68,7 @@ public class PersistenciaTripaliare {
         }
         for(Marca m:marcas){
             if(!auxiliar.contains(m)){
-                m.setSupervisado(1);
+                m.setSupervisado(0);
                 contador+=this.insertarMarcas(m);
                              
             }
@@ -118,7 +119,7 @@ public class PersistenciaTripaliare {
            Marca marca=new Marca();
             marca.setFunCod(Integer.valueOf(rs.getString("funcod").trim()));
             marca.setSupervisado(0);
-            marca.setResponsable(frm.getUsuario());
+            marca.setResponsable(frm.getUsuario().getNombre());
             marca.setMarcaFecha(rs.getTimestamp("marfec"));
             marca.setTipo("RELOJ");
             marcas.add(marca);
@@ -152,7 +153,7 @@ public class PersistenciaTripaliare {
             rs.close();
                      
            
-            return retorno+1;
+        return retorno+1;
     }
     
 public Date sumarDiasFecha(Date fecha){
@@ -280,6 +281,7 @@ public Date sumarDiasFecha(Date fecha){
             marca.setTipo(rs.getString("TIPO"));
             marca.setIncongruencia(rs.getInt("INCONGRUENCIA"));
             marca.setProcesado(rs.getDate("PROCESADO"));
+            marca.setObservacion(rs.getString("OBSERVACION"));
             marcas.add(marca);
             }
             
@@ -343,7 +345,7 @@ public Date sumarDiasFecha(Date fecha){
                 ps.setTimestamp(4, m.getMarcaFecha());
                 ps.setString(5, m.getTipo());
                 ps.setString(6, hoy);
-                ps.setString(7, frm.getUsuario());
+                ps.setString(7, frm.getUsuario().getNombre());
                 retorno=ps.executeUpdate();
        }
            return retorno;
@@ -351,39 +353,44 @@ public Date sumarDiasFecha(Date fecha){
     }
     
     public Integer actualizarMarca(Marca m,Marca marca) throws SQLException, ClassNotFoundException{
-       
+       if(m.getFunCod()==100){
+           String str="";
+       }
         Integer retorno=0;
         PreparedStatement ps=null;
         if(marca==null){
-        String consulta="update Pers_marcas set SUPERVISADO=?,TIPO=?,FECHA=?,RESPONSABLE=?,INCONGRUENCIA=?,MARCA=? where id=? and codfunc=?";
+        String consulta="update Pers_marcas set SUPERVISADO=?,TIPO=?,FECHA=?,RESPONSABLE=?,INCONGRUENCIA=?,MARCA=?,OBSERVACION=? where id=? and codfunc=?";
         contador++;
         this.renuevaConexion();    
         ps=cnn.prepareStatement(consulta);
                 ps.setLong(1, m.getSupervisado());
                 ps.setString(2, m.getTipo());
                 ps.setString(3, this.convertirFecha(m.getFecha()));
-                ps.setString(4, frm.getUsuario());
+                ps.setString(4, frm.getUsuario().getNombre());
                 ps.setInt(5, m.getIncongruencia());
                 ps.setTimestamp(6,m.getMarcaFecha());
-                ps.setLong(7, m.getId());
-                ps.setInt(8, m.getFunCod());
+                ps.setString(7, m.getObservacion());
+                ps.setLong(8, m.getId());
+                ps.setInt(9, m.getFunCod());
                 
                 retorno=ps.executeUpdate();
         }
         else{
-        String consulta="update Pers_marcas set SUPERVISADO=?,TIPO=?,FECHA=?,RESPONSABLE=?,INCONGRUENCIA=?,MARCA=?,EDITADA=? where id=? and codfunc=?";
+        String consulta="update Pers_marcas set SUPERVISADO=?,TIPO=?,FECHA=?,RESPONSABLE=?,INCONGRUENCIA=?,MARCA=?,EDITADA=?,OBSERVACION=? where id=? and codfunc=?";
         contador++;
         this.renuevaConexion();    
         ps=cnn.prepareStatement(consulta);
                 ps.setLong(1, m.getSupervisado());
                 ps.setString(2, m.getTipo());
                 ps.setString(3, this.convertirFecha(m.getFecha()));
-                ps.setString(4, frm.getUsuario());
+                ps.setString(4, frm.getUsuario().getNombre());
                 ps.setInt(5, m.getIncongruencia());
                 ps.setTimestamp(6,m.getMarcaFecha());
                 ps.setInt(7, 1);
-                ps.setLong(8, m.getId());
-                ps.setInt(9, m.getFunCod());
+                ps.setString(8, m.getObservacion().trim());
+                ps.setLong(9, m.getId());
+             
+                ps.setInt(10, m.getFunCod());
                 
                 retorno=ps.executeUpdate();
                 if(retorno>0){
@@ -579,6 +586,19 @@ public Date sumarDiasFecha(Date fecha){
         
     }
     
+     private void eliminarMarcaInterior() throws SQLException, ClassNotFoundException {
+        Connection cn=null;
+        cn=Conexion.Cadena();
+        String delete="delete from PERS_MARCAS where TIPO=? AND SUPERVISADO=? AND EDITADA IS NULL AND PROCESADO IS NULL";
+        PreparedStatement borrar=cn.prepareStatement(delete);
+        borrar.setString(1, "INTERIOR");
+        borrar.setInt(2, 0);
+        ctr=borrar.executeUpdate();
+        
+        cn.close();
+        
+    }
+    
     public ArrayList<Integer> funcDistintos(Date desde,Date hasta) throws SQLException, ClassNotFoundException {
         Connection cn=null;
         Integer i=null;
@@ -675,7 +695,7 @@ public Date sumarDiasFecha(Date fecha){
         PreparedStatement ps=null;
         String consulta="";
         if(f==null&&sup==1){       
-        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
+        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 and e.codigo<>15 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -683,7 +703,7 @@ public Date sumarDiasFecha(Date fecha){
         ps.setTimestamp(2, has);
         }
         else if(f==null&&sup==0){
-        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
+        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 and e.codigo<>15 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -692,7 +712,7 @@ public Date sumarDiasFecha(Date fecha){
         ps.setInt(3, sup);
         }
         else if(f!=null&&sup==1){
-        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
+        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 and e.codigo<>15 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -701,7 +721,7 @@ public Date sumarDiasFecha(Date fecha){
         ps.setInt(3, f.getCodFunc());
         }
         else if(f!=null && sup==0){
-        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 order by e.codigo";
+        consulta="SELECT distinct(m.codfunc),e.codigo FROM PERS_MARCAS m,pers_ingresos_marcas e where m.marca>=? and m.marca<=? and m.supervisado=? and m.codfunc=? and m.id=e.id and m.codfunc=e.codfunc and e.codigo<>10 and e.codigo<>15 order by e.codigo";
         ps=cnn.prepareStatement(consulta);
         java.sql.Timestamp des = this.fijaHoraDesde(desde);
         java.sql.Timestamp has = this.fijaHoraHasta(hasta);
@@ -725,7 +745,7 @@ public Date sumarDiasFecha(Date fecha){
          return marcas;
     }
     
-    public ArrayList<Marca> codigoDiezDiasGenerado(Funcionario f,Integer mes) throws ClassNotFoundException, SQLException{
+    public ArrayList<Marca> codigoDiezDiasGenerado(Funcionario f,Integer mes, Integer ano) throws ClassNotFoundException, SQLException{
         Connection cnn=null;
         Marca m=null;
         cnn=conexion.Cadena();
@@ -734,15 +754,17 @@ public Date sumarDiasFecha(Date fecha){
         String consulta="";
         Integer total=0;
         if(f==null){
-            consulta="select dias_generados,dias_descuento,codfunc from pers_licencia_generada where month(fechaini)=?";
+            consulta="select dias_generados,dias_descuento,codfunc from pers_licencia_generada where month(fechaini)=? and year(fechaini)=? ";
             ps=cnn.prepareStatement(consulta);
             ps.setInt(1, mes);
+            ps.setInt(2, ano);
         }
         else{
-            consulta="select dias_generados,dias_descuento,codfunc from pers_licencia_generada where month(fechaini)=1 and codfunc=?";
+            consulta="select dias_generados,dias_descuento,codfunc from pers_licencia_generada where month(fechaini)=? and year(fechaini)=? and codfunc=?";
             ps=cnn.prepareStatement(consulta);
             ps.setInt(1, mes);
-            ps.setInt(2, f.getCodFunc());
+            ps.setInt(2, ano);
+            ps.setInt(3, f.getCodFunc());
         }
         
         ResultSet rs=ps.executeQuery();
@@ -755,6 +777,56 @@ public Date sumarDiasFecha(Date fecha){
             total=rs.getInt("DIAS_GENERADOS")-rs.getInt("DIAS_DESCUENTO");
             m.setEditada(total);
             m.setIncongruencia(10);
+            marcas.add(m);
+            }      
+             if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+         return marcas;
+        
+    }
+    
+    public ArrayList<Marca> codigoQuince(Funcionario f,Date desde,Date hasta, Integer codigo) throws ClassNotFoundException, SQLException{
+      
+        Connection cnn=null;
+        Marca m=null;
+        cnn=conexion.Cadena();
+        ArrayList<Marca> marcas=new ArrayList<>();
+        PreparedStatement ps=null;
+        String consulta="";
+        Integer total=0;
+        if(f==null){
+            consulta="select * from pers_movimientos_licencia where fechaini>=? and fechaini<=? and tipolic=?";
+            ps=cnn.prepareStatement(consulta);
+            java.sql.Timestamp des = this.fijaHoraDesde(desde);
+            java.sql.Timestamp has = this.fijaHoraHasta(hasta);
+            ps.setTimestamp(1, des);
+            ps.setTimestamp(2, has);
+            ps.setInt(3, codigo);
+    
+        }
+        else{
+            consulta="select * from pers_movimientos_licencia where codfunc=? and fechaini>=? and fechaini<=? and tipolic=?";
+            ps=cnn.prepareStatement(consulta);
+            java.sql.Timestamp des = this.fijaHoraDesde(desde);
+            java.sql.Timestamp has = this.fijaHoraHasta(hasta);
+            ps.setInt(1, f.getCodFunc());
+            ps.setTimestamp(2, des);
+            ps.setTimestamp(3, has);
+            ps.setInt(3, codigo);
+        }
+        
+        ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+            m=new Marca();
+            //se usa marca como objeto contenedor para poder integrarlo a las marcas
+            //los atributos no reflejan lo que llevan adentro
+            //solo importa el tipo de datos
+            m.setFunCod(rs.getInt("CODFUNC"));
+            m.setEditada(rs.getInt("DIAS_TOMADOS"));
+            m.setIncongruencia(codigo);
             marcas.add(m);
             }      
              if(cnn!=null){
@@ -863,7 +935,7 @@ public Date sumarDiasFecha(Date fecha){
                 ps.setInt(2, m.getFunCod());
                 ps.setTimestamp(3, m.getMarcaFecha());
                 ps.setInt(4, m.getSupervisado());
-                ps.setString(5, frm.getUsuario());
+                ps.setString(5, frm.getUsuario().getNombre());
                 ps.setString(6, hoy);
                 ps.setString(7, m.getTipo());
                 retorno+=ps.executeUpdate();

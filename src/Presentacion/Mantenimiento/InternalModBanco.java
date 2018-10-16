@@ -2,6 +2,7 @@
 package Presentacion.Mantenimiento;
 
 import Dominio.Banco;
+import Dominio.CodigoBcu;
 import Dominio.Departamento;
 import Logica.LogBanco;
 import Logica.LogFuncionario;
@@ -17,14 +18,17 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
     LogBanco log;
     Banco b;
     private LogFuncionario fun;
+    private ArrayList<CodigoBcu> banc;
     private static InternalModBanco instancia=null;
   
     private InternalModBanco() throws ClassNotFoundException, SQLException {
         initComponents();
         this.fun=new LogFuncionario();
         log=new LogBanco();
-        this.cargaBanco();
         this.cargaDepto();
+        this.cargaBcu();
+        this.cargaBanco();
+       
         this.jPanel1.setVisible(true);
         this.jPanel2.setVisible(true);
     }
@@ -51,7 +55,6 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        txtNombre = new org.edisoncor.gui.textField.TextFieldRound();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         txtSucursal = new org.edisoncor.gui.textField.TextFieldRound();
@@ -69,6 +72,7 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
         comboBancos = new javax.swing.JComboBox();
         comboDepto = new javax.swing.JComboBox();
         lblNuevo = new javax.swing.JLabel();
+        comboBcu = new javax.swing.JComboBox();
         lblMsg = new javax.swing.JLabel();
 
         setClosable(true);
@@ -93,16 +97,6 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
         });
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Mantenimiento Banco", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Ebrima", 1, 18))); // NOI18N
-
-        txtNombre.setBackground(new java.awt.Color(102, 153, 255));
-        txtNombre.setForeground(new java.awt.Color(255, 255, 255));
-        txtNombre.setCaretColor(new java.awt.Color(255, 255, 255));
-        txtNombre.setSelectionColor(new java.awt.Color(255, 255, 255));
-        txtNombre.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                txtNombreKeyTyped(evt);
-            }
-        });
 
         jLabel1.setFont(new java.awt.Font("Euphemia", 1, 14)); // NOI18N
         jLabel1.setText("Bancos existentes");
@@ -217,6 +211,17 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
         lblNuevo.setFont(new java.awt.Font("Ebrima", 1, 12)); // NOI18N
         lblNuevo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
+        comboBcu.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                comboBcuItemStateChanged(evt);
+            }
+        });
+        comboBcu.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                comboBcuMouseReleased(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -238,8 +243,8 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(txtSucursal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(txtNombre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(comboBancos, 0, 241, Short.MAX_VALUE))
+                                .addComponent(comboBancos, 0, 241, Short.MAX_VALUE)
+                                .addComponent(comboBcu, 0, 241, Short.MAX_VALUE))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(1, 1, 1)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -259,36 +264,34 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel1)
                             .addComponent(comboBancos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
-                        .addComponent(jLabel2)
-                        .addGap(21, 21, 21)
-                        .addComponent(jLabel3))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(38, 38, 38)
-                        .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtSucursal, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4)
-                            .addComponent(comboDepto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtLocalidad, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel7))))
+                        .addComponent(jLabel2))
+                    .addComponent(comboBcu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(17, 17, 17)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtSucursal, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(comboDepto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtLocalidad, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
                 .addGap(18, 18, 18)
                 .addComponent(lblNuevo, javax.swing.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -336,7 +339,7 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 431, Short.MAX_VALUE)
+            .addGap(0, 453, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -346,16 +349,6 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void txtNombreKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombreKeyTyped
-        int k = (int) evt.getKeyChar();
-        if(k==10){
-            this.txtSucursal.requestFocus();
-        }
-        if(this.txtNombre.getText().length()==35){
-            evt.consume();
-        }
-    }//GEN-LAST:event_txtNombreKeyTyped
 
     private void txtSucursalKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSucursalKeyTyped
         int k = (int) evt.getKeyChar();
@@ -413,29 +406,43 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
         else{
             b=null;
         }
-        String nombre=this.txtNombre.getText().toUpperCase();
+        CodigoBcu codBcu=null;
+        if(this.comboBcu.getSelectedIndex()!=0){
+            codBcu=(CodigoBcu) this.comboBcu.getSelectedItem();
+        }
+        else{
+            codBcu=null;
+        }
+        Departamento depto=null;
+        if(this.comboDepto.getSelectedIndex()!=0){
+            depto=(Departamento) this.comboDepto.getSelectedItem();
+        }
+        else{
+            depto=null;
+        }
+       
         String suc=this.txtSucursal.getText();
-        Departamento depto=(Departamento) this.comboDepto.getSelectedItem();
+        
         String localidad=this.txtLocalidad.getText().toUpperCase();
         String direccion=this.txtDireccion.getText().toUpperCase();
         String telef=this.txtTelefono.getText();
 
         if(b!=null){
-            if(this.esNum(suc)&&!nombre.equals("")&&depto!=null){
+            if(this.esNum(suc)&&depto!=null && codBcu!=null){
 
-                Integer sucursal=Integer.valueOf(suc);
-                Integer cod=b.getCodigo();
                 try {
-                    if(this.log.modificabanco(cod,nombre,sucursal,depto,localidad,direccion,telef)){
+                    Integer sucursal=Integer.valueOf(suc);
+                    Integer cod=b.getCodigo();
+                    if(this.log.modificabanco(cod,codBcu,sucursal,depto,localidad,direccion,telef)){
                         this.lblMsg.setText("Banco actualizado");
-
+                        
                     }
                     else{
                         this.lblMsg.setText("No se ha podido actualizar el Banco");
                     }
                 } catch (SQLException ex) {
                     Logger.getLogger(InternalModBanco.class.getName()).log(Level.SEVERE, null, ex);
-                } 
+                }
             }
 
             else{
@@ -443,13 +450,13 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
             }
         }
         else{
-            if(this.esNum(suc)&&!nombre.equals("")&&depto!=null){
-                Integer sucursal=Integer.valueOf(suc);
-            
+            if(this.esNum(suc)&&depto!=null && codBcu!=null){
                 try {
-                    if(!this.log.existe(fun, sucursal, nombre)){
+                    Integer sucursal=Integer.valueOf(suc);
+                    
+                    if(!this.log.existe(fun, sucursal, codBcu.getNombre())){
                         
-                        if(this.log.alta(nombre,sucursal,depto,localidad,direccion,telef)){
+                        if(this.log.alta(codBcu,sucursal,depto,localidad,direccion,telef)){
                             this.lblMsg.setText("Nuevo Banco Ingresado");
                             this.lblNuevo.setText("");
                             
@@ -459,7 +466,7 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
                     }
                     else{
                         this.lblMsg.setText("El Banco que desea ingresar ya existe");
-                    }   
+                    }
                 } catch (SQLException ex) {
                     Logger.getLogger(InternalModBanco.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ClassNotFoundException ex) {
@@ -494,17 +501,18 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
             this.comboDepto.setSelectedIndex(-1);
             this.txtDireccion.setText("");
             this.txtLocalidad.setText("");
-            this.txtNombre.setText("");
+           
             this.txtSucursal.setText("");
             this.txtTelefono.setText("");
     }//GEN-LAST:event_btnAceptarActionPerformed
 
     private void btnNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNuevoActionPerformed
         this.comboBancos.setSelectedIndex(0);
-        this.comboDepto.setSelectedIndex(-1);
+        this.comboBcu.setSelectedIndex(0);
+        this.comboDepto.setSelectedIndex(0);
         this.txtDireccion.setText("");
         this.txtLocalidad.setText("");
-        this.txtNombre.setText("");
+        
         this.txtSucursal.setText("");
         this.txtTelefono.setText("");
         this.b=null;
@@ -553,7 +561,7 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
         this.comboDepto.setSelectedIndex(-1);
         this.txtDireccion.setText("");
         this.txtLocalidad.setText("");
-        this.txtNombre.setText("");
+       
         this.txtSucursal.setText("");
         this.txtTelefono.setText("");
         this.comboBancos.repaint();
@@ -562,26 +570,28 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_btnCancelar1ActionPerformed
 
     private void comboBancosItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboBancosItemStateChanged
-        if(this.comboBancos.getSelectedIndex()!=0 &&this.comboBancos.getSelectedIndex()!=1){
+        int in=this.comboBancos.getSelectedIndex();
+        if(this.comboBancos.getSelectedIndex()!=0 && this.comboBancos.getSelectedIndex()!=1){
             Banco b=(Banco) this.comboBancos.getSelectedItem();
             if(b!=null){
                 String direccion=b.getDireccion();
                 Integer suc=b.getSucursal();
-                String nombre=b.getNombre();
                 Departamento depto=b.getDepartamento();
                 String localidad=b.getLocalidad();
                 String tel=b.getTelefono();
+                
+                this.fijaCodigoBcu(b);
+                
                 this.comboDepto.setEditable(true);
                 this.txtDireccion.setText(this.noNull(direccion));
                 this.txtLocalidad.setText(this.noNull(localidad));
-                this.txtNombre.setText(nombre);
                 this.txtTelefono.setText(this.noNull(tel));
                 this.txtSucursal.setText(String.valueOf(suc));
                 this.comboDepto.setSelectedItem(depto);
 
                 this.txtDireccion.setEditable(true);
                 this.txtLocalidad.setEditable(true);
-                this.txtNombre.setEditable(true);
+                
                 this.txtSucursal.setEditable(true);
                 this.txtTelefono.setEditable(true);
                 this.comboDepto.setEnabled(true);
@@ -589,11 +599,25 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
                 this.lblNuevo.setText("");
                 this.lblMsg.setText("");
             }
+            
         }
+        else{
+               
+                this.comboBcu.setSelectedIndex(0);
+                this.comboDepto.setSelectedIndex(0);
+                this.txtDireccion.setText("");
+                this.txtLocalidad.setText("");
+
+                this.txtSucursal.setText("");
+                this.txtTelefono.setText("");
+                this.b=null;
+                this.lblNuevo.setText("Nuevo Banco");
+                this.lblMsg.setText("");
+            }
     }//GEN-LAST:event_comboBancosItemStateChanged
 
     private void comboBancosMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboBancosMouseReleased
-        this.txtNombre.requestFocus();
+        
     }//GEN-LAST:event_comboBancosMouseReleased
 
     private void comboDeptoMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboDeptoMouseReleased
@@ -611,7 +635,15 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
         instancia=null;
     }//GEN-LAST:event_formInternalFrameClosed
 
-     private void cargaBanco() throws SQLException, ClassNotFoundException{
+    private void comboBcuItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboBcuItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_comboBcuItemStateChanged
+
+    private void comboBcuMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboBcuMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_comboBcuMouseReleased
+
+    private void cargaBanco() throws SQLException, ClassNotFoundException{
         ArrayList<Banco> banc=fun.cargaComboBanco();
       this.comboBancos.addItem("INGRESAR NUEVO");  
       for(int i=0; i<banc.size();i++){
@@ -619,11 +651,22 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
           this.comboBancos.setSelectedIndex(0);
       }
      }
+     
+     private void cargaBcu(){
+      banc=fun.cargaComboBcu();
+      this.comboBcu.addItem("SELECCIONAR");  
+      for(int i=0; i<banc.size();i++){
+          this.comboBcu.addItem(banc.get(i));
+          this.comboBcu.setSelectedIndex(0);
+      }
+     }
+     
     private void cargaDepto() throws SQLException, ClassNotFoundException{
     ArrayList<Departamento> departamentos=fun.cargaComboDepto();
+         this.comboDepto.addItem("SELECCIONAR");  
       for(int i=0; i<departamentos.size();i++){
           this.comboDepto.addItem(departamentos.get(i));
-          this.comboDepto.setSelectedIndex(-1);
+          this.comboDepto.setSelectedIndex(0);
          }
     }
     
@@ -655,6 +698,7 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
     private org.edisoncor.gui.button.ButtonIcon btnCancelar1;
     private org.edisoncor.gui.button.ButtonIcon btnNuevo;
     private javax.swing.JComboBox comboBancos;
+    private javax.swing.JComboBox comboBcu;
     private javax.swing.JComboBox comboDepto;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -669,8 +713,19 @@ public class InternalModBanco extends javax.swing.JInternalFrame {
     private javax.swing.JLabel lblNuevo;
     private org.edisoncor.gui.textField.TextFieldRound txtDireccion;
     private org.edisoncor.gui.textField.TextFieldRound txtLocalidad;
-    private org.edisoncor.gui.textField.TextFieldRound txtNombre;
     private org.edisoncor.gui.textField.TextFieldRound txtSucursal;
     private org.edisoncor.gui.textField.TextFieldRound txtTelefono;
     // End of variables declaration//GEN-END:variables
+
+    private void fijaCodigoBcu(Banco b) {
+      int i =0;
+      boolean esta = false;
+      while (i<this.banc.size() && !esta){
+          if(banc.get(i).getCodigo().equals(b.getCodigoBcu().getCodigo())){
+              esta=true;
+              this.comboBcu.setSelectedItem(banc.get(i));
+          }
+          i++;
+      }
+    }
 }

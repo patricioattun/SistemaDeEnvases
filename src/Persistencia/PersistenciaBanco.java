@@ -2,12 +2,15 @@
 package Persistencia;
 
 import Dominio.Banco;
+import Dominio.CodigoBcu;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PersistenciaBanco {
     
@@ -27,7 +30,7 @@ public class PersistenciaBanco {
         ResultSet rs=ps.executeQuery();
             while(rs.next()){
             banco=new Banco();
-            
+            CodigoBcu CodigoBcu = new CodigoBcu();
             banco.setDepartamento(perCom.buscarDepto(rs.getInt("DEPARTAMENTO")));
             banco.setCodigo(rs.getInt("CODIGO"));
             banco.setSucursal(rs.getInt("SUCURSAL"));
@@ -35,6 +38,7 @@ public class PersistenciaBanco {
             banco.setLocalidad(rs.getString("LOCALIDAD"));
             banco.setDireccion(rs.getString("DIRECCION"));
             banco.setTelefono(rs.getString("TELEFONO"));
+            banco.setCodigoBcu(this.buscaCodigoBcu(cnn, rs.getString("CODIGO_BCU")));
            
             
             bancos.add(banco);
@@ -69,7 +73,7 @@ public class PersistenciaBanco {
         Integer codBanco=null;
          try{
              cnn=conexion.Cadena();
-             String insert="insert into PERS_BANCOS(CODIGO,SUCURSAL,NOMBRE,DEPARTAMENTO,LOCALIDAD,DIRECCION,TELEFONO)"+"values(?,?,?,?,?,?,?)";
+             String insert="insert into PERS_BANCOS(CODIGO,SUCURSAL,NOMBRE,DEPARTAMENTO,LOCALIDAD,DIRECCION,TELEFONO,CODIGO_BCU)"+"values(?,?,?,?,?,?,?,?)";
              PreparedStatement ps=cnn.prepareStatement(insert);
              codBanco=this.buscarUltimoCod();
              ps.setInt(1, codBanco );
@@ -79,7 +83,8 @@ public class PersistenciaBanco {
              ps.setString(5, b.getLocalidad());
              ps.setString(6,b.getDireccion());
              ps.setString(7, b.getTelefono());
-              i=ps.executeUpdate();
+             ps.setString(8, b.getCodigoBcu().getCodigo());
+             i=ps.executeUpdate();
              alta=true;
          }
          catch(ClassNotFoundException e1){
@@ -130,7 +135,7 @@ public class PersistenciaBanco {
         Integer i=0;
         try{
              cnn=conexion.Cadena();
-             String modifica="UPDATE PERS_BANCOS set SUCURSAL=?, NOMBRE=?, DEPARTAMENTO=?, LOCALIDAD=?,DIRECCION=?,  TELEFONO=? where CODIGO=?";
+             String modifica="UPDATE PERS_BANCOS set SUCURSAL=?, NOMBRE=?, DEPARTAMENTO=?, LOCALIDAD=?,DIRECCION=?,  TELEFONO=?, CODIGO_BCU=? where CODIGO=?";
             
              PreparedStatement ps=cnn.prepareStatement(modifica);
              
@@ -140,7 +145,9 @@ public class PersistenciaBanco {
              ps.setString(4, b.getLocalidad());
              ps.setString(5,b.getDireccion());
              ps.setString(6, b.getTelefono());
-             ps.setInt(7, b.getCodigo());
+             ps.setString(7, b.getCodigoBcu().getCodigo());
+             ps.setInt(8, b.getCodigo());
+          
              
              
              i=ps.executeUpdate();
@@ -178,6 +185,58 @@ public class PersistenciaBanco {
             }
             
          return ultCod+1;
+    }
+
+    private CodigoBcu buscaCodigoBcu(Connection cnn, String codigo) {
+        CodigoBcu cod=null;
+        try {
+            String consulta="Select * from PERS_BANCOS_COD_BCU WHERE CODIGO=?";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setString(1, codigo );
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                cod=new CodigoBcu();
+                cod.setCodigo(rs.getString("CODIGO"));
+                cod.setNombre(rs.getString("NOMBRE"));
+            }
+            
+           
+            
+           
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaBanco.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       return cod;
+    }
+    
+    public ArrayList<CodigoBcu> listarCodigoBcu() throws ClassNotFoundException {
+        CodigoBcu cod=null;
+        Connection cnn=null;
+        ArrayList<CodigoBcu> codigos = new ArrayList<>();
+        
+        try {
+            cnn=conexion.Cadena();
+            String consulta="Select * from PERS_BANCOS_COD_BCU ORDER BY CODIGO";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                cod=new CodigoBcu();
+                cod.setCodigo(rs.getString("CODIGO"));
+                cod.setNombre(rs.getString("NOMBRE"));
+                codigos.add(cod);
+            }
+            
+           if(cnn!=null){
+               cnn.close();
+               rs.close();
+               ps.close();
+           }
+            
+           
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaBanco.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       return codigos;
     }
     
     

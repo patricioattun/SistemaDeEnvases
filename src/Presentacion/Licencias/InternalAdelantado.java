@@ -10,6 +10,7 @@ import Dominio.Horario;
 import Dominio.LicenciaAdelantada;
 import Dominio.MovimientoLicencia;
 import Logica.LogFuncionario;
+import Persistencia.BDExcepcion;
 import Presentacion.frmPrin;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -390,14 +392,9 @@ public class InternalAdelantado extends javax.swing.JInternalFrame {
             
             try {
                 lic= log.consultaAdelantado(codFunc);
-            } catch (SQLException ex) {
-                Logger.getLogger(InternalAdelantado.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(InternalAdelantado.class.getName()).log(Level.SEVERE, null, ex);
-            }
                 if(lic!=null){
                     if(lic.getFuncionario()!=null){
-                        this.lblNombres.setText(lic.getFuncionario().getNomCompleto());
+                        this.lblNombres.setText(lic.getFuncionario().getNomCompletoApe());
                         Integer año=lic.getAñoSaldo()-1;
                         this.txtAño.setText(año.toString());
                         Integer saldo=10-lic.getDiasTomados();
@@ -427,6 +424,9 @@ public class InternalAdelantado extends javax.swing.JInternalFrame {
                     this.btnCalc.setEnabled(false);
                     this.txtdias.setEnabled(false);
                 }
+            } catch (BDExcepcion ex) {
+              JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+            }
             
         }
         else{
@@ -506,7 +506,7 @@ public class InternalAdelantado extends javax.swing.JInternalFrame {
                         if(diasTomar==real){
                             Integer codFunc=Integer.valueOf(this.txtCodFunc.getText());
                             try {
-                                if(this.log.insertarLicAdelantada(año,ini,fin,real,lic.getFuncionario(),0)){
+                                if(this.log.insertarLicAdelantada(año,ini,fin,real,lic.getFuncionario(),0,null)){
                                     this.limpiar();
                                     this.lblMsg.setText("Se ingresó correctamente");
                                     this.lblReal.setText("");

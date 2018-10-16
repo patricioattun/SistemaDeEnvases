@@ -4,9 +4,11 @@ package Persistencia;
 import Dominio.Banco;
 import Dominio.Cargo;
 import Dominio.CentroCosto;
+import Dominio.CodigoBcu;
 import Dominio.CodigoDesvinc;
 import Dominio.Departamento;
 import Dominio.EstadoCivil;
+import Dominio.Relacion;
 import Dominio.Sns;
 import Dominio.Sucursal;
 import java.sql.Connection;
@@ -14,11 +16,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PersistenciaCombos {
     private Conexion conexion;
     private ArrayList<CentroCosto> centros;
     private ArrayList<Banco> bancos;
+    private ArrayList<CodigoBcu> codigosBcu;
     private ArrayList<Departamento> deptos;
     private ArrayList<Cargo> cargos;
     private ArrayList<Sucursal> sucursales;
@@ -413,6 +418,121 @@ public class PersistenciaCombos {
              i++;
          }
          return s; 
+    }
+
+    public ArrayList<String> cargoComboDocumento(Connection cn) {
+        ArrayList<String> lista = new ArrayList<>();
+        try {
+            String consulta="Select nombre from pers_tiposdoc order by codigo";
+            PreparedStatement ps=cn.prepareStatement(consulta);
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                String str =rs.getString("NOMBRE").trim();
+                lista.add(str);
+            }
+            ps.close();
+            rs.close();
+            
+                      
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaCombos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
+
+    public ArrayList<String> cargocomboPais(Connection cn) {
+      ArrayList<String> lista = new ArrayList<>();
+        try {
+            String consulta="Select nombre from pers_paises order by codigo";
+            PreparedStatement ps=cn.prepareStatement(consulta);
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                String str =rs.getString("NOMBRE").trim();
+                lista.add(str);
+            }
+            ps.close();
+            rs.close();
+            
+                      
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaCombos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
+
+    public ArrayList<String> cargocomboNacionalidad(Connection cn) {
+     ArrayList<String> lista = new ArrayList<>();
+        try {
+            String consulta="Select nombre from pers_nacionalidad order by codigo";
+            PreparedStatement ps=cn.prepareStatement(consulta);
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                String str =rs.getString("NOMBRE").trim();
+                lista.add(str);
+            }
+            ps.close();
+            rs.close();
+            
+                      
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaCombos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
+
+    public ArrayList<Relacion> cargocomboRelacion(Connection cn) {
+       ArrayList<Relacion> lista = new ArrayList<>();
+        try {
+            String consulta="Select * from pers_relacion order by codigo";
+            PreparedStatement ps=cn.prepareStatement(consulta);
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                Relacion r = new Relacion();
+                r.setNombre(rs.getString("NOMBRE").charAt(0));
+                r.setCodigo(rs.getInt("CODIGO")); 
+                r.setDescripcion(rs.getString("DESCRIPCION"));
+                lista.add(r);
+            }
+            ps.close();
+            rs.close();
+            
+                      
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaCombos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
+
+    public ArrayList<String> cargocomboCaja(Connection cn) {
+            ArrayList<String> lista = new ArrayList<>();
+        try {
+            String consulta="Select nombre from pers_fondosolcjpu order by codigo";
+            PreparedStatement ps=cn.prepareStatement(consulta);
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                String str =rs.getString("NOMBRE").trim();
+                lista.add(str);
+            }
+            ps.close();
+            rs.close();
+            
+                      
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaCombos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
+
+    public ArrayList<CodigoBcu> cargaComboBcu() {
+        try {
+            PersistenciaBanco perBan=new PersistenciaBanco();
+            codigosBcu=perBan.listarCodigoBcu();
+            
+            
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(PersistenciaCombos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return codigosBcu;
     }
 
 }

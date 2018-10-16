@@ -2,6 +2,7 @@
 package Logica;
 
 import Dominio.Banco;
+import Dominio.CodigoBcu;
 import Dominio.Departamento;
 import Persistencia.PersistenciaBanco;
 import Persistencia.PersistenciaCombos;
@@ -29,15 +30,16 @@ public class LogBanco {
         return perban.existe(suc, nombre);
     }
 
-    public boolean alta(String nombre, Integer sucursal, Departamento depto, String localidad, String direccion, String telef) throws SQLException {
+    public boolean alta(CodigoBcu codBcu, Integer sucursal, Departamento depto, String localidad, String direccion, String telef) throws SQLException {
        Boolean alta=false;
        Banco banco=new Banco();
        banco.setDireccion(direccion);
        banco.setLocalidad(localidad);
-       banco.setNombre(nombre);
+       banco.setNombre(codBcu.getNombre());
        banco.setSucursal(sucursal);
        banco.setTelefono(telef);
        banco.setDepartamento(depto);
+       banco.setCodigoBcu(codBcu);
        return perban.altaBanco(banco);
         
     }
@@ -50,16 +52,17 @@ public class LogBanco {
         return this.perban.eliminaBanco(cod);
     }
 
-    public boolean modificabanco(Integer cod, String nombre, Integer sucursal, Departamento depto, String localidad, String direccion, String telef) throws SQLException {
+    public boolean modificabanco(Integer cod, CodigoBcu codBcu, Integer sucursal, Departamento depto, String localidad, String direccion, String telef) throws SQLException {
      Boolean alta=false;
        Banco banco=new Banco();
        banco.setDireccion(direccion);
        banco.setLocalidad(localidad);
-       banco.setNombre(nombre);
+       banco.setNombre(codBcu.getNombre());
        banco.setSucursal(sucursal);
        banco.setTelefono(telef);
        banco.setDepartamento(depto);
        banco.setCodigo(cod);       
+       banco.setCodigoBcu(codBcu);
        return perban.modificaBanco(banco);
     }
 }

@@ -2,16 +2,36 @@
 package Presentacion;
 
 
+import Dominio.Usuario;
+import Logica.LogFuncionario;
+import Persistencia.BDExcepcion;
+import Presentacion.Declaraciones.InternalMantenimientoDecla;
 import Presentacion.Licencias.InternalAdelantado;
 import Presentacion.Licencias.InternalAjustesLicencia;
 import Presentacion.Licencias.InternalCalcular;
+import Presentacion.Licencias.InternalDiasLic;
 import Presentacion.Licencias.InternalMovLicencia;
 import Presentacion.Licencias.pnlDiasLic;
+import Presentacion.Liquidaciones.InternalArchivoBanco;
+import Presentacion.Liquidaciones.InternalFechaPrelacionFunc;
+import Presentacion.Liquidaciones.InternalFechasPrelacion;
 import Presentacion.Liquidaciones.InternalFijoPorCod;
 import Presentacion.Liquidaciones.InternalFijoPorFunc;
 import Presentacion.Liquidaciones.InternalIngresoPorCod;
 import Presentacion.Liquidaciones.InternalIngresoPorFunc;
+import Presentacion.Liquidaciones.InternalLiquidaAguinaldo;
+import Presentacion.Liquidaciones.InternalLiquidaSueldo;
+import Presentacion.Liquidaciones.InternalListadoPorCodigos;
+import Presentacion.Liquidaciones.InternalPromedioHorasExtras;
+import Presentacion.Liquidaciones.InternalReLiqVacacionales;
+import Presentacion.Liquidaciones.InternalReLiquidaSueldos;
+
+import Presentacion.Liquidaciones.InternalResumenYDetalle;
 import Presentacion.Liquidaciones.InternalRetencionesFijas;
+import Presentacion.Liquidaciones.InternalTipoLiquidacion;
+import Presentacion.Liquidaciones.InternalVacacionales;
+import Presentacion.Mantenimiento.InternalAumentoSalarial;
+import Presentacion.Mantenimiento.InternalMantParametros;
 import Presentacion.Mantenimiento.InternalModBanco;
 import Presentacion.Mantenimiento.InternalModCodigoDesvin;
 import Presentacion.Mantenimiento.InternalModFeriado;
@@ -22,14 +42,22 @@ import Presentacion.Reportes.InternalListadoFunc;
 import Presentacion.Reportes.InternalListadoLicencia;
 import Presentacion.Reportes.InternalListadoMovLic;
 import Presentacion.Reportes.InternalVencimientoCarne;
+import Presentacion.Vales.InternalVales;
 import java.awt.Dimension;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDesktopPane;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 
@@ -59,31 +87,38 @@ public class frmPrin extends javax.swing.JFrame {
    private InternalFijoPorCod internalFijoPorCod;
    private InternalFijoPorFunc internalFijoPorFunc;
    private InternalRetencionesFijas internalRetencionesFijas;
-   
+   private InternalMantenimientoDecla internalDecla;
+   private InternalAumentoSalarial internalAumento;
+   private InternalVales internalVale;
+   private InternalArchivoBanco internalArchivoBanco;
+   private InternalDiasLic internalDiasLic;
    private static frmPrin instancia;
-
-
-   private String usuario;
+   private String fechaLiq;
+   private LogFuncionario log;
+   private Usuario usuario;
+   private String nom;
    
    JDesktopPane desktop = new JDesktopPane();
    
-    public frmPrin() throws ClassNotFoundException, SQLException {
+    public frmPrin(Usuario us) throws ClassNotFoundException, SQLException {
         initComponents();
         this.setMinimumSize(new Dimension(1024, 768)); 
         this.setLocationRelativeTo(null);
         this.setExtendedState(MAXIMIZED_BOTH);
-        this.setTitle("Sistema de Sueldos");
         this.setVisible(true);
-        this.licPorFecha.setVisible(false);
+        //this.licPorFecha.setVisible(false);
         this.setContentPane(desktop);
-       // this.jMenu5.setVisible(false);
-        
+        this.usuario=us;
+        this.chequeaPermisos();
+        this.setTitle("Sistema de Sueldos // "+"Bienvenido "+this.usuario.getNombre());
+        log=new LogFuncionario();
+     
     }
     
     public void cargaInfo() throws ClassNotFoundException, SQLException{
                 
         this.internalInfo=InternalInfo.instancia();
-        this.internalInfo.setUsuario(usuario);
+        this.internalInfo.setUsuario(usuario.getNombre());
         if (!internalInfo.isVisible()) {
             desktop.add(internalInfo);
             this.internalInfo.setLocation(330,100);
@@ -104,11 +139,11 @@ public class frmPrin extends javax.swing.JFrame {
     
     }
 
-    public String getUsuario() {
+    public Usuario getUsuario() {
         return usuario;
     }
 
-    public void setUsuario(String usuario) {
+    public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
     }
  
@@ -126,12 +161,21 @@ public class frmPrin extends javax.swing.JFrame {
    {    
          if (instancia== null)
          {
-            instancia = new frmPrin();
+            instancia = new frmPrin(null);
          }
          return instancia;
       
    }
 
+    public static frmPrin instancia2(Usuario us) throws  SQLException, ClassNotFoundException
+   {    
+         if (instancia== null)
+         {
+            instancia = new frmPrin(us);
+         }
+         return instancia;
+      
+   }
     public JPanel getPnlContenido() {
         return pnlContenido;
     }
@@ -141,122 +185,154 @@ public class frmPrin extends javax.swing.JFrame {
     }
 
 
-
-    
-
-
-
-   
-
-
-
- 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         pnlContenido = new javax.swing.JPanel();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
-        jMenuItem6 = new javax.swing.JMenuItem();
-        jMenuItem14 = new javax.swing.JMenuItem();
-        jMenuItem11 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        jMenuItem2 = new javax.swing.JMenuItem();
+        barraMenu = new javax.swing.JMenuBar();
+        menuMant = new javax.swing.JMenu();
+        mantFunc = new javax.swing.JMenuItem();
+        mantHora = new javax.swing.JMenuItem();
+        mantBanco = new javax.swing.JMenuItem();
+        mantFeriado = new javax.swing.JMenuItem();
+        mantCodEgre = new javax.swing.JMenuItem();
+        mantAumento = new javax.swing.JMenuItem();
+        parametros = new javax.swing.JMenuItem();
+        menuRep = new javax.swing.JMenu();
+        repSalud = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
-        jMenuItem7 = new javax.swing.JMenuItem();
-        jMenuItem12 = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
+        repLicGen = new javax.swing.JMenuItem();
+        repMovInt = new javax.swing.JMenuItem();
+        menuMarca = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
-        jMenu4 = new javax.swing.JMenu();
+        menuLic = new javax.swing.JMenu();
         jMenuItem8 = new javax.swing.JMenuItem();
         licPorFecha = new javax.swing.JMenuItem();
         jMenuItem10 = new javax.swing.JMenuItem();
         jMenuItem9 = new javax.swing.JMenuItem();
         jMenuItem15 = new javax.swing.JMenuItem();
-        jMenu5 = new javax.swing.JMenu();
-        jMenu6 = new javax.swing.JMenu();
+        menuLiq = new javax.swing.JMenu();
+        liqMov = new javax.swing.JMenu();
         jMenuItem13 = new javax.swing.JMenuItem();
         jMenuItem16 = new javax.swing.JMenuItem();
-        jMenu7 = new javax.swing.JMenu();
+        liqCodFijo = new javax.swing.JMenu();
         jMenuItem17 = new javax.swing.JMenuItem();
         jMenuItem18 = new javax.swing.JMenuItem();
+        liqRetFija = new javax.swing.JMenuItem();
+        liqBanco = new javax.swing.JMenuItem();
+        prelacion = new javax.swing.JMenu();
+        jMenuItem6 = new javax.swing.JMenuItem();
+        jMenuItem7 = new javax.swing.JMenuItem();
+        horasExtras = new javax.swing.JMenuItem();
         jMenuItem19 = new javax.swing.JMenuItem();
-        jMenu8 = new javax.swing.JMenu();
+        liquidaciones = new javax.swing.JMenu();
+        jMenuItem5 = new javax.swing.JMenuItem();
+        jMenuItem12 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem11 = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem14 = new javax.swing.JMenuItem();
+        jMenuItem22 = new javax.swing.JMenuItem();
+        menuVale = new javax.swing.JMenu();
         jMenuItem20 = new javax.swing.JMenuItem();
-        jMenu9 = new javax.swing.JMenu();
+        menuDecla = new javax.swing.JMenu();
         jMenuItem21 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(51, 102, 255));
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         setIconImages(null);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
         getContentPane().setLayout(new java.awt.FlowLayout());
         getContentPane().add(pnlContenido);
 
-        jMenu1.setText("Mantenimiento");
-        jMenu1.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+        menuMant.setText("Mantenimiento");
+        menuMant.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
 
-        jMenuItem4.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
-        jMenuItem4.setText("Mantenimiento Funcionario");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+        mantFunc.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        mantFunc.setText("Mantenimiento Funcionario");
+        mantFunc.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem4ActionPerformed(evt);
+                mantFuncActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem4);
+        menuMant.add(mantFunc);
 
-        jMenuItem5.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
-        jMenuItem5.setText("Mantenimiento Horario");
-        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+        mantHora.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        mantHora.setText("Mantenimiento Horario");
+        mantHora.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem5ActionPerformed(evt);
+                mantHoraActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem5);
+        menuMant.add(mantHora);
 
-        jMenuItem6.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
-        jMenuItem6.setText("Mantenimiento Banco");
-        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+        mantBanco.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        mantBanco.setText("Mantenimiento Banco");
+        mantBanco.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem6ActionPerformed(evt);
+                mantBancoActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem6);
+        menuMant.add(mantBanco);
 
-        jMenuItem14.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
-        jMenuItem14.setText("Mantenimiento Feriado");
-        jMenuItem14.addActionListener(new java.awt.event.ActionListener() {
+        mantFeriado.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        mantFeriado.setText("Mantenimiento Feriado");
+        mantFeriado.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem14ActionPerformed(evt);
+                mantFeriadoActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem14);
+        menuMant.add(mantFeriado);
 
-        jMenuItem11.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
-        jMenuItem11.setText("Mantenimiento Código Egreso");
-        jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
+        mantCodEgre.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        mantCodEgre.setText("Mantenimiento Código Egreso");
+        mantCodEgre.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem11ActionPerformed(evt);
+                mantCodEgreActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem11);
+        menuMant.add(mantCodEgre);
 
-        jMenuBar1.add(jMenu1);
-
-        jMenu2.setText("Reportes");
-        jMenu2.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
-
-        jMenuItem2.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
-        jMenuItem2.setText("Vencimientos Carne de Salud");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+        mantAumento.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        mantAumento.setText("Aumentos Salariales");
+        mantAumento.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem2ActionPerformed(evt);
+                mantAumentoActionPerformed(evt);
             }
         });
-        jMenu2.add(jMenuItem2);
+        menuMant.add(mantAumento);
+
+        parametros.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        parametros.setText("Mantenimiento de Parámetros");
+        parametros.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                parametrosActionPerformed(evt);
+            }
+        });
+        menuMant.add(parametros);
+
+        barraMenu.add(menuMant);
+
+        menuRep.setText("Reportes");
+        menuRep.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+
+        repSalud.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        repSalud.setText("Vencimientos Carne de Salud");
+        repSalud.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                repSaludActionPerformed(evt);
+            }
+        });
+        menuRep.add(repSalud);
 
         jMenuItem3.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem3.setText("Listado de Funcionarios");
@@ -265,43 +341,44 @@ public class frmPrin extends javax.swing.JFrame {
                 jMenuItem3ActionPerformed(evt);
             }
         });
-        jMenu2.add(jMenuItem3);
+        menuRep.add(jMenuItem3);
 
-        jMenuItem7.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
-        jMenuItem7.setText("Licencia Generada");
-        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+        repLicGen.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        repLicGen.setText("Licencia Generada");
+        repLicGen.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem7ActionPerformed(evt);
+                repLicGenActionPerformed(evt);
             }
         });
-        jMenu2.add(jMenuItem7);
+        menuRep.add(repLicGen);
 
-        jMenuItem12.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
-        jMenuItem12.setText("Movimientos Internos Licencia");
-        jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
+        repMovInt.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        repMovInt.setText("Movimientos Internos Licencia");
+        repMovInt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem12ActionPerformed(evt);
+                repMovIntActionPerformed(evt);
             }
         });
-        jMenu2.add(jMenuItem12);
+        menuRep.add(repMovInt);
 
-        jMenuBar1.add(jMenu2);
+        barraMenu.add(menuRep);
 
-        jMenu3.setText("Marcas");
-        jMenu3.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+        menuMarca.setText("Marcas");
+        menuMarca.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
 
+        jMenuItem1.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem1.setText("Actualizar Marcas");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem1ActionPerformed(evt);
             }
         });
-        jMenu3.add(jMenuItem1);
+        menuMarca.add(jMenuItem1);
 
-        jMenuBar1.add(jMenu3);
+        barraMenu.add(menuMarca);
 
-        jMenu4.setText("Licencias");
-        jMenu4.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+        menuLic.setText("Licencias");
+        menuLic.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
 
         jMenuItem8.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem8.setText("Calcular Licencia");
@@ -310,7 +387,7 @@ public class frmPrin extends javax.swing.JFrame {
                 jMenuItem8ActionPerformed(evt);
             }
         });
-        jMenu4.add(jMenuItem8);
+        menuLic.add(jMenuItem8);
 
         licPorFecha.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         licPorFecha.setText("Calcular Licencia por fecha");
@@ -319,7 +396,7 @@ public class frmPrin extends javax.swing.JFrame {
                 licPorFechaActionPerformed(evt);
             }
         });
-        jMenu4.add(licPorFecha);
+        menuLic.add(licPorFecha);
 
         jMenuItem10.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem10.setText("Ingresar Licencia Adelantada");
@@ -328,16 +405,16 @@ public class frmPrin extends javax.swing.JFrame {
                 jMenuItem10ActionPerformed(evt);
             }
         });
-        jMenu4.add(jMenuItem10);
+        menuLic.add(jMenuItem10);
 
         jMenuItem9.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
-        jMenuItem9.setText("Ingresar Interno Movimiento");
+        jMenuItem9.setText("Ingresar Movimiento Interno");
         jMenuItem9.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem9ActionPerformed(evt);
             }
         });
-        jMenu4.add(jMenuItem9);
+        menuLic.add(jMenuItem9);
 
         jMenuItem15.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem15.setText("Ajustes de Licencias");
@@ -346,86 +423,223 @@ public class frmPrin extends javax.swing.JFrame {
                 jMenuItem15ActionPerformed(evt);
             }
         });
-        jMenu4.add(jMenuItem15);
+        menuLic.add(jMenuItem15);
 
-        jMenuBar1.add(jMenu4);
+        barraMenu.add(menuLic);
 
-        jMenu5.setText("Liquidaciones");
-        jMenu5.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+        menuLiq.setText("Liquidaciones");
+        menuLiq.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
 
-        jMenu6.setText("Ingreso de Movimientos");
+        liqMov.setText("Ingreso de Movimientos");
+        liqMov.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
 
+        jMenuItem13.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem13.setText("Ingresos por Código");
         jMenuItem13.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem13ActionPerformed(evt);
             }
         });
-        jMenu6.add(jMenuItem13);
+        liqMov.add(jMenuItem13);
 
+        jMenuItem16.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem16.setText("Ingresos por Funcionario");
         jMenuItem16.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem16ActionPerformed(evt);
             }
         });
-        jMenu6.add(jMenuItem16);
+        liqMov.add(jMenuItem16);
 
-        jMenu5.add(jMenu6);
+        menuLiq.add(liqMov);
 
-        jMenu7.setText("Carga de Códigos FIjos");
+        liqCodFijo.setText("Carga de Códigos Fijos");
+        liqCodFijo.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
 
+        jMenuItem17.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem17.setText("Por Funcionario");
         jMenuItem17.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem17ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem17);
+        liqCodFijo.add(jMenuItem17);
 
+        jMenuItem18.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem18.setText("Por Código");
         jMenuItem18.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem18ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem18);
+        liqCodFijo.add(jMenuItem18);
 
-        jMenu5.add(jMenu7);
+        menuLiq.add(liqCodFijo);
 
-        jMenuItem19.setText("Retenciones Fijas");
+        liqRetFija.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        liqRetFija.setText("Retenciones Fijas");
+        liqRetFija.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                liqRetFijaActionPerformed(evt);
+            }
+        });
+        menuLiq.add(liqRetFija);
+
+        liqBanco.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        liqBanco.setText("Archivos para Banco");
+        liqBanco.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                liqBancoActionPerformed(evt);
+            }
+        });
+        menuLiq.add(liqBanco);
+
+        prelacion.setText("Carga de Prelacion");
+        prelacion.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+
+        jMenuItem6.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem6.setText("Por Código");
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem6ActionPerformed(evt);
+            }
+        });
+        prelacion.add(jMenuItem6);
+
+        jMenuItem7.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem7.setText("Por Funcionario");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem7ActionPerformed(evt);
+            }
+        });
+        prelacion.add(jMenuItem7);
+
+        menuLiq.add(prelacion);
+
+        horasExtras.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        horasExtras.setText("Generación Prom. Horas Extras Anual");
+        horasExtras.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                horasExtrasActionPerformed(evt);
+            }
+        });
+        menuLiq.add(horasExtras);
+
+        jMenuItem19.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem19.setText("Cambiar Tipo de Liquidación");
         jMenuItem19.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem19ActionPerformed(evt);
             }
         });
-        jMenu5.add(jMenuItem19);
+        menuLiq.add(jMenuItem19);
 
-        jMenuBar1.add(jMenu5);
+        liquidaciones.setText("Liquidación");
+        liquidaciones.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
 
-        jMenu8.setText("Vales");
-        jMenu8.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+        jMenuItem5.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem5.setText("Sueldos");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
+        liquidaciones.add(jMenuItem5);
 
+        jMenuItem12.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem12.setText("Re Liquidación Sueldos");
+        jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem12ActionPerformed(evt);
+            }
+        });
+        liquidaciones.add(jMenuItem12);
+
+        jMenuItem2.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem2.setText("Resumen y Detalle de Liquidacion");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        liquidaciones.add(jMenuItem2);
+
+        jMenuItem11.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem11.setText("Listados por codigos");
+        jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem11ActionPerformed(evt);
+            }
+        });
+        liquidaciones.add(jMenuItem11);
+
+        jMenuItem4.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem4.setText("Vacacionales");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        liquidaciones.add(jMenuItem4);
+
+        jMenuItem14.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem14.setText("Re Liquidación Vacacionales");
+        jMenuItem14.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem14ActionPerformed(evt);
+            }
+        });
+        liquidaciones.add(jMenuItem14);
+
+        jMenuItem22.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem22.setText("Aguinaldo");
+        jMenuItem22.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem22ActionPerformed(evt);
+            }
+        });
+        liquidaciones.add(jMenuItem22);
+
+        menuLiq.add(liquidaciones);
+
+        barraMenu.add(menuLiq);
+
+        menuVale.setText("Vales");
+        menuVale.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+
+        jMenuItem20.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
         jMenuItem20.setText("Ingreso de Vales");
-        jMenu8.add(jMenuItem20);
+        jMenuItem20.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem20ActionPerformed(evt);
+            }
+        });
+        menuVale.add(jMenuItem20);
 
-        jMenuBar1.add(jMenu8);
+        barraMenu.add(menuVale);
 
-        jMenu9.setText("Declaraciones Juradas");
-        jMenu9.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
+        menuDecla.setText("Declaraciones Juradas");
+        menuDecla.setFont(new java.awt.Font("Ebrima", 1, 14)); // NOI18N
 
-        jMenuItem21.setText("jMenuItem21");
-        jMenu9.add(jMenuItem21);
+        jMenuItem21.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        jMenuItem21.setText("Mantenimiento");
+        jMenuItem21.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem21ActionPerformed(evt);
+            }
+        });
+        menuDecla.add(jMenuItem21);
 
-        jMenuBar1.add(jMenu9);
+        barraMenu.add(menuDecla);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(barraMenu);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     //Vencimiento Carne de salud
-    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+    private void repSaludActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_repSaludActionPerformed
         
        try {
             this.internalVencimientoCarne=InternalVencimientoCarne.instancia();
@@ -452,7 +666,7 @@ public class frmPrin extends javax.swing.JFrame {
            Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
        }
         
-    }//GEN-LAST:event_jMenuItem2ActionPerformed
+    }//GEN-LAST:event_repSaludActionPerformed
     //Listado de funcionarios
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
       
@@ -485,7 +699,7 @@ public class frmPrin extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
    //mantenimiento bancos
-    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+    private void mantBancoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mantBancoActionPerformed
       
         try {
             this.internalModBanco=InternalModBanco.instancia();
@@ -512,9 +726,9 @@ public class frmPrin extends javax.swing.JFrame {
             Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-    }//GEN-LAST:event_jMenuItem6ActionPerformed
+    }//GEN-LAST:event_mantBancoActionPerformed
     //Mantenimiento funcionario
-    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+    private void mantFuncActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mantFuncActionPerformed
       
         try {
             this.internalModFunc=InternalModFunc.instancia();
@@ -541,9 +755,9 @@ public class frmPrin extends javax.swing.JFrame {
             Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-    }//GEN-LAST:event_jMenuItem4ActionPerformed
+    }//GEN-LAST:event_mantFuncActionPerformed
     //Mantenimiento horario 
-    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+    private void mantHoraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mantHoraActionPerformed
             
         try {
             this.internalModHorario=InternalModHorario.instancia();
@@ -569,7 +783,7 @@ public class frmPrin extends javax.swing.JFrame {
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_jMenuItem5ActionPerformed
+    }//GEN-LAST:event_mantHoraActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
      
@@ -600,7 +814,7 @@ public class frmPrin extends javax.swing.JFrame {
               
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
-    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+    private void repLicGenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_repLicGenActionPerformed
       
        try {
          this.internalListadoLicencia=InternalListadoLicencia.instancia();
@@ -626,7 +840,7 @@ public class frmPrin extends javax.swing.JFrame {
        } catch (SQLException ex) {
            Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
        }
-    }//GEN-LAST:event_jMenuItem7ActionPerformed
+    }//GEN-LAST:event_repLicGenActionPerformed
     //Calcular licencia
     private void jMenuItem8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem8ActionPerformed
        
@@ -717,7 +931,7 @@ public class frmPrin extends javax.swing.JFrame {
         this.revalidate();
     }//GEN-LAST:event_jMenuItem10ActionPerformed
 
-    private void jMenuItem12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem12ActionPerformed
+    private void repMovIntActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_repMovIntActionPerformed
       
        try {
            this.internalListadoMovLic = InternalListadoMovLic.instancia();
@@ -736,6 +950,35 @@ public class frmPrin extends javax.swing.JFrame {
             }
         }
        } catch (SQLException ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+       } catch (ClassNotFoundException ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+       } catch (BDExcepcion ex) {
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+       }
+       
+        this.repaint();
+        this.revalidate();
+    }//GEN-LAST:event_repMovIntActionPerformed
+
+    private void licPorFechaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_licPorFechaActionPerformed
+       try {
+           this.internalDiasLic = InternalDiasLic.instancia();
+       if (!internalDiasLic.isVisible()) {
+            desktop.add(internalDiasLic);
+            internalDiasLic.setLocation((desktop.getWidth()/2)-(internalDiasLic.getWidth()/2),(desktop.getHeight()/2) - internalDiasLic.getHeight()/2);
+            internalDiasLic.setVisible(true);
+        }
+        else{
+            internalDiasLic.requestFocus();
+            try {
+                internalDiasLic.setSelected(true);
+                
+            } catch (PropertyVetoException ex) {
+                //lblMensaje.setText(ex.getMessage());
+            }
+        }
+       } catch (SQLException ex) {
            Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
        } catch (ClassNotFoundException ex) {
            Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
@@ -743,23 +986,9 @@ public class frmPrin extends javax.swing.JFrame {
        
         this.repaint();
         this.revalidate();
-    }//GEN-LAST:event_jMenuItem12ActionPerformed
-
-    private void licPorFechaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_licPorFechaActionPerformed
-     
-       try {
-           this.pnlDiasLic=new pnlDiasLic(this);
-       } catch (ClassNotFoundException ex) {
-           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
-       } catch (SQLException ex) {
-           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
-       }
-        this.pnlContenido.add(pnlDiasLic);
-        this.repaint();
-        this.revalidate();
     }//GEN-LAST:event_licPorFechaActionPerformed
 
-    private void jMenuItem14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem14ActionPerformed
+    private void mantFeriadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mantFeriadoActionPerformed
    
        try {
             this.internalModFeriado= InternalModFeriado.instancia();
@@ -787,7 +1016,7 @@ public class frmPrin extends javax.swing.JFrame {
        
         this.repaint();
         this.revalidate();
-    }//GEN-LAST:event_jMenuItem14ActionPerformed
+    }//GEN-LAST:event_mantFeriadoActionPerformed
 
     private void jMenuItem15ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem15ActionPerformed
 
@@ -820,7 +1049,7 @@ public class frmPrin extends javax.swing.JFrame {
         this.revalidate();
     }//GEN-LAST:event_jMenuItem15ActionPerformed
 
-    private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem11ActionPerformed
+    private void mantCodEgreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mantCodEgreActionPerformed
         try {
            this.internalModCodigoDesvin=InternalModCodigoDesvin.instancia();
          
@@ -848,7 +1077,7 @@ public class frmPrin extends javax.swing.JFrame {
        // this.pnlContenido.add(pnlAjustes);
         this.repaint();
         this.revalidate();
-    }//GEN-LAST:event_jMenuItem11ActionPerformed
+    }//GEN-LAST:event_mantCodEgreActionPerformed
 
     private void jMenuItem16ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem16ActionPerformed
        try {
@@ -974,7 +1203,7 @@ public class frmPrin extends javax.swing.JFrame {
         this.revalidate();
     }//GEN-LAST:event_jMenuItem17ActionPerformed
 
-    private void jMenuItem19ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem19ActionPerformed
+    private void liqRetFijaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_liqRetFijaActionPerformed
         try {
            this.internalRetencionesFijas=InternalRetencionesFijas.instancia();
          
@@ -1003,7 +1232,698 @@ public class frmPrin extends javax.swing.JFrame {
        // this.pnlContenido.add(pnlAjustes);
         this.repaint();
         this.revalidate();
+    }//GEN-LAST:event_liqRetFijaActionPerformed
+
+    private void jMenuItem21ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem21ActionPerformed
+         try {
+              
+           this.internalDecla=InternalMantenimientoDecla.instancia();
+         
+        if (!internalDecla.isVisible()) {
+            desktop.add(internalDecla);
+            internalDecla.setLocation((desktop.getWidth()/2)-(internalDecla.getWidth()/2),(desktop.getHeight()/2) - internalDecla.getHeight()/2);
+            internalDecla.setVisible(true);
+            internalDecla.getTxtNumFunc().requestFocus();
+           }
+        else{
+            internalDecla.requestFocus();
+            try {
+                internalDecla.setSelected(true);
+                //internalFijoPorCod.getTxtCod().requestFocus();
+            } catch (PropertyVetoException ex) {
+                //lblMensaje.setText(ex.getMessage());
+            }
+        }
+           
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+       
+       // this.pnlContenido.add(pnlAjustes);
+        this.repaint();
+        this.revalidate();
+    }//GEN-LAST:event_jMenuItem21ActionPerformed
+
+    private void mantAumentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mantAumentoActionPerformed
+       try {
+           this.internalAumento=InternalAumentoSalarial.instancia();
+           if (!internalAumento.isVisible()) {
+               desktop.add(internalAumento);
+               internalAumento.setLocation((desktop.getWidth()/2)-(internalAumento.getWidth()/2),(desktop.getHeight()/2) - internalAumento.getHeight()/2);
+               internalAumento.setVisible(true);
+               internalAumento.getTxtIncremento().requestFocus();
+               
+           }
+           else{
+               internalAumento.requestFocus();
+               try {
+                   internalAumento.setSelected(true);
+                   //internalFijoPorCod.getTxtCod().requestFocus();
+               } catch (PropertyVetoException ex) {
+                   //lblMensaje.setText(ex.getMessage());
+               }
+           }
+           
+           // this.pnlContenido.add(pnlAjustes);
+           this.repaint();
+           this.revalidate();
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_mantAumentoActionPerformed
+
+    private void jMenuItem20ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem20ActionPerformed
+       try {
+           this.internalVale=InternalVales.instancia();
+           if (!internalVale.isVisible()) {
+               desktop.add(internalVale);
+               internalVale.setLocation((desktop.getWidth()/2)-(internalVale.getWidth()/2),(desktop.getHeight()/2) - internalVale.getHeight()/2);
+               internalVale.setVisible(true);
+               
+               
+           }
+           else{
+               internalVale.requestFocus();
+               try {
+                   internalVale.setSelected(true);
+                   //internalFijoPorCod.getTxtCod().requestFocus();
+               } catch (PropertyVetoException ex) {
+                   //lblMensaje.setText(ex.getMessage());
+               }
+           }
+           
+           // this.pnlContenido.add(pnlAjustes);
+           this.repaint();
+           this.revalidate();
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_jMenuItem20ActionPerformed
+
+    private void liqBancoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_liqBancoActionPerformed
+         try {
+           this.internalArchivoBanco =InternalArchivoBanco.instancia();
+           if (!internalArchivoBanco.isVisible()) {
+               desktop.add(internalArchivoBanco);
+               internalArchivoBanco.setLocation((desktop.getWidth()/2)-(internalArchivoBanco.getWidth()/2),(desktop.getHeight()/2) - internalArchivoBanco.getHeight()/2);
+               internalArchivoBanco.setVisible(true);
+               
+               
+           }
+           else{
+               internalArchivoBanco.requestFocus();
+               try {
+                   internalArchivoBanco.setSelected(true);
+                   //internalFijoPorCod.getTxtCod().requestFocus();
+               } catch (PropertyVetoException ex) {
+                   //lblMensaje.setText(ex.getMessage());
+               }
+           }
+           
+           // this.pnlContenido.add(pnlAjustes);
+           this.repaint();
+           this.revalidate();
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_liqBancoActionPerformed
+
+    private void parametrosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parametrosActionPerformed
+        try {
+           InternalMantParametros internal=InternalMantParametros.instancia();
+           if (!internal.isVisible()) {
+               desktop.add(internal);
+               internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+               internal.setVisible(true);
+             
+               
+           }
+           else{
+               internal.requestFocus();
+               try {
+                   internal.setSelected(true);
+                   //internalFijoPorCod.getTxtCod().requestFocus();
+               } catch (PropertyVetoException ex) {
+                   //lblMensaje.setText(ex.getMessage());
+               }
+           }
+           
+           // this.pnlContenido.add(pnlAjustes);
+           this.repaint();
+           this.revalidate();
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (BDExcepcion ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_parametrosActionPerformed
+
+    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+        try {
+           InternalFechasPrelacion internal=InternalFechasPrelacion.instancia();
+           if (!internal.isVisible()) {
+               desktop.add(internal);
+               internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+               internal.setVisible(true);
+             
+               
+           }
+           else{
+               internal.requestFocus();
+               try {
+                   internal.setSelected(true);
+                   //internalFijoPorCod.getTxtCod().requestFocus();
+               } catch (PropertyVetoException ex) {
+                   //lblMensaje.setText(ex.getMessage());
+               }
+           }
+           
+           // this.pnlContenido.add(pnlAjustes);
+           this.repaint();
+           this.revalidate();
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_jMenuItem6ActionPerformed
+
+    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+       try {
+           InternalFechaPrelacionFunc internal=InternalFechaPrelacionFunc.instancia();
+           if (!internal.isVisible()) {
+               desktop.add(internal);
+               internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+               internal.setVisible(true);
+             
+               
+           }
+           else{
+               internal.requestFocus();
+               try {
+                   internal.setSelected(true);
+                   //internalFijoPorCod.getTxtCod().requestFocus();
+               } catch (PropertyVetoException ex) {
+                   //lblMensaje.setText(ex.getMessage());
+               }
+           }
+           
+           // this.pnlContenido.add(pnlAjustes);
+           this.repaint();
+           this.revalidate();
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_jMenuItem7ActionPerformed
+
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+      
+       try {
+           if(correspondeFecha(30,31,29,28)){
+               if(chequeoUsuarioLiq()){
+                   if(chequeoUsuarioTipoLiq()){
+                       if(chequeoVentanas2()){
+                           if(noEstaLaFecha()){
+                           try {
+                               InternalLiquidaSueldo internal=InternalLiquidaSueldo.instancia();
+                               if (!internal.isVisible()) {
+                                   desktop.add(internal);
+                                   internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+                                   internal.setVisible(true);
+                                   this.log.actualizaParametro(usuario.getNombre(), "USUARIO_LIQ");
+                                   
+                               }
+                               else{
+                                   internal.requestFocus();
+                                   try {
+                                       internal.setSelected(true);
+                                       //internalFijoPorCod.getTxtCod().requestFocus();
+                                   } catch (PropertyVetoException ex) {
+                                       //lblMensaje.setText(ex.getMessage());
+                                   }
+                               }
+                               
+                               // this.pnlContenido.add(pnlAjustes);
+                               this.repaint();
+                               this.revalidate();
+                               
+                           } catch (ClassNotFoundException ex) {
+                               Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+                           } catch (SQLException ex) {
+                               Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+                           } catch (BDExcepcion ex) {
+                               Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+                           }
+                        }else{
+                            JOptionPane.showMessageDialog(this, "Ya fue incorporada una liquidacion con fecha "+fechaLiq);   
+                        }
+                       }else{
+                           JOptionPane.showMessageDialog(this, "Cierre la ventana de 'Tipo de Liquidación' antes de continuar");
+                       }
+                   }else{
+                       JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta la ventana de 'Tipo de Liquidacion'");
+                   }
+               }else{
+                   JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta esta ventana en su equipo.");    
+               }
+           }else{
+               if(!fechaLiq.equals("")){
+                   JOptionPane.showMessageDialog(this, "La fecha de liquidación es "+fechaLiq+" y no coincide con este tipo de liquidación. Verifique.");
+               }else{
+                   JOptionPane.showMessageDialog(this, "No hay fecha de liquidación asignada. Verifique");
+               }
+           }
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (ParseException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (BDExcepcion ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+       
+          
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+       try {
+           InternalResumenYDetalle internal=InternalResumenYDetalle.instancia();
+           if (!internal.isVisible()) {
+               desktop.add(internal);
+               internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+               internal.setVisible(true);
+             
+               
+           }
+           else{
+               internal.requestFocus();
+               try {
+                   internal.setSelected(true);
+                   //internalFijoPorCod.getTxtCod().requestFocus();
+               } catch (PropertyVetoException ex) {
+                   //lblMensaje.setText(ex.getMessage());
+               }
+           }
+           
+           // this.pnlContenido.add(pnlAjustes);
+           this.repaint();
+           this.revalidate();
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem11ActionPerformed
+         try {
+           InternalListadoPorCodigos internal=InternalListadoPorCodigos.instancia();
+           if (!internal.isVisible()) {
+               desktop.add(internal);
+               internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+               internal.setVisible(true);
+             
+               
+           }
+           else{
+               internal.requestFocus();
+               try {
+                   internal.setSelected(true);
+                   //internalFijoPorCod.getTxtCod().requestFocus();
+               } catch (PropertyVetoException ex) {
+                   //lblMensaje.setText(ex.getMessage());
+               }
+           }
+           
+           // this.pnlContenido.add(pnlAjustes);
+           this.repaint();
+           this.revalidate();
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_jMenuItem11ActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+       
+        try {
+           if(correspondeFecha(1,1,1,1)){
+               if(chequeoUsuarioLiq()){
+                   if(chequeoUsuarioTipoLiq()){
+                       if(chequeoVentanas2()){
+                           if(noEstaLaFecha()){
+               try {
+                   InternalVacacionales internal=InternalVacacionales.instancia();
+                   if (!internal.isVisible()) {
+                       desktop.add(internal);
+                       internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+                       internal.setVisible(true);
+                       this.log.actualizaParametro(usuario.getNombre(), "USUARIO_LIQ");
+                       
+                   }
+                   else{
+                       internal.requestFocus();
+                       try {
+                           internal.setSelected(true);
+                           //internalFijoPorCod.getTxtCod().requestFocus();
+                       } catch (PropertyVetoException ex) {
+                           //lblMensaje.setText(ex.getMessage());
+                       }
+                   }
+                   
+                   // this.pnlContenido.add(pnlAjustes);
+                   this.repaint();
+                   this.revalidate();
+               } catch (ClassNotFoundException ex) {
+                   Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+               } catch (SQLException ex) {
+                   Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+               }
+                           }else{
+                             JOptionPane.showMessageDialog(this, "Ya fue incorporada una liquidacion con fecha "+fechaLiq);     
+                           }
+                       }else{
+                         JOptionPane.showMessageDialog(this, "Cierre la ventana de 'Tipo de Liquidación' antes de continuar");  
+                       }
+                   }else{
+                       JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta la ventana de 'Tipo de Liquidacion'");
+                   }
+               }else{
+                   JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta esta ventana en su equipo.");    
+               }
+           }else{
+               if(!fechaLiq.equals("")){
+                   JOptionPane.showMessageDialog(this, "La fecha de liquidación es "+fechaLiq+" y no coincide con este tipo de liquidación. Verifique.");
+               }else{
+                   JOptionPane.showMessageDialog(this, "No hay fecha de liquidación asignada. Verifique");
+               }
+           } } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (ParseException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (BDExcepcion ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+      
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void jMenuItem12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem12ActionPerformed
+       
+        try {
+           if(correspondeFecha(29,28,27,26)){
+               if(chequeoUsuarioLiq()){
+                   if(chequeoUsuarioTipoLiq()){
+                       if(chequeoVentanas2()){
+                           if(noEstaLaFecha()){
+               try {
+                   InternalReLiquidaSueldos internal=InternalReLiquidaSueldos.instancia();
+                   if (!internal.isVisible()) {
+                       desktop.add(internal);
+                       internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+                       internal.setVisible(true);
+                       this.log.actualizaParametro(usuario.getNombre(), "USUARIO_LIQ");
+                       
+                   }
+                   else{
+                       internal.requestFocus();
+                       try {
+                           internal.setSelected(true);
+                           //internalFijoPorCod.getTxtCod().requestFocus();
+                       } catch (PropertyVetoException ex) {
+                           //lblMensaje.setText(ex.getMessage());
+                       }
+                   }
+                   
+                   // this.pnlContenido.add(pnlAjustes);
+                   this.repaint();
+                   this.revalidate();
+               } catch (ClassNotFoundException ex) {
+                   Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+               } catch (SQLException ex) {
+                   Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+               }
+                           }else{
+                               JOptionPane.showMessageDialog(this, "Ya fue incorporada una liquidacion con fecha "+fechaLiq);   
+                           }
+                       }else{
+                            JOptionPane.showMessageDialog(this, "Cierre la ventana de 'Tipo de Liquidación' antes de continuar");
+                       }
+                   }else{
+                        JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta la ventana de 'Tipo de Liquidacion'");
+                   }
+               }else{
+                   JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta esta ventana en su equipo.");    
+               }
+           }else{
+               if(!fechaLiq.equals("")){
+                   JOptionPane.showMessageDialog(this, "La fecha de liquidación es "+fechaLiq+" y no coincide con este tipo de liquidación. Verifique.");
+               }else{
+                   JOptionPane.showMessageDialog(this, "No hay fecha de liquidación asignada. Verifique");
+               }
+           }
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (ParseException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (BDExcepcion ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+       
+    }//GEN-LAST:event_jMenuItem12ActionPerformed
+
+    private void horasExtrasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_horasExtrasActionPerformed
+        try {
+           InternalPromedioHorasExtras internal=InternalPromedioHorasExtras.instancia();
+           if (!internal.isVisible()) {
+               desktop.add(internal);
+               internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+               internal.setVisible(true);
+             
+               
+           }
+           else{
+               internal.requestFocus();
+               try {
+                   internal.setSelected(true);
+                   //internalFijoPorCod.getTxtCod().requestFocus();
+               } catch (PropertyVetoException ex) {
+                   //lblMensaje.setText(ex.getMessage());
+               }
+           }
+           
+           // this.pnlContenido.add(pnlAjustes);
+           this.repaint();
+           this.revalidate();
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_horasExtrasActionPerformed
+
+    private void jMenuItem14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem14ActionPerformed
+      
+  
+       try {
+           if(correspondeFecha(2,2,2,2)){
+               if(chequeoUsuarioLiq()){
+                   if(chequeoUsuarioTipoLiq()){
+                       if(chequeoVentanas2()){
+                           if(noEstaLaFecha()){
+                           try {
+                               InternalReLiqVacacionales internal=InternalReLiqVacacionales.instancia();
+                               if (!internal.isVisible()) {
+                                   desktop.add(internal);
+                                   internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+                                   internal.setVisible(true);
+                                   this.log.actualizaParametro(usuario.getNombre(), "USUARIO_LIQ");
+                                   
+                               }
+                               else{
+                                   internal.requestFocus();
+                                   try {
+                                       internal.setSelected(true);
+                                       //internalFijoPorCod.getTxtCod().requestFocus();
+                                   } catch (PropertyVetoException ex) {
+                                       //lblMensaje.setText(ex.getMessage());
+                                   }
+                               }
+                               this.repaint();
+                               this.revalidate();
+                           } catch (ClassNotFoundException | SQLException ex) {
+                               Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+                           }
+                           }else{
+                               JOptionPane.showMessageDialog(this, "Ya fue incorporada una liquidacion con fecha "+fechaLiq);   
+                           }
+                       }else{
+                           JOptionPane.showMessageDialog(this, "Cierre la ventana de 'Tipo de Liquidación' antes de continuar");
+                       }
+                   }else{
+                       JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta la ventana de 'Tipo de Liquidacion'");
+                   }
+               }else{
+                   JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta esta ventana en su equipo.");
+               }
+           }else{
+               if(!fechaLiq.equals("")){
+                   JOptionPane.showMessageDialog(this, "La fecha de liquidación es "+fechaLiq+" y no coincide con este tipo de liquidación. Verifique.");
+               }else{
+                   JOptionPane.showMessageDialog(this, "No hay fecha de liquidación asignada. Verifique");
+               }
+           } 
+       } catch (ClassNotFoundException | SQLException | ParseException | BDExcepcion ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        
+    }//GEN-LAST:event_jMenuItem14ActionPerformed
+
+    private void jMenuItem19ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem19ActionPerformed
+        if(chequeoVentanas()){
+            try {
+                if(this.chequeoUsuarioLiq()){
+                    if(chequeoUsuarioTipoLiq()){
+                        InternalTipoLiquidacion internal=InternalTipoLiquidacion.instancia();  
+                        if (!internal.isVisible()) {
+                            desktop.add(internal);
+                            internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+                            internal.setVisible(true);
+                            this.log.actualizaParametro(usuario.getNombre(), "USUARIO_TIPO_LIQ");
+                        }
+                        else{
+                            internal.requestFocus();
+                            try {
+                                internal.setSelected(true);
+                                //internalFijoPorCod.getTxtCod().requestFocus();
+                            } catch (PropertyVetoException ex) {
+                                //lblMensaje.setText(ex.getMessage());
+                            }
+                        }
+                        this.repaint();
+                        this.revalidate();
+                    }else{
+                        JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta esta ventana en su equipo");
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta una ventana de liquidación en su equipo.");
+                }
+            } catch (BDExcepcion | ClassNotFoundException | SQLException | ParseException ex){
+                Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else{
+            JOptionPane.showMessageDialog(this, "Cierre todas las ventanas vinculadas a las liquidaciones antes de continuar.");
+        }
     }//GEN-LAST:event_jMenuItem19ActionPerformed
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+       
+    }//GEN-LAST:event_formWindowClosed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+       try {
+           if(this.chequeoUsuarioLiq()){
+               this.log.actualizaParametro("", "USUARIO_LIQ");
+           }
+       } catch (BDExcepcion | ClassNotFoundException | SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+       try {
+           if(chequeoUsuarioTipoLiq()){
+                if(nom.equals(usuario.getNombre())){
+                     this.log.actualizaParametro("", "USUARIO_TIPO_LIQ");
+                }
+           }
+       } catch (BDExcepcion | ClassNotFoundException | SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_formWindowClosing
+
+    private void jMenuItem22ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem22ActionPerformed
+         try {
+           if(correspondeFecha(15,14,15,14)){
+               if(chequeoUsuarioLiq()){
+                   if(chequeoUsuarioTipoLiq()){
+                       if(chequeoVentanas2()){
+                           if(noEstaLaFecha()){
+                           try {
+                               InternalLiquidaAguinaldo internal=InternalLiquidaAguinaldo.instancia();
+                               if (!internal.isVisible()) {
+                                   desktop.add(internal);
+                                   internal.setLocation((desktop.getWidth()/2)-(internal.getWidth()/2),(desktop.getHeight()/2) - internal.getHeight()/2);
+                                   internal.setVisible(true);
+                                   this.log.actualizaParametro(usuario.getNombre(), "USUARIO_LIQ");
+                                   
+                               }
+                               else{
+                                   internal.requestFocus();
+                                   try {
+                                       internal.setSelected(true);
+                                       //internalFijoPorCod.getTxtCod().requestFocus();
+                                   } catch (PropertyVetoException ex) {
+                                       //lblMensaje.setText(ex.getMessage());
+                                   }
+                               }
+                               
+                               // this.pnlContenido.add(pnlAjustes);
+                               this.repaint();
+                               this.revalidate();
+                               
+                           } catch (ClassNotFoundException ex) {
+                               Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+                           } catch (SQLException ex) {
+                               Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+                           } catch (BDExcepcion ex) {
+                               Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+                           }
+                        }else{
+                            JOptionPane.showMessageDialog(this, "Ya fue incorporada una liquidacion con fecha "+fechaLiq);   
+                        }
+                       }else{
+                           JOptionPane.showMessageDialog(this, "Cierre la ventana de 'Tipo de Liquidación' antes de continuar");
+                       }
+                   }else{
+                       JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta la ventana de 'Tipo de Liquidacion'");
+                   }
+               }else{
+                   JOptionPane.showMessageDialog(this, "El usuario "+nom+" tiene abierta esta ventana en su equipo.");    
+               }
+           }else{
+               if(!fechaLiq.equals("")){
+                   JOptionPane.showMessageDialog(this, "La fecha de liquidación es "+fechaLiq+" y no coincide con este tipo de liquidación. Verifique.");
+               }else{
+                   JOptionPane.showMessageDialog(this, "No hay fecha de liquidación asignada. Verifique");
+               }
+           }
+       } catch (ClassNotFoundException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (SQLException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (ParseException ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (BDExcepcion ex) {
+           Logger.getLogger(frmPrin.class.getName()).log(Level.SEVERE, null, ex);
+       }
+    }//GEN-LAST:event_jMenuItem22ActionPerformed
 
 
 //    public static void main(String args[]) {
@@ -1047,16 +1967,8 @@ public class frmPrin extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
-    private javax.swing.JMenu jMenu5;
-    private javax.swing.JMenu jMenu6;
-    private javax.swing.JMenu jMenu7;
-    private javax.swing.JMenu jMenu8;
-    private javax.swing.JMenu jMenu9;
-    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuBar barraMenu;
+    private javax.swing.JMenuItem horasExtras;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem10;
     private javax.swing.JMenuItem jMenuItem11;
@@ -1071,6 +1983,7 @@ public class frmPrin extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem20;
     private javax.swing.JMenuItem jMenuItem21;
+    private javax.swing.JMenuItem jMenuItem22;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
@@ -1079,6 +1992,160 @@ public class frmPrin extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JMenuItem licPorFecha;
+    private javax.swing.JMenuItem liqBanco;
+    private javax.swing.JMenu liqCodFijo;
+    private javax.swing.JMenu liqMov;
+    private javax.swing.JMenuItem liqRetFija;
+    private javax.swing.JMenu liquidaciones;
+    private javax.swing.JMenuItem mantAumento;
+    private javax.swing.JMenuItem mantBanco;
+    private javax.swing.JMenuItem mantCodEgre;
+    private javax.swing.JMenuItem mantFeriado;
+    private javax.swing.JMenuItem mantFunc;
+    private javax.swing.JMenuItem mantHora;
+    private javax.swing.JMenu menuDecla;
+    private javax.swing.JMenu menuLic;
+    private javax.swing.JMenu menuLiq;
+    private javax.swing.JMenu menuMant;
+    private javax.swing.JMenu menuMarca;
+    private javax.swing.JMenu menuRep;
+    private javax.swing.JMenu menuVale;
+    private javax.swing.JMenuItem parametros;
     private javax.swing.JPanel pnlContenido;
+    private javax.swing.JMenu prelacion;
+    private javax.swing.JMenuItem repLicGen;
+    private javax.swing.JMenuItem repMovInt;
+    private javax.swing.JMenuItem repSalud;
     // End of variables declaration//GEN-END:variables
+
+    private void chequeaPermisos() throws SQLException, ClassNotFoundException {
+ 
+       switch (usuario.getPermiso().getPermiso()) {
+           //CONTADURIA
+           case 2:
+               this.mantFeriado.setVisible(false);
+               this.repLicGen.setVisible(false);
+               this.repMovInt.setVisible(false);
+               this.repSalud.setVisible(false);
+               this.menuMarca.setVisible(false);
+               this.menuLic.setVisible(false);
+               this.liqBanco.setVisible(false);
+               this.menuVale.setVisible(false);
+               //this.liquidaciones.setVisible(false);
+               break;
+            //SECRETARIA   
+           case 3:
+               this.cargaInfo();
+               this.mantAumento.setVisible(false);
+               this.mantBanco.setVisible(false);
+               this.mantCodEgre.setVisible(false);
+               this.mantFunc.setVisible(false);
+               this.menuLiq.setVisible(false);
+               this.menuVale.setVisible(false);
+               this.menuDecla.setVisible(false);
+               this.prelacion.setVisible(false);
+               this.parametros.setVisible(false);
+               this.liquidaciones.setVisible(false);
+               break;
+            //TESORERIA
+           case 6:
+               this.menuDecla.setVisible(false);
+               this.menuLic.setVisible(false);
+               this.menuMant.setVisible(false);
+               this.menuMarca.setVisible(false);
+               this.repLicGen.setVisible(false);
+               this.repMovInt.setVisible(false);
+               this.repSalud.setVisible(false);
+               this.liqCodFijo.setVisible(false);
+               this.liqMov.setVisible(false);
+               this.liqRetFija.setVisible(false);
+               this.prelacion.setVisible(false);
+               this.parametros.setVisible(false);
+               this.liquidaciones.setVisible(false);
+               break;
+           case 1:
+               break;
+           default:
+               this.barraMenu.setVisible(false);
+               JOptionPane.showMessageDialog(this, "NO TIENE PERMISOS PARA ESTAR AQUI");
+               this.dispose();
+               break;
+       }
+
+    }
+
+    private Date stringADate(String s) throws ParseException{
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        Date date = formatter.parse(s);
+        return date;
+    }
+    
+    private boolean correspondeFecha(int i, int e, int u,int s) throws ClassNotFoundException, SQLException, ParseException {
+        fechaLiq=log.fechaLiquidacion();
+        boolean ret=false;
+        Calendar cale = Calendar.getInstance();
+        cale.setTime(this.stringADate(fechaLiq));
+        int mes=cale.get(Calendar.MONTH)+1;
+        
+        if(!fechaLiq.equals("")){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(this.stringADate(fechaLiq)); 
+            int dia=cal.get(Calendar.DAY_OF_MONTH);
+            if(mes!=2){
+                if(dia==i || dia==e){
+                    ret=true;
+                }
+            }else{
+                if(dia==u || dia==s){
+                    ret=true;
+                }
+            }
+        }
+        return ret;
+    }
+    
+    private boolean chequeoUsuarioLiq() throws BDExcepcion, ClassNotFoundException, SQLException{
+      nom=log.cargoParametro("USUARIO_LIQ"); 
+      if("".equals(nom)){
+          return true;
+      }else{
+          return nom.equals(this.usuario.getNombre());
+      }
+    }
+    
+    private boolean chequeoUsuarioTipoLiq() throws BDExcepcion, ClassNotFoundException, SQLException{
+     nom=log.cargoParametro("USUARIO_TIPO_LIQ");
+      if("".equals(nom)){
+          return true;
+      }else{
+          return nom.equals(this.usuario.getNombre());
+      }
+    }
+
+    private boolean chequeoVentanas() {
+        boolean pasa=true;
+        
+        if(InternalLiquidaSueldo.getInstancia()!=null || InternalReLiquidaSueldos.getInstancia()!=null
+           || InternalVacacionales.getInstancia()!=null || InternalReLiqVacacionales.getInstancia()!=null
+                || InternalLiquidaAguinaldo.getInstancia()!=null){
+            pasa=false;
+        }
+        
+        return pasa;
+    }
+    
+    private boolean chequeoVentanas2() {
+        boolean pasa=true;
+        
+        if(InternalTipoLiquidacion.getInstancia()!=null){
+            pasa=false;
+        }
+        
+        return pasa;
+    }
+
+    private boolean noEstaLaFecha() throws BDExcepcion {
+        return this.log.fechaLiquidacionHistorica(fechaLiq);
+    }
+       
 }

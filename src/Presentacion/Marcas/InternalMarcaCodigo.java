@@ -2,9 +2,14 @@
 package Presentacion.Marcas;
 
 import Dominio.Codigo;
+import Dominio.Funcionario;
+import Dominio.Licencia;
 import Dominio.Marca;
+import Dominio.MovimientoLicencia;
 import Logica.LogCodigo;
+import Logica.LogFuncionario;
 import Logica.LogTripaliare;
+import Persistencia.BDExcepcion;
 import Presentacion.frmPrin;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -12,6 +17,7 @@ import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +31,9 @@ import org.edisoncor.gui.textField.TextFieldRound;
 public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
 
     LogCodigo log;
+    
     Marca marca;
+    Funcionario f;
     private ArrayList<Marca> marcas;
     Codigo cod;
     private InternalMarcas internal;
@@ -33,16 +41,33 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
     LogTripaliare trip;
     private static InternalMarcaCodigo instancia=null;
     JPasswordField pf = null;
-    public InternalMarcaCodigo(LogTripaliare tripa,LogCodigo loga,InternalMarcas inte) throws SQLException, ClassNotFoundException {
+    private ArrayList<Licencia> listaPasado=null;
+    private LogFuncionario logF;
+    private MovimientoLicencia lic;
+    public InternalMarcaCodigo(LogTripaliare tripa,LogCodigo loga,InternalMarcas inte,LogFuncionario logF) throws SQLException, ClassNotFoundException {
         initComponents();
         log=loga;
         trip=tripa;
         this.txtCod.requestFocus();
         this.internal=inte;
+        this.logF=logF;
+        this.lblAño.setVisible(false);
+        this.lblSaldo.setVisible(false);
+        this.comboAño.setVisible(false);
+        this.txtSaldo.setVisible(false);
+        this.txtSaldo.setEditable(false);
         
     }
 
-    
+    public Funcionario getF() {
+        return f;
+    }
+
+    public void setF(Funcionario f) {
+        this.f = f;
+    }
+
+       
     public ArrayList<Marca> getMarcas() {
         return marcas;
     }
@@ -84,11 +109,11 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
     }
     
         
-    public static InternalMarcaCodigo instancia(LogTripaliare tripa,LogCodigo loga,InternalMarcas inte) throws ClassNotFoundException, SQLException
+    public static InternalMarcaCodigo instancia(LogTripaliare tripa,LogCodigo loga,InternalMarcas inte,LogFuncionario logF) throws ClassNotFoundException, SQLException
    {    
          if (instancia== null)
          {
-            instancia = new InternalMarcaCodigo(tripa,loga,inte);
+            instancia = new InternalMarcaCodigo(tripa,loga,inte,logF);
          }
          return instancia;
       
@@ -118,6 +143,10 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
         txtCodDesc = new org.edisoncor.gui.textField.TextFieldRound();
         lblMsj = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        lblAño = new javax.swing.JLabel();
+        comboAño = new javax.swing.JComboBox();
+        txtSaldo = new org.edisoncor.gui.textField.TextFieldRound();
+        lblSaldo = new javax.swing.JLabel();
 
         buttonSeven1.setText("buttonSeven1");
 
@@ -211,6 +240,36 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
 
         jLabel1.setText("+ Desplegar listado de Códigos    Esc Salir");
 
+        lblAño.setFont(new java.awt.Font("Euphemia", 1, 14)); // NOI18N
+        lblAño.setText("Año");
+
+        comboAño.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                comboAñoItemStateChanged(evt);
+            }
+        });
+
+        txtSaldo.setBackground(new java.awt.Color(153, 153, 153));
+        txtSaldo.setForeground(new java.awt.Color(255, 255, 255));
+        txtSaldo.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtSaldo.setCaretColor(new java.awt.Color(255, 255, 255));
+        txtSaldo.setNextFocusableComponent(txtCant);
+        txtSaldo.setSelectedTextColor(new java.awt.Color(0, 0, 0));
+        txtSaldo.setSelectionColor(new java.awt.Color(255, 255, 255));
+        txtSaldo.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtSaldoFocusLost(evt);
+            }
+        });
+        txtSaldo.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtSaldoKeyTyped(evt);
+            }
+        });
+
+        lblSaldo.setFont(new java.awt.Font("Euphemia", 1, 14)); // NOI18N
+        lblSaldo.setText("Saldo");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -219,29 +278,36 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblNombres, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblCant, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(txtCod, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtCodDesc, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(txtCant, javax.swing.GroupLayout.PREFERRED_SIZE, 325, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 74, Short.MAX_VALUE))
                     .addComponent(lblMarca, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblMsj, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                            .addGroup(layout.createSequentialGroup()
                                 .addGap(15, 15, 15)
                                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 420, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 111, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                        .addGap(17, 17, 17)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(lblCant, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(lblAño))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(txtCod, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(txtCodDesc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                            .addComponent(txtCant, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(comboAño, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(lblSaldo, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(69, 69, 69)
+                                                .addComponent(txtSaldo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                    .addComponent(lblMsj, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                         .addComponent(btnAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -257,11 +323,17 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
                     .addComponent(jLabel6)
                     .addComponent(txtCod, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtCodDesc, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(35, 35, 35)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblAño)
+                    .addComponent(comboAño, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtSaldo, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblSaldo))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtCant, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblCant))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(btnAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
@@ -275,6 +347,12 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtCodKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtCodKeyTyped
+        this.lblAño.setVisible(false);
+        this.lblSaldo.setVisible(false);
+        this.comboAño.setVisible(false);
+        this.txtSaldo.setVisible(false);
+        this.txtSaldo.setEditable(false);
+
         this.txtCodDesc.setText("");
         char c=evt.getKeyChar();
         this.lblMsj.setText("");
@@ -354,7 +432,7 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
                         if(tope>0){
                             if(tope>=cant){
                                     marca.setSupervisado(1);
-                                    if(this.log.insertarCodigoMarca(marca.getId(), marca.getFunCod(), codigo, cant) && this.trip.actualizaMarca(marca,null)==1){
+                                    if(this.log.insertarCodigoMarca(marca.getId(), marca.getFunCod(), codigo, cant, marca.getFechaUso()) && this.trip.actualizaMarca(marca,null)==1){
                                         this.lblMsj.setText("Ingreso Exitoso");
                                         this.txtCant.setText("");
                                         this.txtCod.setText("");
@@ -362,6 +440,11 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
                                         this.lblCant.setText("Cantidad");
                                         this.txtCod.requestFocus();
                                         this.txtCod.selectAll();
+                                        this.lblAño.setVisible(false);
+                                        this.lblSaldo.setVisible(false);
+                                        this.comboAño.setVisible(false);
+                                        this.txtSaldo.setVisible(false);
+                                        this.txtSaldo.setEditable(false);
                                         this.internal.getBtnListar().doClick();
                                     }
                                     else{
@@ -382,9 +465,51 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
                             this.txtCod.selectAll();
                         }
                         }
-                        else{
-                             marca.setSupervisado(1);
-                                if(this.log.insertarCodigoMarca(marca.getId(), marca.getFunCod(), codigo, cant) && this.trip.actualizaMarca(marca,null)==1){
+                        else if(codigo == 1001){
+                            lic= logF.consultaAdelantado(marca.getFunCod().toString());
+                            Integer saldo=10-lic.getDiasTomados();
+                                if(saldo>=1){
+                                     marca.setSupervisado(1);
+                                    if(this.log.insertarCodigoMarca(marca.getId(), marca.getFunCod(), codigo, cant,marca.getFechaUso()) && this.trip.actualizaMarca(marca,null)==1){
+                                        if(this.logF.insertarLicAdelantada(this.obtenerAño(),marca.getFechaUso(),marca.getFechaUso(),1,f,0,marca.getId())){
+                                                this.lblMsj.setText("Ingreso Exitoso");
+                                                this.txtCant.setText("");
+                                                this.txtCod.setText("");
+                                                this.txtCodDesc.setText("");
+                                                this.lblCant.setText("Cantidad");
+                                                this.txtCod.requestFocus();
+                                                this.txtCod.selectAll();
+                                                this.lblAño.setVisible(false);
+                                                this.lblSaldo.setVisible(false);
+                                                this.comboAño.setVisible(false);
+                                                this.txtSaldo.setVisible(false);
+                                                this.txtSaldo.setEditable(false);
+                                               
+                                                this.internal.getBtnListar().doClick();
+                                            }
+                                    
+                                }
+                                else{
+                                    this.lblMsj.setText("Inténtelo de nuevo");
+                                    this.txtCod.requestFocus();
+                                    this.txtCod.selectAll();
+                                }
+                            }
+                              else{
+                                    this.lblMsj.setText("El saldo es de "+saldo);
+                                    this.txtCod.requestFocus();
+                                    this.txtCod.selectAll();
+                                }
+                        }
+                        else if(codigo == 1000){
+                            Licencia h=(Licencia)this.comboAño.getSelectedItem();
+                            Integer añoSacar=h.getAño()+1;
+                            Integer saldo=Integer.valueOf(this.txtSaldo.getText());
+                            Integer saldoPos=saldo-1;
+                            Date hoy = new Date();
+                            marca.setSupervisado(1);
+                            if(this.log.insertarCodigoMarca(marca.getId(), marca.getFunCod(), codigo, cant,marca.getFechaUso()) && this.trip.actualizaMarca(marca,null)==1){
+                                if(this.logF.insertarMovLicencia(marca.getFechaUso(),marca.getFechaUso(),saldo,1,hoy,añoSacar,f,saldoPos,1000,marca.getId())){
                                     this.lblMsj.setText("Ingreso Exitoso");
                                     this.txtCant.setText("");
                                     this.txtCod.setText("");
@@ -392,6 +517,30 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
                                     this.lblCant.setText("Cantidad");
                                     this.txtCod.requestFocus();
                                     this.txtCod.selectAll();
+                                    this.lblAño.setVisible(false);
+                                    this.lblSaldo.setVisible(false);
+                                    this.comboAño.setVisible(false);
+                                    this.txtSaldo.setVisible(false);
+                                    this.txtSaldo.setEditable(false);
+                                    this.internal.getBtnListar().doClick();
+                                }
+                            }
+                        }
+                        else{
+                            marca.setSupervisado(1);
+                            if(this.log.insertarCodigoMarca(marca.getId(), marca.getFunCod(), codigo, cant,marca.getFechaUso()) && this.trip.actualizaMarca(marca,null)==1){
+                                    this.lblMsj.setText("Ingreso Exitoso");
+                                    this.txtCant.setText("");
+                                    this.txtCod.setText("");
+                                    this.txtCodDesc.setText("");
+                                    this.lblCant.setText("Cantidad");
+                                    this.txtCod.requestFocus();
+                                    this.txtCod.selectAll();
+                                    this.lblAño.setVisible(false);
+                                    this.lblSaldo.setVisible(false);
+                                    this.comboAño.setVisible(false);
+                                    this.txtSaldo.setVisible(false);
+                                    this.txtSaldo.setEditable(false);
                                     this.internal.getBtnListar().doClick();
                                 }
                                 else{
@@ -406,19 +555,67 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
                         if(respuesta==0){
                             try {
                                 if(this.abreInput().equals("1234")){
-                                    if(this.log.borrarCodigoMarca(marca.getId(),marca.getFunCod(),codigo)){
-                                        this.lblMsj.setText("Borrado Exitoso");
-                                        this.txtCant.setText("");
-                                        this.txtCod.setText("");
-                                        this.txtCodDesc.setText("");
-                                        this.txtCod.requestFocus();
-                                        this.txtCod.selectAll();
-                                        this.internal.getBtnListar().doClick();
-                                    }
+                                    
+                                        if(codigo==1001){
+                                            if(this.log.borrarCodigoMarca(marca.getId(),marca.getFunCod(),codigo)){
+                                                if(this.logF.borrarLicAdelantada(marca.getId(),marca.getFunCod(),codigo)){
+                                                    this.lblMsj.setText("Borrado Exitoso");
+                                                    this.txtCant.setText("");
+                                                    this.txtCod.setText("");
+                                                    this.txtCodDesc.setText("");
+                                                    this.txtCod.requestFocus();
+                                                    this.txtCod.selectAll();
+                                                    //this.internal.getBtnListar().doClick();
+                                                }
+                                            }
+                                        }
+                                        else if(codigo==1000){
+                                            Integer anioSaldo =this.logF.obtieneAñoSaldo(marca.getId(),marca.getFunCod(),codigo);
+                                            Licencia h=(Licencia)this.comboAño.getSelectedItem();
+                                            Integer añoSacar=h.getAño()+1;
+                                            if(anioSaldo.equals(añoSacar)){
+                                            Integer saldo=Integer.valueOf(this.txtSaldo.getText());
+                                            Integer saldoPos=saldo+1;
+                                            Date hoy = new Date();
+                                            if(this.log.borrarCodigoMarca(marca.getId(),marca.getFunCod(),codigo)){
+                                                    if(this.logF.insertarMovLicencia(marca.getFechaUso(),marca.getFechaUso(),saldo,-1,hoy,añoSacar,f,saldoPos,1000,marca.getId())){
+                                                        this.lblMsj.setText("Borrado Exitoso");
+                                                        this.txtCant.setText("");
+                                                        this.txtCod.setText("");
+                                                        this.txtCodDesc.setText("");
+                                                        this.txtCod.requestFocus();
+                                                        this.txtCod.selectAll();
+                                                        this.lblAño.setVisible(false);
+                                                        this.lblSaldo.setVisible(false);
+                                                        this.comboAño.setVisible(false);
+                                                        this.txtSaldo.setVisible(false);
+                                                        this.txtSaldo.setEditable(false);
+                                                        
+                                                    }
+                                                }
+                                            }
+                                            else{
+                                                this.lblMsj.setText("El código 1000 de esta marca corresponde a licencia generada del año "+String.valueOf(anioSaldo-1));
+                                            }
+                                        }
+                                        else{
+                                            if(this.log.borrarCodigoMarca(marca.getId(),marca.getFunCod(),codigo)){
+                                                this.lblMsj.setText("Borrado Exitoso");
+                                                this.txtCant.setText("");
+                                                this.txtCod.setText("");
+                                                this.txtCodDesc.setText("");
+                                                this.txtCod.requestFocus();
+                                                this.txtCod.selectAll();
+                                            }
+                                        }
+                                    
                                 }
                             } catch (SQLException ex1) {
-                                Logger.getLogger(InternalMarcaCodigo.class.getName()).log(Level.SEVERE, null, ex1);
+                               JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                            } catch (ClassNotFoundException ex1) {
+                               JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                             }
+                            this.internal.getBtnListar().doClick();
                         }
                         else{
                         this.txtCod.requestFocus();
@@ -426,48 +623,186 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
                         }
                        
                     } catch (ClassNotFoundException ex) {
-                Logger.getLogger(InternalMarcaCodigo.class.getName()).log(Level.SEVERE, null, ex);
-            }
+               JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                }catch (BDExcepcion ex) {
+                 JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                }
         }
             else if(marcas.size()>0){
                 Integer i=0;
                 for(Marca m:marcas){
                     m.setSupervisado(1);
                     try {
-                        if(this.log.insertarCodigoMarca(m.getId(), m.getFunCod(), codigo, cant) && this.trip.actualizaMarca(m,null)==1){
-                            i++;
-                            this.txtCant.setText("");
-                            this.txtCod.setText("");
-                            this.txtCodDesc.setText("");
-                            this.txtCod.requestFocus();
-                            this.txtCod.selectAll();
-                           
+                       if(codigo == 35 || codigo ==36){
+                        Integer tope = this.log.calculoTopesCodigos(m, codigo);
+                            if(tope>0){
+                                if(tope>=cant){
+                                        if(this.log.insertarCodigoMarca(m.getId(), m.getFunCod(), codigo, cant, m.getFechaUso()) && this.trip.actualizaMarca(m,null)==1){
+                                            this.lblMsj.setText("Ingreso Exitoso");
+                                            this.txtCant.setText("");
+                                            this.txtCod.setText("");
+                                            this.txtCodDesc.setText("");
+                                            this.lblCant.setText("Cantidad");
+                                            this.txtCod.requestFocus();
+                                            this.txtCod.selectAll();
+                                            this.lblAño.setVisible(false);
+                                            this.lblSaldo.setVisible(false);
+                                            this.comboAño.setVisible(false);
+                                            this.txtSaldo.setVisible(false);
+                                            this.txtSaldo.setEditable(false);
+                                            this.internal.getBtnListar().doClick();
+                                             i++;
+                                        }
+                                        else{
+                                            this.lblMsj.setText("Inténtelo de nuevo");
+                                            this.txtCod.requestFocus();
+                                            this.txtCod.selectAll();
+                                        }
+                                }
+                                else{
+                                  this.lblMsj.setText("Saldo " +tope +". Ingrese una cantidad menor o igual al saldo");
+                                  this.txtCant.requestFocus();
+                                  this.txtCant.selectAll();
+                                }
+                            }
+                            else{
+                                this.lblMsj.setText("El saldo para este código está en cero");
+                                this.txtCod.requestFocus();
+                                this.txtCod.selectAll();
+                            }
+                        }    
+                          else if(codigo == 1001){
+                            lic= logF.consultaAdelantado(m.getFunCod().toString());
+                            Integer saldo=10-lic.getDiasTomados();
+                                if(saldo>=1){
+                                     m.setSupervisado(1);
+                                    if(this.log.insertarCodigoMarca(m.getId(), m.getFunCod(), codigo, cant,m.getFechaUso()) && this.trip.actualizaMarca(m,null)==1){
+                                        this.logF.insertarLicAdelantada(this.obtenerAño(),m.getFechaUso(),m.getFechaUso(),1,f,0,m.getId());
+                                                this.lblMsj.setText("Ingreso Exitoso");
+                                                this.txtCant.setText("");
+                                                this.txtCod.setText("");
+                                                this.txtCodDesc.setText("");
+                                                this.lblCant.setText("Cantidad");
+                                                this.txtCod.requestFocus();
+                                                this.txtCod.selectAll();
+                                                this.lblAño.setVisible(false);
+                                                this.lblSaldo.setVisible(false);
+                                                this.comboAño.setVisible(false);
+                                                this.txtSaldo.setVisible(false);
+                                                this.txtSaldo.setEditable(false);
+                                                this.internal.getBtnListar().doClick();
+                                                i++;
+                                    
+                                }
+                                else{
+                                    this.lblMsj.setText("Inténtelo de nuevo");
+                                    this.txtCod.requestFocus();
+                                    this.txtCod.selectAll();
+                                }
+                            }
+                              else{
+                                    this.lblMsj.setText("El saldo es de "+saldo);
+                                    this.txtCod.requestFocus();
+                                    this.txtCod.selectAll();
+                                }
+                        }
+                        else if(codigo == 1000){
+                            Integer saldo=Integer.valueOf(this.txtSaldo.getText());
+                            if(saldo>=marcas.size()){
+                                Licencia h=(Licencia)this.comboAño.getSelectedItem();
+                                Integer añoSacar=h.getAño()+1;
+                                Integer saldoPos=saldo-1;
+                                
+                                Date hoy = new Date();
+                                m.setSupervisado(1);
+                                if(this.log.insertarCodigoMarca(m.getId(), m.getFunCod(), codigo, cant,m.getFechaUso()) && this.trip.actualizaMarca(m,null)==1){
+                                    if(this.logF.insertarMovLicencia(m.getFechaUso(),m.getFechaUso(),saldo,1,hoy,añoSacar,f,saldoPos,1000,m.getId())){
+                                        this.lblMsj.setText("Ingreso Exitoso");
+                                        this.txtCant.setText("");
+                                        this.txtCod.setText("");
+                                        this.txtCodDesc.setText("");
+                                        this.lblCant.setText("Cantidad");
+                                        this.txtCod.requestFocus();
+                                        this.txtCod.selectAll();
+                                        this.lblAño.setVisible(false);
+                                        this.lblSaldo.setVisible(false);
+                                        this.comboAño.setVisible(false);
+                                        this.txtSaldo.setVisible(false);
+                                        this.txtSaldo.setEditable(false);
+                                        this.txtSaldo.setText(saldoPos.toString());
+                                        this.repaint();
+                                        this.revalidate();
+                                        this.internal.getBtnListar().doClick();
+                                        i++;
+                                    }
+                                }
+                            }
+                            else{
+                                JOptionPane.showMessageDialog(null, "El número de marcas a asignar es superior al saldo");
+                            }
+                        }
+                          
+                          else{ 
+                            if(this.log.insertarCodigoMarca(m.getId(), m.getFunCod(), codigo, cant,m.getFechaUso()) && this.trip.actualizaMarca(m,null)==1){
+                                i++;
+                                this.txtCant.setText("");
+                                this.txtCod.setText("");
+                                this.txtCodDesc.setText("");
+                                this.txtCod.requestFocus();
+                                m.setSupervisado(1);
+                                this.txtCod.selectAll();
+                                i++;
+                            }
                         }
                     } catch (SQLException ex) {
                         int respuesta = JOptionPane.showConfirmDialog(this, "La marca "+this.formateo(m.getFechaUso())+", "+m.getHoraUso()+" del funcionario "+m.getFunCod()+" ya tiene ingresad el código "+ codigo +" .¿Desea eliminarla?",null, JOptionPane.YES_NO_OPTION);
                         if(respuesta==0){
                             try {
                                 if(this.abreInput().equals("1234")){
-                                    if(this.log.borrarCodigoMarca(m.getId(),m.getFunCod(),codigo)){
-                                        this.lblMsj.setText("Borrado Exitoso");
-                                        this.txtCant.setText("");
-                                        this.txtCod.setText("");
-                                        this.txtCodDesc.setText("");
-                                        this.txtCod.requestFocus();
-                                        this.txtCod.selectAll();
+                                       if(codigo==1001){
+                                          if(this.log.borrarCodigoMarca(m.getId(),m.getFunCod(),codigo)){
+                                            if(this.logF.borrarLicAdelantada(m.getId(),m.getFunCod(),codigo)){
+                                                this.lblMsj.setText("Borrado Exitoso");
+                                                this.txtCant.setText("");
+                                                this.txtCod.setText("");
+                                                this.txtCodDesc.setText("");
+                                                this.txtCod.requestFocus();
+                                                this.txtCod.selectAll();
+                                                this.internal.getBtnListar().doClick();
+                                                i++;
+                                            }
+                                          }
+                                        }
+                                        else if(codigo==1000){
+                                            this.lblMsj.setText("No se permite hacer borrados múltiples de código 1000");
+                                        }
+                                        else{
+                                            if(this.log.borrarCodigoMarca(m.getId(),m.getFunCod(),codigo)){
+                                                this.lblMsj.setText("Borrado Exitoso");
+                                                this.txtCant.setText("");
+                                                this.txtCod.setText("");
+                                                this.txtCodDesc.setText("");
+                                                this.txtCod.requestFocus();
+                                                this.txtCod.selectAll();
+                                                this.internal.getBtnListar().doClick();
+                                                i++;
+                                            }
+                                        }
                                         
-                                    }
+                                    
                                 }
                             } catch (SQLException ex1) {
-                                Logger.getLogger(InternalMarcaCodigo.class.getName()).log(Level.SEVERE, null, ex1);
+                               JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                             }
                         }
                     } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(InternalMarcaCodigo.class.getName()).log(Level.SEVERE, null, ex);
+                        JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+                    } catch (BDExcepcion ex) {
+                        JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
                     }
                 }
                 if(i>0){
-                    this.lblMsj.setText("Se ingresó el código para "+i+" marcas");
+                    //this.lblMsj.setText("Se ingresó el código para "+i+" marcas");
                     this.txtCant.setText("");
                     this.txtCod.setText("");
                     this.txtCodDesc.setText("");
@@ -524,6 +859,29 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
             else{ 
                 this.lblCant.setText("Cantidad (Minutos)");
             }
+            
+            if(cod.getCod()==1000){
+                this.lblAño.setVisible(true);
+                this.lblSaldo.setVisible(true);
+                this.comboAño.setVisible(true);
+                this.txtSaldo.setVisible(true);
+                listaPasado=logF.cargaComboLicenciaPasado(f.getCodFunc().toString());
+                if(listaPasado!=null){
+                  this.comboAño.removeAllItems();
+                    for(int i=0;i<listaPasado.size();i++){
+                        this.comboAño.addItem(listaPasado.get(i));
+                        //this.comboAño.setSelectedIndex(1);
+                    }
+                }
+            }
+            else{
+                this.lblAño.setVisible(false);
+                this.lblSaldo.setVisible(false);
+                this.comboAño.setVisible(false);
+                this.txtSaldo.setVisible(false);
+                this.txtSaldo.setEditable(false);
+            }
+            
             }
             else{
             this.txtCodDesc.setText("Código Incorrecto");
@@ -531,8 +889,10 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
             this.txtCod.selectAll();
             }
         } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(InternalMarcaCodigo.class.getName()).log(Level.SEVERE, null, ex);
-        }
+           JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+        }   catch (BDExcepcion ex) {
+JOptionPane.showMessageDialog(null, "Ha ocurrido un problema. Reinicie el programa y si persiste consulte a Desarrollo.");
+            }
         }
         else{
             if(!str.equals("")){
@@ -544,19 +904,39 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
         
     }//GEN-LAST:event_txtCodFocusLost
 
+    private void txtSaldoFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtSaldoFocusLost
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSaldoFocusLost
+
+    private void txtSaldoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSaldoKeyTyped
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSaldoKeyTyped
+
+    private void comboAñoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboAñoItemStateChanged
+      this.txtSaldo.setText("");
+       Licencia l=(Licencia) this.comboAño.getSelectedItem();
+            if(l!=null){
+                this.txtSaldo.setText(l.getSaldo().toString());
+      }
+    }//GEN-LAST:event_comboAñoItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.edisoncor.gui.button.ButtonIcon btnAceptar;
     private org.edisoncor.gui.button.ButtonSeven buttonSeven1;
+    private javax.swing.JComboBox comboAño;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel lblAño;
     private javax.swing.JLabel lblCant;
     private javax.swing.JLabel lblMarca;
     private javax.swing.JLabel lblMsj;
     private javax.swing.JLabel lblNombres;
+    private javax.swing.JLabel lblSaldo;
     private org.edisoncor.gui.textField.TextFieldRound txtCant;
     private org.edisoncor.gui.textField.TextFieldRound txtCod;
     private org.edisoncor.gui.textField.TextFieldRound txtCodDesc;
+    private org.edisoncor.gui.textField.TextFieldRound txtSaldo;
     // End of variables declaration//GEN-END:variables
 
     private Boolean esNum(String num){
@@ -635,4 +1015,12 @@ public class InternalMarcaCodigo extends javax.swing.JInternalFrame {
       }
       return retorno;
      }  
+    
+     public Integer obtenerAño(){
+        Date fecha = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fecha);
+        Integer t=calendar.get(Calendar.YEAR)+1;
+        return t;
+    }
 }

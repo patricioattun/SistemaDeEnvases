@@ -1,4 +1,3 @@
-
 package Persistencia;
 
 import Dominio.Banco;
@@ -6,6 +5,7 @@ import Dominio.Cargo;
 import Dominio.CentroCosto;
 import Dominio.CodigoDesvinc;
 import Dominio.CodigoPdf;
+import Dominio.Declaracion;
 import Dominio.Departamento;
 import Dominio.EstadoCivil;
 import Dominio.Fallecimiento;
@@ -13,8 +13,11 @@ import Dominio.Feriado;
 import Dominio.Funcionario;
 import Dominio.Horario;
 import Dominio.Licencia;
-import Dominio.Marca;
+import Dominio.Liquidacion;
 import Dominio.MovimientoLicencia;
+import Dominio.Parametro;
+import Dominio.PersonasACargo;
+import Dominio.Relacion;
 import Dominio.Sns;
 import Dominio.Sucursal;
 import Presentacion.frmPrin;
@@ -29,6 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class PersistenciaFuncionario {
@@ -52,7 +57,7 @@ public class PersistenciaFuncionario {
     
     public Integer funcionarioExiste(Integer numFunc) throws SQLException, ClassNotFoundException {
         Connection cnn=null;
-        cnn=conexion.Cadena();
+        cnn=Conexion.Cadena();
         String consulta="Select CODIGO from PERS_FUNCIONARIOS where CODIGO=?";
         PreparedStatement ps=cnn.prepareStatement(consulta);
         ps.setInt(1, numFunc);
@@ -130,12 +135,12 @@ public class PersistenciaFuncionario {
                  this.altaHoraFunc(f.getCodFunc(), horarios.get(i), cnn);
              }
               alta=true;
-             this.insertarAltaAuditoria(String.valueOf(f.getSueldoCargo()),cnn,"Alta Sueldo",f.getCodFunc()); 
-             this.insertarAltaAuditoria(String.valueOf(f.getBaseHoraria()),cnn,"Alta Base Horaria",f.getCodFunc()); 
-             this.insertarAltaAuditoria(String.valueOf(f.getBaseHoras()),cnn,"Alta Base Horas",f.getCodFunc());
-             this.insertarAltaAuditoria(String.valueOf(f.getSns().getCodigo()), cnn,"Alta SNS",f.getCodFunc());
-             this.insertarAltaAuditoria(this.convertirFecha(f.getFechaIngreso()),cnn,"Alta Fecha Ingreso",f.getCodFunc());
-             this.insertarAltaAuditoria(String.valueOf(f.getCargo().getCodigo()),cnn,"Alta Cargo",f.getCodFunc()); 
+             this.insertarAltaAuditoria("",cnn,"Alta Funcionario",f.getCodFunc()); 
+//             this.insertarAltaAuditoria(String.valueOf(f.getBaseHoraria()),cnn,"Alta Base Horaria",f.getCodFunc()); 
+//             this.insertarAltaAuditoria(String.valueOf(f.getBaseHoras()),cnn,"Alta Base Horas",f.getCodFunc());
+//             this.insertarAltaAuditoria(String.valueOf(f.getSns().getCodigo()), cnn,"Alta SNS",f.getCodFunc());
+//             this.insertarAltaAuditoria(this.convertirFecha(f.getFechaIngreso()),cnn,"Alta Fecha Ingreso",f.getCodFunc());
+//             this.insertarAltaAuditoria(String.valueOf(f.getCargo().getCodigo()),cnn,"Alta Cargo",f.getCodFunc()); 
              cnn.commit();
             
 
@@ -174,8 +179,7 @@ public class PersistenciaFuncionario {
          SimpleDateFormat sdf=new SimpleDateFormat("dd/MM/yyyy"); 
          str= sdf.format(fecha);
     }
-     
-    
+        
     return str;
     }
     private Date stringADate(String s) throws ParseException{
@@ -255,7 +259,7 @@ public class PersistenciaFuncionario {
                f.setCelular(rs.getString("CELULAR"));
                f.setCentroCosto(this.buscarCentro(rs.getInt("CENTRO_COSTO")));
                f.setCredencial(rs.getString("CREDENCIAL"));
-               f.setCuenta(rs.getDouble("CUENTA"));
+               f.setCuenta(rs.getDouble("CUENTA"));               
                f.setDepartamento(this.buscarDepto(rs.getInt("DEPARTAMENTO")));
                f.setDireccion(rs.getString("DIRECCION"));
                f.setEstadoCivil(this.buscarEstado(rs.getInt("EST_CIVIL")));
@@ -350,6 +354,7 @@ public class PersistenciaFuncionario {
                f.setHorarios(this.buscarHorarios(cnn,rs.getInt("CODIGO")));
                f.setCodFunc(rs.getInt("CODIGO"));
                
+               
                lista.add(f);
            }
      
@@ -361,6 +366,71 @@ public class PersistenciaFuncionario {
             
             }
               Integer fds=lista.size();
+         return lista;
+    
+    }
+    
+     public ArrayList<Funcionario> listarFuncionariosActivosReLiq() throws ClassNotFoundException, SQLException {
+        String consulta="";
+        Connection cnn=null;
+        cnn=conexion.Cadena();
+       
+        Funcionario f;
+        ArrayList<Funcionario> lista=new ArrayList<>();
+        PreparedStatement ps=null;
+    
+        consulta="select * from pers_funcionarios where (fecha_egreso is null) and codigo not in(select cod_func from pers_excepciones_reqliquidacion) order by codigo";
+        ps=cnn.prepareStatement(consulta);
+             
+        ResultSet rs=ps.executeQuery();
+
+           while (rs.next()){
+               f=new Funcionario();
+               f.setAfap(rs.getInt("AFAP"));
+               f.setApellido1(rs.getString("APELLIDO1"));
+               f.setApellido2(rs.getString("APELLIDO2"));
+               f.setBanco(this.buscarBanco(rs.getInt("BANCO")));
+               f.setBaseHoraria(rs.getInt("BASE_HORARIA"));
+               f.setBaseHoras(rs.getInt("BASE_HORAS"));
+               f.setCargo(this.buscarCargo(rs.getInt("COD_CARGO")));
+               f.setCedula(rs.getInt("CEDULA"));
+               f.setCelular(rs.getString("CELULAR"));
+               f.setCentroCosto(this.buscarCentro(rs.getInt("CENTRO_COSTO")));
+               f.setCredencial(rs.getString("CREDENCIAL"));
+               f.setCuenta(rs.getDouble("CUENTA"));
+               f.setDepartamento(this.buscarDepto(rs.getInt("DEPARTAMENTO")));
+               f.setDireccion(rs.getString("DIRECCION"));
+               f.setEstadoCivil(this.buscarEstado(rs.getInt("EST_CIVIL")));
+               f.setFechaEgreso(rs.getDate("FECHA_EGRESO"));
+               f.setFechaIngreso(rs.getDate("FECHA_INGRESO"));
+               f.setFechaNac(rs.getDate("FECHA_NAC"));
+               f.setIniciales(rs.getString("INICIALES"));
+               f.setLocalidad(rs.getString("LOCALIDAD"));
+               f.setLugarTrabajo(this.buscarSucursal(rs.getInt("LUGAR_TRABAJO")));
+               f.setNombre1(rs.getString("NOMBRE1"));
+               f.setNombre2(rs.getString("NOMBRE2"));
+               f.setSexo(rs.getString("SEXO").charAt(0));
+               f.setSns(this.buscarSns(rs.getInt("SNS")));
+               f.setSueldoCargo(rs.getDouble("SUELDO_CARGO"));
+               f.setTelefono(rs.getString("TELEFONO"));
+               f.setTipoCuenta(rs.getString("TIPO_CUENTA"));
+               f.setVencimientoCarne(rs.getDate("VENCIMIENTO_CARNE"));
+               f.setVigenciaCargo(rs.getDate("VIGENCIA_CARGO"));
+               f.setHorarios(this.buscarHorarios(cnn,rs.getInt("CODIGO")));
+               f.setCodFunc(rs.getInt("CODIGO"));
+               
+               
+               lista.add(f);
+           }
+     
+        
+            if(cnn!=null){
+            ps.close();
+            rs.close();
+            cnn.close();
+            
+            }
+              
          return lista;
     
     }
@@ -1022,7 +1092,7 @@ public class PersistenciaFuncionario {
                 this.insertarModAuditoria(this.convertirFecha(f.getFechaEgreso()),"",cnn,"Baja de Funcionario",f.getCodFunc()); 
              }
              else if(f.getFechaEgreso()==null){
-                 this.insertarModAuditoria("",this.convertirFecha(fv.getFechaEgreso()),cnn,"Reingreso de funcionario",f.getCodFunc()); 
+                this.insertarModAuditoria("",this.convertirFecha(fv.getFechaEgreso()),cnn,"Reingreso de funcionario",f.getCodFunc()); 
              }
              }
              
@@ -1041,6 +1111,50 @@ public class PersistenciaFuncionario {
          return alta;
     
     }
+    
+    public Boolean modFuncionarioSecretaria(Funcionario f) throws SQLException {
+       Boolean alta=false;
+        try {
+            Connection cnn=null;
+                
+            ArrayList<Horario> horarios=f.getHorarios();
+            
+            cnn=conexion.Cadena();
+            cnn.setAutoCommit(false);
+            String insert="update PERS_FUNCIONARIOS set VENCIMIENTO_CARNE=? where CODIGO=?";
+            //,COD_CARGO,SUELDO_CARGO,CENTRO_COSTO,VIGENCIA_CARGO,BASE_HORARIA,BASE_HORAS,LUGAR_TRABAJO,AFAP,CUENTA,SOCIO,HORARIO,SNS
+            
+            PreparedStatement psFunc=cnn.prepareStatement(insert);
+            
+            psFunc.setString(1, this.convertirFecha(f.getVencimientoCarne()));
+            psFunc.setInt(2, f.getCodFunc());
+            psFunc.executeUpdate();
+            
+            this.borrarHoraFunc(f.getCodFunc(), cnn);
+            
+            for(Integer i=0;i<horarios.size();i++){
+                this.altaHoraFunc(f.getCodFunc(), horarios.get(i), cnn);
+            }
+            alta=true;
+            
+            
+            cnn.commit();
+            
+            if(cnn!=null){
+                cnn.close();
+                psFunc.close();
+            }
+            
+            
+            
+            
+           
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+         return alta;
+    }
+            
     
     public ArrayList<Funcionario> vencimientoCarne() throws ClassNotFoundException, SQLException{
         ArrayList<Funcionario> listado=null;
@@ -1068,6 +1182,40 @@ public class PersistenciaFuncionario {
             f.setNombre1(rs.getString("NOMBRE1"));
             f.setNombre2(rs.getString("NOMBRE2"));
             f.setVencimientoCarne(rs.getDate("VENCIMIENTO_CARNE"));
+            listado.add(f);
+        }
+        
+        if(cnn!=null){
+            ps.close();
+            rs.close();
+            cnn.close();
+            
+            }
+        
+        return listado;
+    }
+    
+    public ArrayList<Funcionario> listadoSueldo() throws ClassNotFoundException, SQLException{
+        ArrayList<Funcionario> listado=null;
+        Funcionario f=null;
+        Connection cnn=null;
+        cnn=conexion.Cadena();
+        Integer size=0;
+        String consulta="select CODIGO,NOMBRE1,NOMBRE2,APELLIDO1,APELLIDO2,SUELDO_CARGO,COD_CARGO from PERS_FUNCIONARIOS where FECHA_EGRESO IS NULL order by CODIGO";
+   
+        PreparedStatement ps=cnn.prepareStatement(consulta);
+
+        ResultSet rs=ps.executeQuery();
+        listado=new ArrayList<>();
+        while(rs.next()){
+            f=new Funcionario();
+            f.setCodFunc(rs.getInt("CODIGO"));
+            f.setApellido1(rs.getString("APELLIDO1"));
+            f.setApellido2(rs.getString("APELLIDO2"));
+            f.setNombre1(rs.getString("NOMBRE1"));
+            f.setNombre2(rs.getString("NOMBRE2"));
+            f.setSueldoCargo(rs.getDouble("SUELDO_CARGO"));
+            f.setCargo(this.buscarCargo(rs.getInt("COD_CARGO")));
             listado.add(f);
         }
         
@@ -1177,7 +1325,7 @@ public class PersistenciaFuncionario {
         PreparedStatement ps=null;
        if(!filtro.equals("")){
         filtro=filtro.toUpperCase();
-        consulta="Select CODIGO,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2 from PERS_FUNCIONARIOS where FECHA_EGRESO IS NULL AND(APELLIDO1 LIKE ? OR APELLIDO2 LIKE ? OR NOMBRE1 LIKE ? OR NOMBRE2 LIKE ?) order by codigo";
+        consulta="Select CODIGO,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2 from PERS_FUNCIONARIOS where (APELLIDO1 LIKE ? OR APELLIDO2 LIKE ? OR NOMBRE1 LIKE ? OR NOMBRE2 LIKE ?) order by codigo";
         ps=cnn.prepareStatement(consulta);
         ps.setString(1, "%"+filtro+"%");
         ps.setString(2, "%"+filtro+"%");
@@ -1186,7 +1334,7 @@ public class PersistenciaFuncionario {
         
         }
        else{
-        consulta="Select CODIGO,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2 from PERS_FUNCIONARIOS where FECHA_EGRESO IS NULL order by codigo";
+        consulta="Select CODIGO,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2 from PERS_FUNCIONARIOS order by codigo";
         ps=cnn.prepareStatement(consulta);
        }
         ResultSet rs=ps.executeQuery();
@@ -1286,12 +1434,98 @@ public class PersistenciaFuncionario {
     
     }
 
-    public Funcionario funcionarioParcial(int codigo) throws ClassNotFoundException, SQLException {
-        Connection cnn=null;
-        cnn=conexion.Cadena();
-        Integer size=0;
+    public Funcionario funcionarioParcial(int codigo)throws BDExcepcion {
         Funcionario f=null;
-        String consulta="Select CEDULA,CODIGO,FECHA_INGRESO,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2, LUGAR_TRABAJO from PERS_FUNCIONARIOS where CODIGO=? and FECHA_EGRESO IS NULL";
+        try {
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            Integer size=0;
+                        
+            String consulta="Select CEDULA,CODIGO,FECHA_INGRESO,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2, LUGAR_TRABAJO,CUENTA,VENCIMIENTO_CARNE from PERS_FUNCIONARIOS where CODIGO=? and FECHA_EGRESO IS NULL";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, codigo);
+            ResultSet rs=ps.executeQuery();
+            
+            while (rs.next()){
+                f=new Funcionario();
+                f.setApellido1(rs.getString("APELLIDO1"));
+                f.setApellido2(rs.getString("APELLIDO2"));
+                f.setCedula(rs.getInt("CEDULA"));
+                f.setFechaIngreso(rs.getDate("FECHA_INGRESO"));
+                f.setNombre1(rs.getString("NOMBRE1"));
+                f.setNombre2(rs.getString("NOMBRE2"));
+                f.setLugarTrabajo(this.buscarSucursal(rs.getInt("LUGAR_TRABAJO")));
+                f.setCodFunc(codigo);
+                f.setHorarios(this.buscarHorarios(cnn,codigo));
+                f.setCuenta(rs.getDouble("CUENTA"));
+                f.setVencimientoCarne(rs.getDate("VENCIMIENTO_CARNE"));
+            }
+            
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+                
+            }
+            
+            
+        } catch (ClassNotFoundException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        }
+        return f;
+    }
+    
+    public Funcionario funcionarioParcialTodos(int codigo)throws BDExcepcion {
+        Funcionario f=null;
+        try {
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            Integer size=0;
+                        
+            String consulta="Select CEDULA,CODIGO,FECHA_INGRESO,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2, LUGAR_TRABAJO,CUENTA,VENCIMIENTO_CARNE from PERS_FUNCIONARIOS where CODIGO=?";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, codigo);
+            ResultSet rs=ps.executeQuery();
+            
+            while (rs.next()){
+                f=new Funcionario();
+                f.setApellido1(rs.getString("APELLIDO1"));
+                f.setApellido2(rs.getString("APELLIDO2"));
+                f.setCedula(rs.getInt("CEDULA"));
+                f.setFechaIngreso(rs.getDate("FECHA_INGRESO"));
+                f.setNombre1(rs.getString("NOMBRE1"));
+                f.setNombre2(rs.getString("NOMBRE2"));
+                f.setLugarTrabajo(this.buscarSucursal(rs.getInt("LUGAR_TRABAJO")));
+                f.setCodFunc(codigo);
+                f.setHorarios(this.buscarHorarios(cnn,codigo));
+                f.setCuenta(rs.getDouble("CUENTA"));
+                f.setVencimientoCarne(rs.getDate("VENCIMIENTO_CARNE"));
+            }
+            
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+                
+            }
+            
+            
+        } catch (ClassNotFoundException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        }
+        return f;
+    }
+    
+    
+    
+    
+    public Funcionario funcionarioVale(int codigo, Connection cnn) throws ClassNotFoundException, SQLException {
+        Funcionario f=null;
+        String consulta="Select CODIGO,NOMBRE1,NOMBRE2,APELLIDO1,APELLIDO2,CUENTA from PERS_FUNCIONARIOS where CODIGO=? and FECHA_EGRESO IS NULL";
         PreparedStatement ps=cnn.prepareStatement(consulta);
         ps.setInt(1, codigo);
         ResultSet rs=ps.executeQuery();
@@ -1300,23 +1534,16 @@ public class PersistenciaFuncionario {
                f=new Funcionario();
                f.setApellido1(rs.getString("APELLIDO1"));
                f.setApellido2(rs.getString("APELLIDO2"));
-               f.setCedula(rs.getInt("CEDULA"));
-               f.setFechaIngreso(rs.getDate("FECHA_INGRESO"));
                f.setNombre1(rs.getString("NOMBRE1"));
                f.setNombre2(rs.getString("NOMBRE2"));
-               f.setLugarTrabajo(this.buscarSucursal(rs.getInt("LUGAR_TRABAJO")));
-               f.setCodFunc(codigo);
-               f.setHorarios(this.buscarHorarios(cnn,codigo));
+               f.setCuenta(rs.getDouble("CUENTA"));
+               f.setCodFunc(rs.getInt("CODIGO"));
            }
            
-            if(cnn!=null){
+           
             ps.close();
             rs.close();
-            cnn.close();
-            
-            }
-            
-         return f;
+       return f;
     }
     
        public Funcionario funcionarioBasico(int codigo) throws ClassNotFoundException, SQLException {
@@ -1344,6 +1571,126 @@ public class PersistenciaFuncionario {
             cnn.close();
             
             }
+            
+         return f;
+    }
+       
+     public Funcionario funcionarioBasicoMasivo(int codigo, Connection cnn) throws BDExcepcion {
+  
+        try {
+            Integer size=0;
+            Funcionario f=null;
+            String consulta="Select cedula,CODIGO,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2 from PERS_FUNCIONARIOS where CODIGO=?";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, codigo);
+            ResultSet rs=ps.executeQuery();
+            
+            while (rs.next()){
+                f=new Funcionario();
+                f.setApellido1(rs.getString("APELLIDO1"));
+                f.setApellido2(rs.getString("APELLIDO2"));
+                f.setNombre1(rs.getString("NOMBRE1"));
+                f.setNombre2(rs.getString("NOMBRE2"));
+                f.setCodFunc(codigo);
+               
+            }
+            
+            
+            ps.close();
+            rs.close();
+            
+
+            return f;
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+    }
+     
+    public Funcionario funcionarioParaLiq(int codigo, Connection cnn) throws BDExcepcion {
+  
+        try {
+            Integer size=0;
+            Funcionario f=null;
+            String consulta="Select sns,CUENTA,BANCO,cedula,fecha_ingreso,lugar_trabajo,CODIGO,cod_cargo,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2 from PERS_FUNCIONARIOS where CODIGO=?";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, codigo);
+            ResultSet rs=ps.executeQuery();
+            
+            while (rs.next()){
+                f=new Funcionario();
+                f.setApellido1(rs.getString("APELLIDO1"));
+                f.setApellido2(rs.getString("APELLIDO2"));
+                f.setNombre1(rs.getString("NOMBRE1"));
+                f.setNombre2(rs.getString("NOMBRE2"));
+                f.setCargo(this.buscoCargo(cnn,rs.getInt("cod_cargo")));
+                f.setCodFunc(codigo);
+                f.setFechaIngreso(rs.getDate("fecha_ingreso")); 
+                f.setCedula(rs.getInt("CEDULA"));
+                Sucursal s = new Sucursal();
+                s.setNumero(rs.getInt("lugar_trabajo"));
+                f.setCuenta(rs.getDouble("CUENTA"));
+                f.setBanco(this.buscarBancoVale(rs.getInt("BANCO"), cnn));
+                f.setSns(this.cargaSns(rs.getInt("SNS"), cnn)); 
+                f.setLugarTrabajo(s);
+            }
+            
+            
+            ps.close();
+            rs.close();
+            
+
+            return f;
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+    }
+    
+    
+    public Sns cargaSns(Integer cod, Connection cnn) throws SQLException{
+ 
+        Sns sns=null; 
+    
+        String consulta="Select * from PERS_SNS where codigo=? order by codigo";
+        PreparedStatement ps=cnn.prepareStatement(consulta);
+        ps.setInt(1, cod);
+        ResultSet rs=ps.executeQuery();
+            if(rs.next()){
+            sns=new Sns();
+            sns.setCodigo(rs.getInt("CODIGO"));
+            sns.setDescripcion(rs.getString("DESCRIPCION").trim());
+            sns.setCaja(rs.getDouble("CAJA"));
+            sns.setFonasa(rs.getDouble("FONASA"));
+            
+            }        
+             ps.close();
+             rs.close();
+          
+         return sns;
+    }
+     
+     public Funcionario funcionarioBasicoVale(int codigo,Connection cnn) throws ClassNotFoundException, SQLException {
+  
+        Funcionario f=null;
+        String consulta="Select CUENTA,CODIGO,BANCO,trim(NOMBRE1) as nombre1,trim(NOMBRE2) as nombre2,trim(APELLIDO1) as apellido1,trim(APELLIDO2) as apellido2 from PERS_FUNCIONARIOS where CODIGO=?";
+        PreparedStatement ps=cnn.prepareStatement(consulta);
+        ps.setInt(1, codigo);
+        ResultSet rs=ps.executeQuery();
+
+           while (rs.next()){
+               f=new Funcionario();
+               f.setApellido1(rs.getString("APELLIDO1"));
+               f.setApellido2(rs.getString("APELLIDO2"));
+               f.setNombre1(rs.getString("NOMBRE1"));
+               f.setNombre2(rs.getString("NOMBRE2"));
+               f.setCuenta(rs.getDouble("CUENTA"));
+               f.setBanco(this.buscarBancoVale(rs.getInt("BANCO"),cnn));
+               f.setCodFunc(codigo);
+          }
+           
+           
+            ps.close();
+            rs.close();
+         
             
          return f;
     }
@@ -1380,6 +1727,8 @@ public class PersistenciaFuncionario {
             
          return f;
     }
+    
+    
     
        public ArrayList<Funcionario> listaFuncionarioParcial() throws ClassNotFoundException, SQLException {
         Connection cnn=null;
@@ -1437,77 +1786,91 @@ public class PersistenciaFuncionario {
        
        
     
-    public ArrayList<Licencia> licenciaPorCod(Integer codigo) throws ClassNotFoundException, SQLException {
-        String consulta="";
-        Connection cnn=null;
-        cnn=conexion.Cadena();
-        Date d=new Date();
-        Integer año=this.obtenerAño(d);
-        Licencia l;
+    public ArrayList<Licencia> licenciaPorCod(Integer codigo)throws BDExcepcion{
         ArrayList<Licencia> lista=new ArrayList<>();
-        PreparedStatement ps=null;
-        consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? AND ANIO>=?";
-        ps=cnn.prepareStatement(consulta);
-        ps.setInt(1, codigo);
-        ps.setInt(2, año);
-        ResultSet rs=ps.executeQuery();
-           while (rs.next()){
-               l=new Licencia();
-               l.setAño(rs.getInt("ANIO")-1);
-               l.setFechaIni(rs.getDate("FECHAINI"));
-               l.setFechaFin(rs.getDate("FECHAFIN"));
-               l.setId(rs.getInt("CODIGO"));
-               l.setDiasGenerados(rs.getInt("DIAS_GENERADOS"));
-               l.setSaldo(rs.getInt("SALDO"));
-               l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
-               l.setFechaGen(rs.getDate("FECHAGEN"));
-               l.setDiasDescuento(rs.getInt("DIAS_DESCUENTO"));
-               lista.add(l);
-           }
-     
-        
-           
-            if(cnn!=null){
-            ps.close();
-            rs.close();
-            cnn.close();
+        try {
+            String consulta="";
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            Date d=new Date();
+            Integer año=this.obtenerAño(d);
+            Licencia l;
             
+            PreparedStatement ps=null;
+            consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? AND ANIO<=? order by anio desc";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, codigo);
+            ps.setInt(2, año);
+            ResultSet rs=ps.executeQuery();
+            while (rs.next()){
+                l=new Licencia();
+                l.setAño(rs.getInt("ANIO")-1);
+                l.setFechaIni(rs.getDate("FECHAINI"));
+                l.setFechaFin(rs.getDate("FECHAFIN"));
+                l.setId(rs.getInt("CODIGO"));
+                l.setDiasGenerados(rs.getInt("DIAS_GENERADOS"));
+                l.setSaldo(rs.getInt("SALDO"));
+                l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
+                l.setFechaGen(rs.getDate("FECHAGEN"));
+                l.setDiasDescuento(rs.getInt("DIAS_DESCUENTO"));
+                lista.add(l);
             }
-             
-         return lista;
-    
+            
+            
+            
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+                
+            }
+            
+            
+        } catch (ClassNotFoundException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+        return lista;
     }
   
-     public Licencia licencia(Integer codigo,Date d) throws ClassNotFoundException, SQLException {
-        String consulta="";
-        Connection cnn=null;
-        cnn=conexion.Cadena();
+     public Licencia licencia(Integer codigo,Date d)throws BDExcepcion{
         Licencia l=null;
-        PreparedStatement ps=null;
-        consulta="Select * from PERS_LICENCIA_GENERADA where CODFUNC=? and FECHAGEN=? order by CODFUNC";
-        ps=cnn.prepareStatement(consulta);
-        ps.setInt(1, codigo);
-        ps.setString(2, this.convertirFecha(d));
-        ResultSet rs=ps.executeQuery();
-           while (rs.next()){
-               l=new Licencia();
-               l.setAño(rs.getInt("ANIO"));
-               l.setFechaIni(rs.getDate("FECHAINI"));
-               l.setFechaFin(rs.getDate("FECHAFIN"));
-               l.setId(rs.getInt("CODIGO"));
-               l.setSaldo(rs.getInt("SALDO"));
-               l.setDiasGenerados(rs.getInt("DIAS_GENERADOS"));
-               l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
-           }
-            if(cnn!=null){
-            ps.close();
-            rs.close();
-            cnn.close();
+         try {
+            String consulta="";
+            Connection cnn=null;
+            cnn=conexion.Cadena();
             
+            PreparedStatement ps=null;
+            consulta="Select * from PERS_LICENCIA_GENERADA where CODFUNC=? and FECHAGEN=? order by CODFUNC";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, codigo);
+            ps.setString(2, this.convertirFecha(d));
+            ResultSet rs=ps.executeQuery();
+            while (rs.next()){
+                l=new Licencia();
+                l.setAño(rs.getInt("ANIO"));
+                l.setFechaIni(rs.getDate("FECHAINI"));
+                l.setFechaFin(rs.getDate("FECHAFIN"));
+                l.setId(rs.getInt("CODIGO"));
+                l.setSaldo(rs.getInt("SALDO"));
+                l.setDiasGenerados(rs.getInt("DIAS_GENERADOS"));
+                l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
             }
-             
-         return l;
-    
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+                
+            }
+            
+            
+        } catch (ClassNotFoundException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+    return l;
     }
 
     public boolean insertarLicencia(Licencia l,Connection cnn) throws SQLException, ClassNotFoundException {
@@ -1581,184 +1944,216 @@ public class PersistenciaFuncionario {
             }
             return esta;  
     }
-    public ArrayList<Licencia> cargaComboLicencia(Integer cod) throws ClassNotFoundException, SQLException{
-        String consulta="";
-        Connection cnn=null;
-        Date d=new Date();
-        Integer año=Integer.valueOf(this.obtenerAño1(d));
-        cnn=conexion.Cadena();
-        Licencia l;
-        ArrayList<Licencia> lista=new ArrayList<>();
-        PreparedStatement ps=null;
-        consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? and SALDO>0 and anio=? order by ANIO";
-        ps=cnn.prepareStatement(consulta);
-        ps.setInt(1, cod);
-        ps.setInt(2, año);
-        ResultSet rs=ps.executeQuery();
-           while (rs.next()){
-               l=new Licencia();
-               l.setAño(rs.getInt("ANIO")-1);
-               l.setFechaIni(rs.getDate("FECHAINI"));
-               l.setFechaFin(rs.getDate("FECHAFIN"));
-               l.setId(rs.getInt("CODIGO"));
-               l.setSaldo(rs.getInt("SALDO"));
-               l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
-               lista.add(l);
-           }
-     
-        
-            if(cnn!=null){
-            ps.close();
-            rs.close();
-            cnn.close();
-            
+    public ArrayList<Licencia> cargaComboLicencia(Integer cod)throws BDExcepcion{
+         ArrayList<Licencia> lista=new ArrayList<>();
+        try {
+            String consulta="";
+            Connection cnn=null;
+            Date d=new Date();
+            Integer año=Integer.valueOf(this.obtenerAño1(d));
+            cnn=conexion.Cadena();
+            Licencia l;
+           
+            PreparedStatement ps=null;
+            consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? and SALDO>0 and anio=? and fechaini>? order by ANIO";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            ps.setInt(2, año);
+            ps.setString(3, this.convertirFecha(d));
+            ResultSet rs=ps.executeQuery();
+            while (rs.next()){
+                l=new Licencia();
+                l.setAño(rs.getInt("ANIO")-1);
+                l.setFechaIni(rs.getDate("FECHAINI"));
+                l.setFechaFin(rs.getDate("FECHAFIN"));
+                l.setId(rs.getInt("CODIGO"));
+                l.setSaldo(rs.getInt("SALDO"));
+                l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
+                lista.add(l);
             }
-             
-         return lista;
-    
-    }
-    public ArrayList<Licencia> cargaComboLicenciaPasado(Integer cod) throws ClassNotFoundException, SQLException{
-        String consulta="";
-        Connection cnn=null;
-        Date d=new Date();
-        Integer año=Integer.valueOf(this.obtenerAño1(d));
-        cnn=conexion.Cadena();
-        Licencia l;
-        ArrayList<Licencia> lista=new ArrayList<>();
-        PreparedStatement ps=null;
-        consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? and SALDO>0 and anio<? order by ANIO";
-        ps=cnn.prepareStatement(consulta);
-        ps.setInt(1, cod);
-        ps.setInt(2, año);
-        ResultSet rs=ps.executeQuery();
-           while (rs.next()){
-               l=new Licencia();
-               l.setAño(rs.getInt("ANIO")-1);
-               l.setFechaIni(rs.getDate("FECHAINI"));
-               l.setFechaFin(rs.getDate("FECHAFIN"));
-               l.setId(rs.getInt("CODIGO"));
-               l.setSaldo(rs.getInt("SALDO"));
-               l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
-               lista.add(l);
-           }
-     
-        
-            if(cnn!=null){
-            ps.close();
-            rs.close();
-            cnn.close();
             
+            
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+                
             }
-             
-         return lista;
-    
+            
+           
+        } catch (ClassNotFoundException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+     return lista;
+    }
+    public ArrayList<Licencia> cargaComboLicenciaPasado(Integer cod)throws BDExcepcion{
+        ArrayList<Licencia> lista=new ArrayList<>();
+        try {
+            String consulta="";
+            Connection cnn=null;
+            Date d=new Date();
+            Integer año=Integer.valueOf(this.obtenerAño1(d));
+            cnn=conexion.Cadena();
+            Licencia l;
+            
+            PreparedStatement ps=null;
+            consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? and SALDO>0 and anio<? order by ANIO";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            ps.setInt(2, año);
+            ResultSet rs=ps.executeQuery();
+            while (rs.next()){
+                l=new Licencia();
+                l.setAño(rs.getInt("ANIO")-1);
+                l.setFechaIni(rs.getDate("FECHAINI"));
+                l.setFechaFin(rs.getDate("FECHAFIN"));
+                l.setId(rs.getInt("CODIGO"));
+                l.setSaldo(rs.getInt("SALDO"));
+                l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
+                lista.add(l);
+            }
+            Licencia e=this.cargoSaldoAñoCorriente(cnn, cod);
+            if(e!=null){
+                lista.add(e);
+            }
+            
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+                
+            }
+            
+            
+        } catch (ClassNotFoundException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+    return lista;
     }
     
-       public Licencia licenciaActualFunc(Integer cod) throws ClassNotFoundException, SQLException{
-        String consulta="";
-        Connection cnn=null;
-        Date d=new Date();
-        Integer año=Integer.valueOf(this.obtenerAño1(d));
-        cnn=conexion.Cadena();
+       public Licencia licenciaActualFunc(Integer cod)throws BDExcepcion {
         Licencia l=null;
-        PreparedStatement ps=null;
-        consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? and anio=?";
-        ps=cnn.prepareStatement(consulta);
-        ps.setInt(1, cod);
-        ps.setInt(2, año);
-        ResultSet rs=ps.executeQuery();
-           while (rs.next()){
-               l=new Licencia();
-               l.setAño(rs.getInt("ANIO")-1);
-               l.setId(rs.getInt("CODIGO"));
-               l.setFechaIni(rs.getDate("FECHAINI"));
-               l.setFechaGen(rs.getDate("FECHAGEN"));
-               l.setSaldo(rs.getInt("SALDO"));
-               l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
-               
-           }
-     
-        
-            if(cnn!=null){
-            ps.close();
-            rs.close();
-            cnn.close();
+         try {
+            String consulta="";
+            Connection cnn=null;
+            Date d=new Date();
+            Integer año=Integer.valueOf(this.obtenerAño1(d));
+            cnn=conexion.Cadena();
             
+            PreparedStatement ps=null;
+            consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? and anio=?";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            ps.setInt(2, año);
+            ResultSet rs=ps.executeQuery();
+            while (rs.next()){
+                l=new Licencia();
+                l.setAño(rs.getInt("ANIO")-1);
+                l.setId(rs.getInt("CODIGO"));
+                l.setFechaIni(rs.getDate("FECHAINI"));
+                l.setFechaGen(rs.getDate("FECHAGEN"));
+                l.setSaldo(rs.getInt("SALDO"));
+                l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
+                
             }
-             
-         return l;
-    
+            
+            
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+                
+            }
+            
+           
+        } catch (ClassNotFoundException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+          throw new BDExcepcion(ex.getMessage());
+        }
+     return l;
     }
        
-       public ArrayList<Licencia> licenciaAnteriorFunc(Integer cod) throws ClassNotFoundException, SQLException{
-        String consulta="";
-        Connection cnn=null;
-        Date d=new Date();
-        Integer año=Integer.valueOf(this.obtenerAño1(d));
-        cnn=conexion.Cadena();
-        Licencia l=null;
+       public ArrayList<Licencia> licenciaAnteriorFunc(Integer cod)throws BDExcepcion{
         ArrayList<Licencia> lista=new ArrayList<>();
-        PreparedStatement ps=null;
-        consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? and anio<?";
-        ps=cnn.prepareStatement(consulta);
-        ps.setInt(1, cod);
-        ps.setInt(2, año);
-        ResultSet rs=ps.executeQuery();
-           while (rs.next()){
-               l=new Licencia();
-               l.setAño(rs.getInt("ANIO")-1);
-               l.setId(rs.getInt("CODIGO"));
-               l.setFechaGen(rs.getDate("FECHAGEN"));
-               l.setSaldo(rs.getInt("SALDO"));
-               l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
-               lista.add(l);
-           }
-     
-        
-            if(cnn!=null){
-            ps.close();
-            rs.close();
-            cnn.close();
+         try {
+            String consulta="";
+            Connection cnn=null;
+            Date d=new Date();
+            Integer año=Integer.valueOf(this.obtenerAño1(d));
+            cnn=conexion.Cadena();
+            Licencia l=null;
             
+            PreparedStatement ps=null;
+            consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? and anio<?";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            ps.setInt(2, año);
+            ResultSet rs=ps.executeQuery();
+            while (rs.next()){
+                l=new Licencia();
+                l.setAño(rs.getInt("ANIO")-1);
+                l.setId(rs.getInt("CODIGO"));
+                l.setFechaGen(rs.getDate("FECHAGEN"));
+                l.setSaldo(rs.getInt("SALDO"));
+                l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
+                lista.add(l);
             }
-             
-         return lista;
-    
+            
+            
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+                
+            }
+            
+            
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        } catch (ClassNotFoundException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+        return lista;
     }   
 
-    public boolean actualizarLicencia(Date fechaIni, Date fechaFin, Licencia lic) throws SQLException {
-     Connection cnn=null;
-        Boolean alta=false;
-        Integer a=0;
-        
-        try{
-             cnn=conexion.Cadena();
-             String insert="update PERS_LICENCIA_GENERADA set FECHAINI=?,FECHAFIN=?,SALDO=?,DIAS_DESCUENTO=? WHERE CODFUNC=? AND ANIO=?";
-             PreparedStatement psFunc=cnn.prepareStatement(insert);
-             
-             psFunc.setString(1, this.convertirFecha(fechaIni));
-             psFunc.setString(2,this.convertirFecha(fechaFin));
-             psFunc.setInt(3, lic.getSaldo());
-             psFunc.setInt(4, lic.getDiasDescuento());
-             psFunc.setInt(5, lic.getFuncionario().getCodFunc());
-             psFunc.setInt(6, lic.getAño()+1);
-             a=psFunc.executeUpdate();
-             if(a==1){
-                 alta=true;
-             }
-             if(cnn!=null){
+    public boolean actualizarLicencia(Date fechaIni, Date fechaFin, Licencia lic) throws BDExcepcion {
+        try {
+            Connection cnn=null;
+            Boolean alta=false;
+            Integer a=0;
+            
+            
+            cnn=conexion.Cadena();
+            String insert="update PERS_LICENCIA_GENERADA set FECHAINI=?,FECHAFIN=?,SALDO=?,DIAS_DESCUENTO=? WHERE CODFUNC=? AND ANIO=?";
+            PreparedStatement psFunc=cnn.prepareStatement(insert);
+            
+            psFunc.setString(1, this.convertirFecha(fechaIni));
+            psFunc.setString(2,this.convertirFecha(fechaFin));
+            psFunc.setInt(3, lic.getSaldo());
+            psFunc.setInt(4, lic.getDiasDescuento());
+            psFunc.setInt(5, lic.getFuncionario().getCodFunc());
+            psFunc.setInt(6, lic.getAño()+1);
+            a=psFunc.executeUpdate();
+            if(a==1){
+                alta=true;
+            }
+            if(cnn!=null){
                 psFunc.close();
                 cnn.close();
             }
-
-         }
-         catch(ClassNotFoundException e1){
             
-         }
-         finally{
-               
-     }
-         return alta;    
+            
+            return alta;    
+        } catch (ClassNotFoundException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        }
     }
     
      public boolean actualizarLicenciaFechaCargada(Licencia lic) throws SQLException {
@@ -1799,7 +2194,7 @@ public class PersistenciaFuncionario {
         Integer contador=0;
         cnn=conexion.Cadena();
             cnn.setAutoCommit(false);
-             String insert="insert into PERS_MOVIMIENTOS_LICENCIA(CODIGO,ANIOSALDO,FECHAINI,FECHAFIN,FECHAMOV,SALDOANIO,DIAS_TOMADOS,SALDO_POSTERIOR,CODFUNC,TIPOLIC,COD_MOV_LIC,REFERENCIA)"+"values(?,?,?,?,?,?,?,?,?,?,?,?)";
+             String insert="insert into PERS_MOVIMIENTOS_LICENCIA(CODIGO,ANIOSALDO,FECHAINI,FECHAFIN,FECHAMOV,SALDOANIO,DIAS_TOMADOS,SALDO_POSTERIOR,CODFUNC,TIPOLIC,COD_MOV_LIC,REFERENCIA,ADELANTADA,ID_MARCA)"+"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
              PreparedStatement psFunc=cnn.prepareStatement(insert);
                
              int ultcod=this.buscarCodigoMov();
@@ -1821,6 +2216,13 @@ public class PersistenciaFuncionario {
               psFunc.setInt(11,0);
              }
              psFunc.setInt(12, Mov.getReferencia());
+             psFunc.setInt(13, 0);
+             if(Mov.getMarcaId()!=null){
+             psFunc.setLong(14, Mov.getMarcaId());
+             }
+             else{
+              psFunc.setLong(14, -1);    
+             }
              psFunc.executeUpdate();
              
              if(Mov.getTipoLic()==10){
@@ -1926,39 +2328,45 @@ public class PersistenciaFuncionario {
         return retorno;
     }
 
-    public MovimientoLicencia consultaAdelantado(Integer cod, Integer año) throws SQLException, ClassNotFoundException {
-        String consulta="";
-        Connection cnn=null;
-        cnn=conexion.Cadena();
-        Integer retorno=0;
-        MovimientoLicencia lic=new MovimientoLicencia();
-        PreparedStatement ps=null;
-        consulta="Select SUM(DIAS_TOMADOS) AS DIAS from PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? AND ANIOSALDO=? and ADELANTADA=?";
-        ps=cnn.prepareStatement(consulta);
-        ps.setInt(1, cod);
-        ps.setInt(2, año);
-        ps.setInt(3, 1);
-        ResultSet rs=ps.executeQuery();
-           while (rs.next()){
-              retorno=rs.getInt("DIAS");
-              lic.setAñoSaldo(año);
-              lic.setDiasTomados(retorno);
-              lic.setFuncionario(this.funcionarioParcial(cod));
-           }
+    public MovimientoLicencia consultaAdelantado(Integer cod, Integer año)throws BDExcepcion {
+        try {
+            String consulta="";
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            Integer retorno=0;
+            MovimientoLicencia lic=new MovimientoLicencia();
+            PreparedStatement ps=null;
+            consulta="Select SUM(DIAS_TOMADOS) AS DIAS from PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? AND ANIOSALDO=? and ADELANTADA=?";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            ps.setInt(2, año);
+            ps.setInt(3, 1);
+            ResultSet rs=ps.executeQuery();
+            while (rs.next()){
+                retorno=rs.getInt("DIAS");
+                lic.setAñoSaldo(año);
+                lic.setDiasTomados(retorno);
+                lic.setFuncionario(this.funcionarioParcial(cod));
+            }
             if(cnn!=null){
                 cnn.close();
             }           
             ps.close();
             rs.close();
-        return lic;
+            return lic;
+        } catch (ClassNotFoundException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
     }
 
-    public boolean insertarLicAdelantada(MovimientoLicencia lic) throws ClassNotFoundException, SQLException {
+    public boolean insertarLicAdelantada(MovimientoLicencia lic,Long id) throws ClassNotFoundException, SQLException {
         Connection cnn=null;
         Boolean alta=false;
         Integer contador=0;
         cnn=conexion.Cadena();
-             String insert="insert into PERS_MOVIMIENTOS_LICENCIA(CODIGO,ANIOSALDO,FECHAINI,FECHAFIN,FECHAMOV,DIAS_TOMADOS,CODFUNC,COD_MOV_LIC,REFERENCIA,ADELANTADA,TIPOLIC)"+"values(?,?,?,?,?,?,?,?,?,?,?)";
+             String insert="insert into PERS_MOVIMIENTOS_LICENCIA(CODIGO,ANIOSALDO,FECHAINI,FECHAFIN,FECHAMOV,DIAS_TOMADOS,CODFUNC,COD_MOV_LIC,REFERENCIA,ADELANTADA,TIPOLIC,ID_MARCA)"+"values(?,?,?,?,?,?,?,?,?,?,?,?)";
              PreparedStatement psFunc=cnn.prepareStatement(insert);
                
              int ultcod=this.buscarCodigoMov();
@@ -1981,8 +2389,9 @@ public class PersistenciaFuncionario {
              psFunc.setInt(9,lic.getReferencia());
              psFunc.setInt(10, 1);
              psFunc.setInt(11, 1001);
+             psFunc.setLong(12, id);
              contador=psFunc.executeUpdate();
-             cnn.commit();
+             
              if (contador==1){
                  alta=true;
              }
@@ -1995,55 +2404,56 @@ public class PersistenciaFuncionario {
 
     
 
-    public ArrayList<MovimientoLicencia> listarLicAdelantada(Integer cod,MovimientoLicencia mov) throws ClassNotFoundException, SQLException {
-        Connection cnn=null;
-        ResultSet rs=null;
-        PreparedStatement ps;
-        ArrayList<MovimientoLicencia> lista=new ArrayList<>();
-        cnn=conexion.Cadena();
-        if(cod!=null){
-            if(mov!=null){
-                String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE ANIOSALDO=? AND CODFUNC=? AND ADELANTADA=?";
-                ps=cnn.prepareStatement(consulta);
-                ps.setInt(1, mov.getAñoSaldo()+1);
-                ps.setInt(2, cod);
-                ps.setInt(3, 1);
-                rs=ps.executeQuery();
+    public ArrayList<MovimientoLicencia> listarLicAdelantada(Integer cod,MovimientoLicencia mov)throws BDExcepcion{
+        try {
+            Connection cnn=null;
+            ResultSet rs=null;
+            PreparedStatement ps;
+            ArrayList<MovimientoLicencia> lista=new ArrayList<>();
+            cnn=conexion.Cadena();
+            if(cod!=null){
+                if(mov!=null){
+                    String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE ANIOSALDO=? AND CODFUNC=? AND ADELANTADA=?";
+                    ps=cnn.prepareStatement(consulta);
+                    ps.setInt(1, mov.getAñoSaldo()+1);
+                    ps.setInt(2, cod);
+                    ps.setInt(3, 1);
+                    rs=ps.executeQuery();
+                }
+                else{
+                    String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? AND ADELANTADA=?";
+                    ps=cnn.prepareStatement(consulta);
+                    ps.setInt(1, cod);
+                    ps.setInt(2, 1);
+                    rs=ps.executeQuery();
+                }
             }
             else{
-                String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? AND ADELANTADA=?";
-                ps=cnn.prepareStatement(consulta);
-                ps.setInt(1, cod);
-                ps.setInt(2, 1);
-                rs=ps.executeQuery();
-            }
-        }
-        else{
-            if(mov!=null){
-                String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE ANIOSALDO=? AND ADELANTADA=? ORDER BY CODFUNC";
-                ps=cnn.prepareStatement(consulta);
-                ps.setInt(1, mov.getAñoSaldo()+1);
-                ps.setInt(2, 1);
-                rs=ps.executeQuery(); 
-            }
-            else{
-                String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA where ADELANTADA=?";
-                ps=cnn.prepareStatement(consulta);
-                ps.setInt(1, 1);
-                rs=ps.executeQuery(); 
+                if(mov!=null){
+                    String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE ANIOSALDO=? AND ADELANTADA=? ORDER BY CODFUNC";
+                    ps=cnn.prepareStatement(consulta);
+                    ps.setInt(1, mov.getAñoSaldo()+1);
+                    ps.setInt(2, 1);
+                    rs=ps.executeQuery();
+                }
+                else{
+                    String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA where ADELANTADA=?";
+                    ps=cnn.prepareStatement(consulta);
+                    ps.setInt(1, 1);
+                    rs=ps.executeQuery();
+                }
+                
             }
             
-        }
-        
-        
+
             while(rs.next()){
                 MovimientoLicencia lic=new MovimientoLicencia();
-                lic.setAñoSaldo(rs.getInt("ANIOSALDO")+1);
+                lic.setAñoSaldo(rs.getInt("ANIOSALDO"));
                 lic.setDiasTomados(rs.getInt("DIAS_TOMADOS"));
                 lic.setFechaFin(rs.getDate("FECHAFIN")); 
                 lic.setFechaIni(rs.getDate("FECHAINI"));
                 lic.setFechaMovimiento(rs.getDate("FECHAMOV"));
-                lic.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
+                lic.setFuncionario(this.funcionarioParcialTodos(rs.getInt("CODFUNC")));
                 lic.setCodMovLic(rs.getInt("COD_MOV_LIC"));
                 lic.setCodigo(rs.getInt("CODIGO"));
                 lic.setReferencia(rs.getInt("REFERENCIA"));
@@ -2055,24 +2465,28 @@ public class PersistenciaFuncionario {
                 cnn.close();
             }
             return lista;
+        } catch (ClassNotFoundException | SQLException ex) {
+             throw new BDExcepcion(ex.getMessage());
+        }
          }
     
-    public ArrayList<MovimientoLicencia> ultimoMovimiento(Integer cod,Integer tipo,Integer anio) throws ClassNotFoundException, SQLException {
-        Connection cnn=null;
-        MovimientoLicencia lic=null;
-        ArrayList<MovimientoLicencia> lista=new ArrayList<>();
-        cnn=conexion.Cadena();
-        PreparedStatement ps;
-        ResultSet rs=null;
-        String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? AND TIPOLIC=? and aniosaldo=? and REFERENCIA=0 and adelantada=? order by fechamov";
-        ps=cnn.prepareStatement(consulta);
-        ps.setInt(1, cod);
-        ps.setInt(2, tipo);
-        ps.setInt(3, anio);
-        ps.setInt(4, 0);
-        rs=ps.executeQuery();
-        while(rs.next()){
-               lic=new MovimientoLicencia();
+    public ArrayList<MovimientoLicencia> ultimoMovimiento(Integer cod,Integer tipo,Integer anio)throws BDExcepcion{
+        try {
+            Connection cnn=null;
+            MovimientoLicencia lic=null;
+            ArrayList<MovimientoLicencia> lista=new ArrayList<>();
+            cnn=conexion.Cadena();
+            PreparedStatement ps;
+            ResultSet rs=null;
+            String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? AND TIPOLIC=? and aniosaldo=? and REFERENCIA=0 and adelantada=? order by fechamov";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            ps.setInt(2, tipo);
+            ps.setInt(3, anio);
+            ps.setInt(4, 0);
+            rs=ps.executeQuery();
+            while(rs.next()){
+                lic=new MovimientoLicencia();
                 lic.setAñoSaldo(rs.getInt("ANIOSALDO"));
                 lic.setCodigo(rs.getInt("CODIGO"));
                 lic.setDiasTomados(rs.getInt("DIAS_TOMADOS"));
@@ -2093,6 +2507,11 @@ public class PersistenciaFuncionario {
                 cnn.close();
             }
             return lista;
+        } catch (ClassNotFoundException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
         
     }
     
@@ -2131,40 +2550,41 @@ public class PersistenciaFuncionario {
         
     }
     
-    public ArrayList<MovimientoLicencia> movimientoLic(Integer cod,MovimientoLicencia mov) throws ClassNotFoundException, SQLException {
-        Connection cnn=null;
-        ArrayList<MovimientoLicencia> lista=new ArrayList<>();
-        cnn=conexion.Cadena();
-        PreparedStatement ps;
-        ResultSet rs=null;
-        if(cod!=null){
-            if(mov==null){
-                String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? and adelantada=0 ORDER BY ANIOSALDO,FECHAMOV DESC,TIPOLIC";
-                ps=cnn.prepareStatement(consulta);
-                ps.setInt(1, cod);
-                rs=ps.executeQuery();
+    public ArrayList<MovimientoLicencia> movimientoLic(Integer cod,MovimientoLicencia mov)throws BDExcepcion{
+        try {
+            Connection cnn=null;
+            ArrayList<MovimientoLicencia> lista=new ArrayList<>();
+            cnn=conexion.Cadena();
+            PreparedStatement ps;
+            ResultSet rs=null;
+            if(cod!=null){
+                if(mov==null){
+                    String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? and adelantada=0 ORDER BY ANIOSALDO,FECHAMOV DESC,TIPOLIC";
+                    ps=cnn.prepareStatement(consulta);
+                    ps.setInt(1, cod);
+                    rs=ps.executeQuery();
+                }
+                else{
+                    String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? and adelantada=0 AND ANIOSALDO=? ORDER BY FECHAMOV DESC,TIPOLIC";
+                    ps=cnn.prepareStatement(consulta);
+                    ps.setInt(1, cod);
+                    ps.setInt(2, mov.getAñoSaldo()+1);
+                    rs=ps.executeQuery();
+                }
             }
             else{
-                String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? and adelantada=0 AND ANIOSALDO=? ORDER BY FECHAMOV DESC,TIPOLIC";
-                ps=cnn.prepareStatement(consulta);
-                ps.setInt(1, cod);
-                ps.setInt(2, mov.getAñoSaldo()+1);
-                rs=ps.executeQuery();
+                if(mov==null){
+                    String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA where adelantada=0 ORDER BY ANIOSALDO,FECHAMOV DESC,TIPOLIC";
+                    ps=cnn.prepareStatement(consulta);
+                    rs=ps.executeQuery();
+                }
+                else{
+                    String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE ANIOSALDO=? and adelantada=0 ORDER BY FECHAMOV DESC,TIPOLIC";
+                    ps=cnn.prepareStatement(consulta);
+                    ps.setInt(1, mov.getAñoSaldo()+1);
+                    rs=ps.executeQuery();
+                }
             }
-        }
-        else{
-            if(mov==null){
-                String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA where adelantada=0 ORDER BY ANIOSALDO,FECHAMOV DESC,TIPOLIC";
-                ps=cnn.prepareStatement(consulta);
-                rs=ps.executeQuery();   
-            }
-            else{
-                String consulta="SELECT * FROM PERS_MOVIMIENTOS_LICENCIA WHERE ANIOSALDO=? and adelantada=0 ORDER BY FECHAMOV DESC,TIPOLIC";
-                ps=cnn.prepareStatement(consulta);
-                ps.setInt(1, mov.getAñoSaldo()+1);
-                rs=ps.executeQuery();   
-            }
-        }
             while(rs.next()){
                 MovimientoLicencia lic=new MovimientoLicencia();
           
@@ -2175,7 +2595,7 @@ public class PersistenciaFuncionario {
                 lic.setFechaFin(rs.getDate("FECHAFIN")); 
                 lic.setFechaIni(rs.getDate("FECHAINI"));
                 lic.setFechaMovimiento(rs.getDate("FECHAMOV"));
-                lic.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
+                lic.setFuncionario(this.funcionarioParcialTodos(rs.getInt("CODFUNC")));
                 lic.setTipoLic(rs.getInt("TIPOLIC"));
                 lic.setCodMovLic(rs.getInt("COD_MOV_LIC"));
                 if(lic.getTipoLic()==1000){
@@ -2192,6 +2612,11 @@ public class PersistenciaFuncionario {
                 cnn.close();
             }
             return lista;
+        } catch (ClassNotFoundException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        }
     }
     
        public ArrayList<MovimientoLicencia> comboMovimientoAñoLic() throws ClassNotFoundException, SQLException {
@@ -2714,12 +3139,12 @@ public class PersistenciaFuncionario {
          return listaFalle;
     }
 
-    private void insertarAltaAuditoria(String info, Connection cnn,String desc,Integer codFunc) throws SQLException, ClassNotFoundException {
+    public void insertarAltaAuditoria(String info, Connection cnn,String desc,Integer codFunc) throws SQLException, ClassNotFoundException {
         this.frm=frmPrin.instancia();
-        String responsable=this.frm.getUsuario();
+        String responsable=this.frm.getUsuario().getNombre();
         Date fecha=new Date();
         java.sql.Timestamp des = this.convertirATimestamp(fecha);
-        String insert="insert into PERS_AUDITORIA_FICHA_FUNC(ID,DESCRIPCION,DESPUES,FECHA,RESPONSABLE,COD_FUNC)"+"values(?,?,?,?,?,?)";
+        String insert="insert into PERS_AUDITORIA(ID,DESCRIPCION,DESPUES,FECHA,RESPONSABLE,COD_FUNC)"+"values(?,?,?,?,?,?)";
             PreparedStatement psFunc=cnn.prepareStatement(insert);
              int ultcod=this.buscarCodigoAudit(cnn);
              psFunc.setInt(1, ultcod);
@@ -2746,7 +3171,7 @@ public class PersistenciaFuncionario {
     
     private int buscarCodigoAudit(Connection cnn) throws ClassNotFoundException, SQLException {
         Integer ultCod=null;
-        String consulta="SELECT MAX(ID) FROM PERS_AUDITORIA_FICHA_FUNC";
+        String consulta="SELECT MAX(ID) FROM PERS_AUDITORIA";
         PreparedStatement ps=cnn.prepareStatement(consulta);
         ResultSet rs=ps.executeQuery();
             while(rs.next()){
@@ -2758,12 +3183,12 @@ public class PersistenciaFuncionario {
             return ultCod+1;  
     }
 
-    private void insertarModAuditoria(String nuevo, String viejo, Connection cnn, String desc, Integer codFunc) throws ClassNotFoundException, SQLException {
+    public void insertarModAuditoria(String nuevo, String viejo, Connection cnn, String desc, Integer codFunc) throws ClassNotFoundException, SQLException {
     this.frm=frmPrin.instancia();
-        String responsable=this.frm.getUsuario();
+        String responsable=this.frm.getUsuario().getNombre();
         Date fecha=new Date();
         java.sql.Timestamp des = this.convertirATimestamp(fecha);
-        String insert="insert into PERS_AUDITORIA_FICHA_FUNC(ID,DESCRIPCION,ANTES,DESPUES,FECHA,RESPONSABLE,COD_FUNC)"+"values(?,?,?,?,?,?,?)";
+        String insert="insert into PERS_AUDITORIA(ID,DESCRIPCION,ANTES,DESPUES,FECHA,RESPONSABLE,COD_FUNC)"+"values(?,?,?,?,?,?,?)";
             PreparedStatement psFunc=cnn.prepareStatement(insert);
              int ultcod=this.buscarCodigoAudit(cnn);
              psFunc.setInt(1, ultcod);
@@ -2971,6 +3396,32 @@ public class PersistenciaFuncionario {
             }
          return existe;  
     }
+    
+    public String cargoParametro(String nombre) throws ClassNotFoundException, SQLException{
+      Connection cnn=null;
+        cnn=conexion.Cadena();
+        String existe="";
+        String consulta="Select VALOR from PERS_PARAMETROS WHERE NOMBRE=?";
+        PreparedStatement ps=cnn.prepareStatement(consulta);
+        ps.setString(1, nombre);
+        ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                existe=rs.getString("VALOR");
+            }        
+            if(existe!=null){
+                if(!"".equals(existe)){
+                    existe = existe.trim();
+                }
+            }else{
+                existe="";
+            }
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+         return existe;  
+    }
 
     public Integer obtenerFaltas(Funcionario f, Integer añoLiq,Date fechaAux,Connection cnn) throws SQLException {
         Integer faltas=0;
@@ -2996,6 +3447,694 @@ public class PersistenciaFuncionario {
          
          return faltas;  
     }
+    
+    
+    ///DECLARACIONES
+    
+    public Declaracion cargoDeclaracion(Integer codFunc){
+       Declaracion d = null;
+        try {
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            String consulta="Select * from PERS_DECLARACIONES WHERE CODFUNC=?";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, codFunc);
+            
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                d = new Declaracion();
+                d.setCodFunc(rs.getInt("CODFUNC"));
+                d.setTipoDoc(rs.getString("TIPODOC"));
+                d.setNroDoc(rs.getString("NRODOC"));
+                d.setPais(rs.getString("PAIS"));
+                d.setVigencia(rs.getInt("VIGENCIA"));
+                d.setPersonasACargo(rs.getInt("PERSONASACARGO"));
+                d.setCatcjpu(rs.getInt("CATCJPU"));
+                d.setReintcjpu(rs.getDouble("REINTCJPU"));
+                d.setFondosolcjpu(rs.getString("FONDOSOLCJPU"));
+                d.setAdicionalcjpu(rs.getInt("ADICIONALCJPU")); 
+                d.setMinimoimp(rs.getInt("MINNOIMP"));
+                d.setFechaRecepcion(rs.getDate("FECHARECEPCION"));
+                d.setTipoDocConyu(rs.getString("TIPODOCCONYU"));
+                d.setNroDocConyu(rs.getString("NRODOCCONYU"));
+                d.setPaisConyu(rs.getString("PAISCONYU"));
+                d.setApellidoUnoConyu(rs.getString("APELLIDO1CONYU"));
+                d.setApellidoDosConyu(rs.getString("APELLIDO2CONYU"));
+                d.setNombreUnoConyu(rs.getString("NOMBRE1CONYU"));
+                d.setNombreDosConyu(rs.getString("NOMBRE2CONYU"));
+                d.setFechaNacConyu(rs.getDate("FECHA_NACCONYU"));
+                d.setNacionalConyu(rs.getString("NACIONALIDADCONYU"));
+                String sexoConyu = rs.getString("SEXOCONYU");
+                if(sexoConyu!=null){
+                d.setSexoConyu(rs.getString("SEXOCONYU").charAt(0));
+                }
+                else{
+                d.setSexoConyu(' ');    
+                }
+                d.setFamiliar(rs.getInt("FAMILIAR"));
+            }        
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return d;
+    }
+    
+     public ArrayList<PersonasACargo> cargoPersonas(Integer codFunc){
+      ArrayList<PersonasACargo> lista = new ArrayList<>();
+        try {
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            String consulta="select * from pers_persacargo WHERE CODFUNC=? order by ordinal";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, codFunc);
+            
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                PersonasACargo p = new PersonasACargo();
+                Relacion r = new Relacion();
+                p.setCodFunc(rs.getInt("CODFUNC"));
+                p.setOrdinal(rs.getInt("ORDINAL"));
+                p.setTipoDoc(rs.getString("TIPODOC"));
+                p.setNroDoc(rs.getString("NRODOC"));
+                p.setPais(rs.getString("PAIS"));
+                p.setFecha_nac(rs.getDate("FECHA_NAC"));
+                p.setNacionalidad(rs.getString("NACIONALIDAD"));
+                p.setSexo(rs.getString("SEXO").charAt(0)); 
+                p.setRelacion(rs.getString("RELACION").charAt(0));
+                p.setSistSalud(rs.getString("SISTSALUD"));
+                p.setPjedist(rs.getInt("PJEDIST"));
+                p.setDiscapacidad(rs.getInt("DISCAPACIDAD"));
+                p.setApellidoUno(rs.getString("APELLIDO1"));
+                p.setApellidoDos(rs.getString("APELLIDO2"));
+                p.setNombreUno(rs.getString("NOMBRE1"));
+                p.setNombreDos(rs.getString("NOMBRE2"));
+                lista.add(p);
+            }        
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
+
+    public Integer insertaPersonasAcargo(PersonasACargo p, Integer codFunc, Integer ordinal, Connection cnn) {
+         Integer a=0;
+        try {
+               
+            String insert="insert into PERS_PERSACARGO(CODFUNC,ORDINAL,TIPODOC,NRODOC,PAIS,FECHA_NAC,NACIONALIDAD,SEXO,RELACION,SISTSALUD,PJEDIST,DISCAPACIDAD,APELLIDO1,APELLIDO2,NOMBRE1,NOMBRE2)"+"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            PreparedStatement psFunc=cnn.prepareStatement(insert);
+            
+            psFunc.setInt(1, codFunc);
+            psFunc.setInt(2, ordinal);
+            psFunc.setString(3, p.getTipoDoc().trim());
+            psFunc.setString(4,p.getNroDoc().trim());
+            psFunc.setString(5, p.getPais().trim());
+            psFunc.setString(6, this.convertirFecha(p.getFecha_nac()));
+            psFunc.setString(7, p.getNacionalidad().trim());
+            psFunc.setString(8, p.getSexo().toString().trim());
+            psFunc.setString(9, p.getRelacion().toString().trim());
+            psFunc.setString(10, p.getSistSalud().trim());
+            psFunc.setInt(11, p.getPjedist());
+            psFunc.setInt(12, p.getDiscapacidad());
+            psFunc.setString(13, p.getApellidoUno().trim());
+            if(p.getApellidoDos()!=null){
+            psFunc.setString(14, p.getApellidoDos().trim());
+            }
+            else{
+            psFunc.setString(14, p.getApellidoDos());
+            }
+            psFunc.setString(15, p.getNombreUno().trim());
+            if(p.getNombreDos()!=null){
+            psFunc.setString(16, p.getNombreDos().trim());
+            }
+            else{
+             psFunc.setString(16, p.getNombreDos());    
+            }
+            a=psFunc.executeUpdate();
+            
+            psFunc.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return a;
+               
+    }
+            
+                        
+            
+           
+  
+
+    public boolean ingresoDeclaracion(Declaracion d, ArrayList<PersonasACargo> lista)throws BDExcepcion {
+        Boolean alta=false;
+         Integer a=0;
+        try {
+            Connection cnn=null;
+            PreparedStatement ps = null;
+            cnn=conexion.Cadena();
+            cnn.setAutoCommit(false);
+                this.borrarDeclaracion(d.getCodFunc(), cnn);
+            
+                String insert="insert into PERS_DECLARACIONES(CODFUNC,TIPODOC,NRODOC,PAIS,VIGENCIA,PERSONASACARGO,CATCJPU,REINTCJPU,FONDOSOLCJPU,ADICIONALCJPU,MINNOIMP,FECHARECEPCION,TIPODOCCONYU,NRODOCCONYU,PAISCONYU,APELLIDO1CONYU,APELLIDO2CONYU,NOMBRE1CONYU,NOMBRE2CONYU,FECHA_NACCONYU,NACIONALIDADCONYU,SEXOCONYU,FAMILIAR)"+"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                ps=cnn.prepareStatement(insert);
+                
+                ps.setInt(1, d.getCodFunc());
+                ps.setString(2, d.getTipoDoc());
+                ps.setString(3, d.getNroDoc());
+                ps.setString(4, d.getPais());
+                ps.setInt(5, d.getVigencia());
+                ps.setInt(6, d.getPersonasACargo());
+                ps.setInt(7, d.getCatcjpu());
+                ps.setDouble(8, d.getReintcjpu());
+                ps.setString(9, d.getFondosolcjpu());
+                ps.setInt(10, d.getAdicionalcjpu());
+                ps.setInt(11, d.getMinimoimp());
+                ps.setString(12, this.convertirFecha(d.getFechaRecepcion()));
+                ps.setString(13, d.getTipoDocConyu());
+                ps.setString(14, d.getNroDocConyu());
+                ps.setString(15, d.getPaisConyu());
+                ps.setString(16, d.getApellidoUnoConyu());
+                ps.setString(17, d.getApellidoDosConyu());
+                ps.setString(18, d.getNombreUnoConyu());
+                ps.setString(19, d.getNombreDosConyu());
+                if(d.getFechaNacConyu()!=null){
+                ps.setString(20, this.convertirFecha(d.getFechaNacConyu()));
+                }
+                else{
+                ps.setString(20, null);    
+                }
+                ps.setString(21, d.getNacionalConyu());
+                if(d.getSexoConyu()!=null){
+                ps.setString(22, String.valueOf(d.getSexoConyu()));
+                }
+                else{
+                ps.setString(22, null);
+                }
+                if(d.getFamiliar()==null){
+                     ps.setInt(23, 0);
+                }else{
+                ps.setInt(23, d.getFamiliar());
+                }
+                a=ps.executeUpdate();
+            
+          
+                if(lista!=null){
+                    if(lista.size()>0){
+                        this.borrarPersonasACargo(d.getCodFunc(), cnn);
+                        int ordinal=1;
+                        int contador =0;
+                        for(PersonasACargo p:lista){
+                            contador+=this.insertaPersonasAcargo(p, d.getCodFunc(), ordinal, cnn);
+                            ordinal++;
+                        }
+                    }
+                }
+                
+                cnn.commit();
+                if(cnn!=null){
+                    cnn.close();
+                    ps.close();
+                }
+                if(a>0){
+                    alta=true;
+                }
+                
+               } catch (ClassNotFoundException | SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+        return alta;
+    }
+    
+    
+    public Integer borrarPersonasACargo(Integer codFunc, Connection cnn){
+          Integer a = 1;
+        try {
+            String delete = "DELETE FROM PERS_PERSACARGO WHERE CODFUNC=?";
+            PreparedStatement ps=cnn.prepareStatement(delete);
+            ps.setInt(1, codFunc);
+           a+=ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return a;
+    }
+    
+    public Integer borrarDeclaracion(Integer codFunc, Connection cnn){
+     Integer a = 0;
+        try {
+            String delete = "DELETE FROM PERS_DECLARACIONES WHERE CODFUNC=?";
+            PreparedStatement ps=cnn.prepareStatement(delete);
+            ps.setInt(1, codFunc);
+            a=ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return a;
+    }
+    
+     public Integer actualizaSalario(ArrayList<Funcionario> listado, String antiguedad,String porcentaje,Integer tipo){
+       int count = 0;
+         try {
+                       
+            Connection cnn=conexion.Cadena();
+            cnn.setAutoCommit(false);
+                              
+            String sql = "update pers_funcionarios set SUELDO_CARGO=? WHERE CODIGO=?";
+            PreparedStatement ps=cnn.prepareStatement(sql.toUpperCase());
+            final int batchSize = 500;
+            for (Funcionario f: listado) {
+                
+                ps.setDouble(1, f.getSueldoCargo());
+                ps.setInt(2,f.getCodFunc());           
+                ps.addBatch();
+                if(tipo==1){
+                this.insertarModAuditoria(f.getSueldoCargo().toString(), f.getCuenta().toString(), cnn, "Aumento salarial del "+porcentaje+ "%", f.getCodFunc());
+                }
+                else{
+                this.insertarModAuditoria(f.getSueldoCargo().toString(), f.getCuenta().toString(), cnn, "Decremento salarial del "+porcentaje+ "%", f.getCodFunc());    
+                }
+                if(++count % batchSize == 0) {
+                    ps.executeBatch();
+                }
+            }
+            ps.executeBatch(); 
+            this.actualizaAntiguedad(antiguedad,cnn);
+            cnn.commit();
+            ps.close();
+            cnn.close();
+            
+            
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+         return count;
+    }
+     
+     
+      public String valorDeAntiguedad() throws ClassNotFoundException, SQLException{
+        Connection cnn=null;
+        cnn=conexion.Cadena();
+        String ret="";
+        String consulta="Select VALOR from PERS_PARAMETROS WHERE NOMBRE=?";
+        PreparedStatement ps=cnn.prepareStatement(consulta);
+        ps.setString(1, "ANTIGUEDAD");
+        ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                ret=rs.getString("VALOR").trim();
+            }        
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+         return ret;  
+    }
+
+    private void actualizaAntiguedad(String str,Connection cnn) {
+        try {
+            String sql = "update pers_parametros set valor=? WHERE nombre=?";
+            PreparedStatement ps=cnn.prepareStatement(sql);
+             ps.setString(1, str);
+             ps.setString(2, "ANTIGUEDAD");
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public boolean actualizaParametros(String valorNuevo, String valorViejo, String nombre)throws BDExcepcion {
+      boolean cambio=false;
+        try {
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            cnn.setAutoCommit(false);
+            String sql = "update pers_parametros set valor=? WHERE nombre=?";
+            PreparedStatement ps=cnn.prepareStatement(sql);
+            ps.setString(1, valorNuevo);
+            ps.setString(2, nombre);
+            if(ps.executeUpdate()==1){
+                cambio=true;
+                this.insertarModAuditoria(valorNuevo,valorViejo, cnn, "Actualiza parametro "+nombre, 0);
+            }
+            cnn.commit();
+            if(cnn!=null){
+                ps.close();
+                cnn.close();
+            }
+        } catch (SQLException | ClassNotFoundException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+        return cambio;
+    }
+    
+    public boolean actualizaParametro(String valor, String nombre)throws BDExcepcion {
+      boolean cambio=false;
+        try {
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            cnn.setAutoCommit(false);
+            String sql = "update pers_parametros set valor=? WHERE nombre=?";
+            PreparedStatement ps=cnn.prepareStatement(sql);
+            ps.setString(1, valor);
+            ps.setString(2, nombre);
+            if(ps.executeUpdate()==1){
+                cambio=true;
+            }
+            cnn.commit();
+            if(cnn!=null){
+                ps.close();
+                cnn.close();
+            }
+        } catch (SQLException | ClassNotFoundException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+        return cambio;
+    }
+
+    
+    //VALES
+    public String cargoCuentaAce() {
+        String ret="";
+        try {
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            
+            String consulta="Select VALOR from PERS_PARAMETROS WHERE NOMBRE=?";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setString(1, "CUENTAABN");
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                ret=rs.getString("VALOR").trim();
+            }        
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+          
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+          return ret.trim();  
+    }
+
+    public String cargoRutAce() {
+       String ret="";
+        try {
+            Connection cnn=null;
+            cnn=conexion.Cadena();
+            
+            String consulta="Select VALOR from CFE_PARAMETROS WHERE IDENTIFICADOR=?";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setString(1, "Rut Emisor");
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                ret=rs.getString("VALOR").trim();
+            }        
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+          
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+          return ret.trim();  
+    }
+
+    private Banco buscarBancoVale(int cod, Connection cnn) {
+        Banco b=null;
+        try {
+            String consulta="Select sucursal,codigo_bcu,nombre from PERS_BANCOS WHERE CODIGO=?";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                b = new Banco();
+                b.setSucursal(rs.getInt("SUCURSAL"));
+                b.setCodBcu(rs.getString("CODIGO_BCU"));
+                b.setNombre(rs.getString("NOMBRE"));
+            }
+            
+            ps.close();
+            rs.close();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return b;
+    }
+
+    public boolean borrarLicAdelantada(Long id, Integer funCod, Integer codigo) {
+         Boolean alta=false;
+        try {
+            Connection cnn=null;
+           
+            Integer i=-1;
+            
+            cnn=conexion.Cadena();
+          
+            String borrar="DELETE FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? and TIPOLIC=? AND ID_MARCA=?";
+            PreparedStatement ps=cnn.prepareStatement(borrar);
+            ps.setInt(1, funCod);
+            ps.setInt(2, codigo);
+            ps.setLong(3, id);
+            i=ps.executeUpdate();
+            if(i==1){
+                alta=true;
+                
+            }
+            
+            
+            
+            if(cnn!=null){
+                cnn.close();
+                
+            }
+           
+        } catch (SQLException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(PersistenciaFuncionario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+         return alta;
+    }
+
+    private Licencia cargoSaldoAñoCorriente(Connection cnn, Integer cod)throws BDExcepcion {
+        try {
+            String consulta="";
+            Date d=new Date();
+            Integer año=Integer.valueOf(this.obtenerAño1(d));
+            Licencia l=null;
+            PreparedStatement ps=null;
+            consulta="Select * from PERS_LICENCIA_GENERADA WHERE CODFUNC=? and SALDO>0 and anio=? and fechaini<? order by ANIO";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            ps.setInt(2, año);
+            ps.setString(3, this.convertirFecha(d));
+            ResultSet rs=ps.executeQuery();
+            while (rs.next()){
+                l=new Licencia();
+                l.setAño(rs.getInt("ANIO")-1);
+                l.setFechaIni(rs.getDate("FECHAINI"));
+                l.setFechaFin(rs.getDate("FECHAFIN"));
+                l.setId(rs.getInt("CODIGO"));
+                l.setSaldo(rs.getInt("SALDO"));
+                l.setFuncionario(this.funcionarioParcial(rs.getInt("CODFUNC")));
+            }
+            
+            ps.close();
+            rs.close();
+            return l;
+        } catch (SQLException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        }
+    }
+
+    public Integer obtieneAñoSaldo(Long id, Integer funCod, Integer codigo) throws ClassNotFoundException, SQLException {
+        Integer i=null;
+        Connection cnn=null;
+        MovimientoLicencia lic=null;
+        ArrayList<MovimientoLicencia> lista=new ArrayList<>();
+        cnn=conexion.Cadena();
+        PreparedStatement ps;
+        ResultSet rs=null;
+        String consulta="SELECT aniosaldo FROM PERS_MOVIMIENTOS_LICENCIA WHERE CODFUNC=? AND TIPOLIC=? and ID_MARCA=?";
+        ps=cnn.prepareStatement(consulta);
+        ps.setInt(1, funCod);
+        ps.setInt(2, codigo);
+        ps.setLong(3, id);
+        rs=ps.executeQuery();
+        while(rs.next()){
+               
+               i=rs.getInt("ANIOSALDO");
+                
+            }        
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+            return i;
+    }
+    
+    public ArrayList<Parametro> cargaParametros()throws BDExcepcion{
+        try {
+            ArrayList<Parametro> parametros = new ArrayList<>();
+            Connection cnn=null;
+            Parametro p=null;
+            cnn=conexion.Cadena();
+            PreparedStatement ps;
+            ResultSet rs=null;
+            String consulta="select * from pers_parametros where modificable=1 order by NOMBRE";
+            ps=cnn.prepareStatement(consulta);
+            rs=ps.executeQuery();
+            while(rs.next()){
+                p=new Parametro();
+                p.setNombre(rs.getString("NOMBRE").trim());
+                p.setValor(rs.getString("VALOR").trim());
+                p.setModificable(rs.getInt("MODIFICABLE"));
+                parametros.add(p);
+            }
+            
+            if(cnn!=null){
+                ps.close();
+                rs.close();
+                cnn.close();
+            }
+            return parametros;
+        } catch (ClassNotFoundException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+    }
+
+  
+
+    boolean estaActivo(String trim, Connection cnn)throws BDExcepcion {
+         try {
+            boolean ret=false;
+            PreparedStatement ps;
+            ResultSet rs=null;
+            Integer cod = Integer.parseInt(trim);
+            String consulta="select * from pers_funcionarios where codigo=? and fecha_egreso is null";
+            ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            rs=ps.executeQuery();
+            if(rs.next()){
+                ret = true;
+            }
+            else{
+                ret= false;
+            }
+            
+         
+            return ret;
+        } catch (SQLException ex) {
+            throw new BDExcepcion(ex.getMessage());
+        }
+    }
+
+    private Cargo buscoCargo(Connection cnn, int cod)throws BDExcepcion {
+   
+        try {
+            Cargo cargo=null;
+            String consulta="Select * from PERS_CARGOS where codigo=?";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            ps.setInt(1, cod);
+            ResultSet rs=ps.executeQuery();
+            if(rs.next()){
+                cargo=new Cargo();
+                cargo.setCodigo(rs.getInt("CODIGO"));
+                cargo.setNombre(rs.getString("NOMBRE").trim());
+                
+            }
+            
+            ps.close();
+            rs.close();
+            
+
+            
+            return cargo;
+        } catch (SQLException ex) {
+             throw new BDExcepcion(ex.getMessage());
+        }
+    }
+
+    public Date fechaLiquidacionEnLiq()throws BDExcepcion {
+         try {
+            ArrayList<Liquidacion> liqs=new ArrayList<>();
+            Connection cnn=null;
+            cnn=Conexion.Cadena();
+            Date fecha=null;    
+            String consulta="select FECHA from pers_liquidaciones";
+            PreparedStatement ps=cnn.prepareStatement(consulta);
+            
+            ResultSet rs=ps.executeQuery();
+          
+            if (rs.next()) {
+               fecha=rs.getDate("FECHA");
+            }
+            
+            
+            ps.close();
+            rs.close();
+            cnn.close();
+            
+            return fecha;
+        } catch (ClassNotFoundException | SQLException ex) {
+             throw new BDExcepcion(ex.getMessage());
+        }
+    }
+
+    public boolean fechaLiquidacionHistorica(String fechaLiq)throws BDExcepcion {
+       try {
+            boolean ret=true;
+            Connection cnn=null;
+            cnn=Conexion.Cadena();
+            String sql = "select * from pers_hist_liquidaciones where fechaliq=?";
+            PreparedStatement ps=cnn.prepareStatement(sql);
+            ps.setString(1, fechaLiq);
+            ResultSet rs=ps.executeQuery();
+            if(rs.next()){
+                ret=false;
+            }
+            ps.close();
+            rs.close();
+            cnn.close();
+            
+            
+            return ret;
+        } catch (SQLException | ClassNotFoundException ex) {
+           throw new BDExcepcion(ex.getMessage());
+        }
+    }
+
+   
+
+
     
     }
     

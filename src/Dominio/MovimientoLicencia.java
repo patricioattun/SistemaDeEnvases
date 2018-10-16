@@ -17,7 +17,16 @@ public class MovimientoLicencia {
     private Integer tipoLic;
     private Integer codMovLic;
     private Integer referencia;
+    private Long marcaId;
 
+    public Long getMarcaId() {
+        return marcaId;
+    }
+
+    public void setMarcaId(Long marcaId) {
+        this.marcaId = marcaId;
+    }
+    
     public Integer getReferencia() {
         return referencia;
     }
